@@ -23,6 +23,17 @@ function sequencia(estado: Estado, lances: string): Estado {
 }
 
 describe("Mão de cartas", () => {
+  it("nenhum poder se repete na mão nem no baralho de um lado", () => {
+    for (let semente = 1; semente <= 50; semente++) {
+      const m = criarPartida({ maoDeCartas: { rng: aleatorioComSemente(semente) } }).mao!;
+      for (const cor of ["brancas", "pretas"] as const) {
+        const todas = [...m.mao[cor], ...m.baralho[cor]];
+        expect(new Set(todas).size).toBe(todas.length);
+        expect(m.mao[cor]).toHaveLength(MAO_INICIAL);
+      }
+    }
+  });
+
   it("começa com 3 cartas, sem poder fixo e com baralhos de pesos iguais", () => {
     const e = partida();
     expect(e.cartas.brancas.poder).toBeNull();

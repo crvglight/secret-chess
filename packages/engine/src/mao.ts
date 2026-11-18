@@ -33,19 +33,29 @@ function sortearPeso(pesos: number[], rng: Aleatorio): number {
 /**
  * Monta os baralhos dos dois lados com a mesma sequência de pesos
  * (cada posição sorteia um peso e uma carta daquele peso para cada lado).
+ * Sem repetição: cada poder aparece no máximo uma vez no baralho de cada lado.
  */
 export function montarMaos(rng: Aleatorio = Math.random, cartas: readonly CartaQualquer[] = CARTAS_OFICIAIS): MaoDeCartas {
-  const porPeso = new Map<number, CartaQualquer[]>();
-  for (const c of cartasDaMao(cartas)) porPeso.set(c.peso, [...(porPeso.get(c.peso) ?? []), c]);
-  const pesos = [...porPeso.keys()];
-  const qualquer = (lista: CartaQualquer[]) => lista[Math.floor(rng() * lista.length)]!.id;
+  // Cartas que ainda podem sair, separadas por peso, para cada lado.
+  const restantes = (): Map<number, CartaQualquer[]> => {
+    const porPeso = new Map<number, CartaQualquer[]>();
+    for (const c of cartasDaMao(cartas)) porPeso.set(c.peso, [...(porPeso.get(c.peso) ?? []), c]);
+    return porPeso;
+  };
+  const sobra = { brancas: restantes(), pretas: restantes() };
+  const tirar = (lista: CartaQualquer[]) => lista.splice(Math.floor(rng() * lista.length), 1)[0]!.id;
 
   const brancas: string[] = [];
   const pretas: string[] = [];
   for (let i = 0; i < TAMANHO_BARALHO; i++) {
-    const lista = porPeso.get(sortearPeso(pesos, rng))!;
-    brancas.push(qualquer(lista));
-    pretas.push(qualquer(lista));
+    // Só pesos que ainda têm carta para os dois lados.
+    const pesos = [...sobra.brancas.keys()].filter(
+      (p) => sobra.brancas.get(p)!.length > 0 && (sobra.pretas.get(p)?.length ?? 0) > 0,
+    );
+    if (pesos.length === 0) break;
+    const peso = sortearPeso(pesos, rng);
+    brancas.push(tirar(sobra.brancas.get(peso)!));
+    pretas.push(tirar(sobra.pretas.get(peso)!));
   }
   return {
     mao: { brancas: brancas.slice(0, MAO_INICIAL), pretas: pretas.slice(0, MAO_INICIAL) },
