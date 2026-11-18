@@ -31,7 +31,7 @@ export const DESCRICAO_CASA: Record<TipoCasaEspecial, { nome: string; descricao:
   espelho: { nome: "Espelho", descricao: "A peça que para aqui troca de lugar com a que estiver no outro espelho." },
   areia: { nome: "Areia movediça", descricao: "A peça que fica 2 rodadas aqui afunda e some (menos o rei)." },
   altar: { nome: "Altar", descricao: "A peça que entra aqui é sacrificada e dá +1 uso do poder (o rei não entra)." },
-  nevoa: { nome: "Névoa", descricao: "As peças do dono desta metade, aqui e em volta, ficam escondidas do adversário." },
+  nevoa: { nome: "Névoa", descricao: "A peça que está aqui aparece como “?” para o adversário: ele sabe que tem uma peça, mas não qual." },
   sorte: { nome: "Casa da sorte", descricao: "Sorteia na hora: +1 uso do poder, peça atolada ou nada. Depois some." },
 };
 
@@ -39,7 +39,6 @@ export const TIPOS_DE_CASA = Object.keys(DESCRICAO_CASA) as TipoCasaEspecial[];
 
 /** A casa espelhada (giro de 180°): a correspondente do outro lado. */
 const espelho = (c: Casa): Casa => 63 - c;
-const naMetadeDasBrancas = (c: Casa) => fileira(c) <= 3;
 
 /**
  * Sorteia as casas especiais: `quantos` tipos diferentes, um de cada nas fileiras 3 e 4
@@ -352,17 +351,14 @@ export function ladosComVigia(estado: Estado): Set<Cor> {
 }
 
 /**
- * Névoa: casas (a névoa e as vizinhas) onde as peças do dono daquela metade
- * ficam escondidas do adversário. Devolve, para cada casa, de quem são as peças escondidas.
+ * Névoa: a peça parada numa casa de névoa aparece como "?" para o adversário dela.
+ * Devolve, para cada névoa ocupada, a cor da peça que está lá.
  */
 export function casasNaNevoa(estado: Estado): Map<Casa, Cor> {
   const mapa = new Map<Casa, Cor>();
   for (const c of casasDoTipo(estado, "nevoa")) {
-    const dono: Cor = naMetadeDasBrancas(c) ? "brancas" : "pretas";
-    mapa.set(c, dono);
-    for (const [dc, df] of VIZINHOS) {
-      if (dentro(coluna(c) + dc, fileira(c) + df)) mapa.set(casa(coluna(c) + dc, fileira(c) + df), dono);
-    }
+    const p = estado.tabuleiro[c];
+    if (p) mapa.set(c, p.cor);
   }
   return mapa;
 }

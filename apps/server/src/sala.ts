@@ -305,9 +305,11 @@ export class Sala {
           if (d.dono === adversario && p) tabuleiro[d.casa] = { ...p, tipo: d.tipo };
         }
       }
-      // Névoa: as peças do adversário escondidas nela somem da vista.
+      // Névoa: a peça do adversário parada nela vira "?" na tela. O tipo verdadeiro
+      // não sai do servidor (vai como peão), para não dar para descobrir pelo navegador.
       for (const [c, dono] of casasNaNevoa(estado)) {
-        if (dono === adversario && tabuleiro[c]?.cor === adversario) tabuleiro[c] = null;
+        const p = tabuleiro[c];
+        if (dono === adversario && p) tabuleiro[c] = { ...p, tipo: "peao" };
       }
       visivel = {
         ...oculto,

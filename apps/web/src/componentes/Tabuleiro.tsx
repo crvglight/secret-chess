@@ -23,8 +23,8 @@ interface Props {
   casasEspeciais?: CasaEspecial[];
   /** Peças que devem aparecer com outro tipo (carta Ilusão). */
   disfarces?: ReadonlyMap<Casa, TipoPeca>;
-  /** Casas cobertas pela névoa para quem está olhando (as peças ali não aparecem). */
-  escondidas?: ReadonlySet<Casa>;
+  /** Peças na névoa para quem está olhando: aparecem como "?" (casa especial Névoa). */
+  misteriosas?: ReadonlySet<Casa>;
   podeArrastar(casa: Casa): boolean;
   aoTocarCasa(casa: Casa): void;
   aoSoltar(de: Casa, para: Casa): void;
@@ -189,12 +189,6 @@ export function Tabuleiro(props: Props) {
         );
       })}
 
-      {props.escondidas &&
-        [...props.escondidas].map((c) => {
-          const { x, y } = posicao(c);
-          return <rect key={`nevoa-${c}`} className="nevoa" x={x} y={y} width={LADO} height={LADO} />;
-        })}
-
       {visual.coordenadas && <Coordenadas orientacao={orientacao} />}
 
       {alvosPoder?.map((c) => {
@@ -215,7 +209,7 @@ export function Tabuleiro(props: Props) {
       })}
 
       {estado.tabuleiro.map((p, c) => {
-        if (!p || props.escondidas?.has(c)) return null;
+        if (!p) return null;
         const { x, y } = posicao(c);
         const arrastando = arraste?.moveu && arraste.de === c;
         return (
@@ -225,7 +219,11 @@ export function Tabuleiro(props: Props) {
             style={{ transform: `translate(${x}px, ${y}px)` }}
             opacity={arrastando ? 0.3 : 1}
           >
-            <PecaSvg tipo={props.disfarces?.get(c) ?? p.tipo} cor={p.cor} />
+            {props.misteriosas?.has(c) ? (
+              <PecaMisteriosa cor={p.cor} />
+            ) : (
+              <PecaSvg tipo={props.disfarces?.get(c) ?? p.tipo} cor={p.cor} />
+            )}
           </g>
         );
       })}
@@ -233,8 +231,7 @@ export function Tabuleiro(props: Props) {
       {visual.lancesPossiveis &&
         destinos.map((l) => {
         const { x, y } = posicao(l.para);
-        // Na névoa, a marca não pode entregar que há uma peça ali.
-        const captura = (estado.tabuleiro[l.para] && !props.escondidas?.has(l.para)) || l.especial === "en-passant";
+        const captura = estado.tabuleiro[l.para] || l.especial === "en-passant";
         return captura ? (
           <circle key={`d-${l.para}-${l.promocao ?? ""}`} className="marca-captura" cx={x + 50} cy={y + 50} r={44} />
         ) : (
@@ -385,6 +382,18 @@ function Coordenadas({ orientacao }: { orientacao: Cor }) {
           {n}
         </text>
       ))}
+    </g>
+  );
+}
+
+/** Peça na névoa: o adversário vê que há uma peça, na cor dela, mas não qual. */
+function PecaMisteriosa({ cor }: { cor: Cor }) {
+  return (
+    <g className={`peca peca-${cor} peca-misteriosa`} aria-label="Peça escondida na névoa">
+      <circle cx={50} cy={52} r={32} strokeWidth={3} />
+      <text x={50} y={66} textAnchor="middle">
+        ?
+      </text>
     </g>
   );
 }

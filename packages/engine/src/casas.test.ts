@@ -153,11 +153,15 @@ describe("Casas especiais", () => {
     expect(e.usosPoder.brancas).toBe(2);
   });
 
-  it("Névoa: esconde as peças do dono daquela metade", () => {
-    const nevoa = casasNaNevoa(comCasas([["e3", "nevoa"]]));
-    expect(nevoa.get(c("e3"))).toBe("brancas");
-    expect(nevoa.get(c("e2"))).toBe("brancas");
-    expect(nevoa.has(c("e5"))).toBe(false);
+  it("Névoa: só a peça parada nela fica disfarçada", () => {
+    const e = comCasas([["e3", "nevoa"], ["d6", "nevoa"]]);
+    expect(casasNaNevoa(e).size).toBe(0); // névoas vazias não escondem nada
+    const depois = sequencia(e, "e2-e3 d7-d6");
+    expect([...casasNaNevoa(depois)]).toEqual([
+      [c("e3"), "brancas"],
+      [c("d6"), "pretas"],
+    ]);
+    expect(casasNaNevoa(depois).has(c("e2"))).toBe(false);
   });
 
   it("Casa da sorte: sorteia um efeito e some", () => {

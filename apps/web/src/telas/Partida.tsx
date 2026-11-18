@@ -263,14 +263,12 @@ export function Partida({ modo, cartas, aoSair, aoRevanche, online }: Props) {
   // Torre de vigia: o lado adversário de quem está nela vê os segredos dele.
   const vigias = ladosComVigia(estado);
   const veSegredosDe = (cor: Cor) => veCartasDe(cor) || vigias.has(corOposta(cor));
-  // Névoa: as peças de um lado ficam escondidas de quem joga do outro lado.
-  // Contra a IA, quem olha é o humano; na partida local, quem tem a vez.
+  // Névoa: a peça do adversário parada numa névoa aparece como "?".
+  // Contra a IA e online, quem olha é o humano; na partida local, quem tem a vez.
   const olhando: Cor = corHumano ?? estado.vez;
-  const escondidas = new Set<Casa>();
+  const misteriosas = new Set<Casa>();
   if (!estado.resultado) {
-    for (const [c, dono] of casasNaNevoa(estado)) {
-      if (dono !== olhando && estado.tabuleiro[c]?.cor === dono) escondidas.add(c);
-    }
+    for (const [c, dono] of casasNaNevoa(estado)) if (dono !== olhando) misteriosas.add(c);
   }
   // Ilusão: a peça disfarçada aparece como peão para quem não vê as cartas do dono.
   const disfarces = new Map(
@@ -506,7 +504,7 @@ export function Partida({ modo, cartas, aoSair, aoRevanche, online }: Props) {
               reiEmXeque={reiEmXeque}
               casasEspeciais={casasVisiveis(estado)}
               disfarces={disfarces}
-              escondidas={escondidas}
+              misteriosas={misteriosas}
               podeArrastar={(c) =>
                 !modoPoder && !estado.resultado && !vezDoOutro && estado.tabuleiro[c]?.cor === estado.vez
               }

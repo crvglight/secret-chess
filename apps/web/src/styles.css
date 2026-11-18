@@ -1344,9 +1344,18 @@ input:focus-visible {
   opacity: 1;
   pointer-events: auto;
 }
-.nevoa {
-  fill: rgba(205, 210, 218, 0.82);
-  pointer-events: none;
+.peca-misteriosa {
+  opacity: 0.92;
+}
+.peca-misteriosa text {
+  font: 700 42px system-ui, sans-serif;
+  stroke: none;
+}
+.peca-misteriosa.peca-brancas text {
+  fill: var(--peca-branca-contorno);
+}
+.peca-misteriosa.peca-pretas text {
+  fill: var(--peca-preta-contorno);
 }
 
 /* ---------- Progresso (coleção, conquistas, histórico, estatísticas, criar carta) ---------- */

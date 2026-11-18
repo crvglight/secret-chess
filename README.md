@@ -131,7 +131,7 @@ Atalhos: acrescente o modo no fim da URL, como `#local-draft` ou `#ia-medio-bran
 
 Na tela inicial, **Jogar com amigo**: escolha o modo, as casas especiais, o relógio (3, 5 ou 10 minutos, ou sem tempo) e a cor; o jogo cria a sala e mostra o link (`#sala-CÓDIGO`) e o código. Quem abre o link (ou digita o código no Início) entra na outra cor.
 
-- **O servidor é a autoridade** (`apps/server`): guarda o estado completo e as cartas, valida cada ação com o motor e manda a cada jogador uma vista sem os segredos do adversário (cartas e mão viradas, armadilha/bomba escondidas, peça da Ilusão como peão, peças na névoa somem). Lance barrado por algo escondido volta com "Uma carta do adversário impede este lance".
+- **O servidor é a autoridade** (`apps/server`): guarda o estado completo e as cartas, valida cada ação com o motor e manda a cada jogador uma vista sem os segredos do adversário (cartas e mão viradas, armadilha/bomba escondidas, peça da Ilusão como peão, peça na névoa vai como "?" e o tipo dela não sai do servidor). Lance barrado por algo escondido volta com "Uma carta do adversário impede este lance".
 - **Reconexão:** cada jogador guarda um token no navegador; abrir o link de novo volta para a mesma cor. Quem fica fora mais de 60 s perde por abandono.
 - **Relógio:** corre no servidor; quem tem a desvantagem Lentidão começa com 1 minuto a menos (ela só entra no sorteio quando há relógio).
 - **Reações prontas** (sem chat livre), **desistir** e **revanche** (as cores trocam).
