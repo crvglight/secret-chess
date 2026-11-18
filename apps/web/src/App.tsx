@@ -1,4 +1,5 @@
 import { lazy, Suspense, useEffect, useState } from "react";
+import { analiseLiberada } from "./dev/liberacao.ts";
 import type { ModoPartida, RegrasPartida } from "./modo.ts";
 import { Inicio } from "./telas/Inicio.tsx";
 import { Jogo } from "./telas/Jogo.tsx";
@@ -6,9 +7,12 @@ import { Personalizar } from "./telas/Personalizar.tsx";
 import { Progresso } from "./telas/Progresso.tsx";
 import { TelaOnline } from "./telas/TelaOnline.tsx";
 
-// Janela de análise ao vivo (#analise): só no modo de desenvolvimento.
-// No build publicado, import.meta.env.DEV vira false e o arquivo nem é gerado.
-const JanelaAnalise = import.meta.env.DEV ? lazy(() => import("./dev/JanelaAnalise.tsx")) : null;
+// Janela de análise ao vivo (#analise): no `pnpm dev` e, no site publicado, só no
+// navegador liberado pela chave secreta (dev/liberacao.ts). Sem ela, nem é baixada.
+const JanelaAnalise = lazy(() => import("./dev/JanelaAnalise.tsx"));
+
+// Lê a chave secreta do endereço (?chave=...) assim que o site abre, em qualquer tela.
+void analiseLiberada();
 
 /**
  * Atalhos de URL: #local ou #ia-<facil|medio|dificil>-<brancas|pretas> abrem a partida direto.
@@ -51,7 +55,12 @@ export function App() {
   }, []);
   const [personalizando, setPersonalizando] = useState(() => location.hash === "#personalizar");
   const [vendoProgresso, setVendoProgresso] = useState(() => location.hash === "#progresso");
-  if (JanelaAnalise && location.hash === "#analise") {
+  const [podeAnalisar, setPodeAnalisar] = useState(false);
+  useEffect(() => {
+    void analiseLiberada().then(setPodeAnalisar);
+  }, []);
+  if (location.hash === "#analise") {
+    if (!podeAnalisar) return null;
     return (
       <Suspense fallback={null}>
         <JanelaAnalise />

@@ -7,3 +7,6 @@ coverage/
 # Cópia do site para publicar na Vercel (gerada por pnpm publicar)
 publicacao/
 .vercel/
+
+# Chave secreta da análise ao vivo (só no seu computador)
+CHAVE-ANALISE.txt

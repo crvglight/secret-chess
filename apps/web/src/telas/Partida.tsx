@@ -42,6 +42,7 @@ import type { ReacaoRecebida } from "../online/useSala.ts";
 import { PainelCasas } from "../componentes/PainelCasas.tsx";
 import { PainelJogador } from "../componentes/PainelJogador.tsx";
 import { Tabuleiro } from "../componentes/Tabuleiro.tsx";
+import { analiseLiberada } from "../dev/liberacao.ts";
 import { useIA } from "../ia/useIA.ts";
 import { NOME_NIVEL, NOME_REGRAS, type ModoPartida } from "../modo.ts";
 import { NOME_COR, numeroDoLance, tituloResultado } from "../textos.ts";
@@ -197,9 +198,9 @@ export function Partida({ modo, cartas, aoSair, aoRevanche, online }: Props) {
   }, [mostrarVisual]);
   const pedirJogada = useIA();
 
-  // Análise ao vivo (só no modo de desenvolvimento): Alt+A abre a janela de análise,
-  // que acompanha esta partida. No build publicado, import.meta.env.DEV vira false e
-  // o Vite nem gera os arquivos de src/dev.
+  // Análise ao vivo: Alt+A abre a janela de análise, que acompanha esta partida.
+  // Vale no `pnpm dev` e, no site publicado, só no navegador liberado pela chave
+  // secreta (dev/liberacao.ts). Sem a chave, o código da análise nem é baixado.
   const partidaAtual = useRef({ estado, orientacao });
   const transmissor = useRef<Transmissor | null>(null);
   useEffect(() => {
@@ -207,9 +208,10 @@ export function Partida({ modo, cartas, aoSair, aoRevanche, online }: Props) {
     transmissor.current?.publicar();
   }, [estado, orientacao]);
   useEffect(() => {
-    if (!import.meta.env.DEV) return;
     let cancelado = false;
-    void import("../dev/transmissor.ts").then(({ iniciarTransmissor }) => {
+    void analiseLiberada().then(async (pode) => {
+      if (!pode || cancelado) return;
+      const { iniciarTransmissor } = await import("../dev/transmissor.ts");
       if (!cancelado) transmissor.current = iniciarTransmissor(() => partidaAtual.current);
     });
     return () => {
