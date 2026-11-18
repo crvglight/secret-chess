@@ -1,0 +1,287 @@
+import { useMemo, useState } from "react";
+import { obterCarta } from "@xadrez/engine";
+import { CartaVisual } from "../componentes/CartaVisual.tsx";
+import { Tabuleiro } from "../componentes/Tabuleiro.tsx";
+import { NOME_NIVEL, NOME_REGRAS } from "../modo.ts";
+import {
+  CONQUISTAS,
+  lerProgresso,
+  reconstruirPartida,
+  textoVencedor,
+  type PartidaSalva,
+  type Progresso as DadosProgresso,
+} from "../progresso.ts";
+import { explicacaoResultado, NOME_COR } from "../textos.ts";
+
+type Aba = "conquistas" | "historico" | "estatisticas";
+
+const ABAS: { id: Aba; nome: string }[] = [
+  { id: "conquistas", nome: "Conquistas" },
+  { id: "historico", nome: "Histórico" },
+  { id: "estatisticas", nome: "Estatísticas" },
+];
+
+const SEM_ACAO = () => {};
+
+export function Progresso({ aoVoltar }: { aoVoltar(): void }) {
+  const [progresso] = useState(lerProgresso);
+  const [aba, setAba] = useState<Aba>("conquistas");
+  const [revendo, setRevendo] = useState<PartidaSalva | null>(null);
+
+  if (revendo) return <Replay partida={revendo} aoVoltar={() => setRevendo(null)} />;
+
+  return (
+    <div className="tela-progresso">
+      <header className="barra">
+        <button type="button" className="botao-link" onClick={aoVoltar}>
+          ← Início
+        </button>
+        <span className="barra-titulo">Progresso</span>
+        <span />
+      </header>
+
+      <nav className="abas" role="tablist" aria-label="Seções do progresso">
+        {ABAS.map((a) => (
+          <button
+            key={a.id}
+            type="button"
+            role="tab"
+            aria-selected={aba === a.id}
+            className={aba === a.id ? "ativa" : ""}
+            onClick={() => setAba(a.id)}
+          >
+            {a.nome}
+          </button>
+        ))}
+      </nav>
+
+      <section className="conteudo-aba" role="tabpanel">
+        {aba === "conquistas" && <Conquistas progresso={progresso} />}
+        {aba === "historico" && <Historico progresso={progresso} aoRever={setRevendo} />}
+        {aba === "estatisticas" && <Estatisticas progresso={progresso} />}
+      </section>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+
+function Conquistas({ progresso }: { progresso: DadosProgresso }) {
+  const feitas = CONQUISTAS.filter((c) => progresso.conquistas[c.id]).length;
+  return (
+    <>
+      <p className="subtitulo">
+        {feitas} de {CONQUISTAS.length} conquistas. Elas contam nas partidas contra a IA e online.
+      </p>
+      <ul className="lista-conquistas">
+        {CONQUISTAS.map((c) => {
+          const quando = progresso.conquistas[c.id];
+          return (
+            <li key={c.id} className={quando ? "feita" : ""}>
+              <span className="trofeu" aria-hidden="true">
+                {quando ? "🏆" : "🔒"}
+              </span>
+              <span>
+                <strong>{c.nome}</strong>
+                <span className="dica">
+                  {c.descricao}
+                  {quando && ` Conquistada em ${new Date(quando).toLocaleDateString("pt-BR")}.`}
+                </span>
+              </span>
+            </li>
+          );
+        })}
+      </ul>
+    </>
+  );
+}
+
+function descricaoModo(p: PartidaSalva): string {
+  const quem =
+    p.modo.tipo === "ia" ? `contra a IA (${NOME_NIVEL[p.modo.nivel].toLowerCase()})` : p.modo.tipo === "online" ? "online" : "local";
+  const regras = p.modo.regras !== "padrao" ? ` · ${NOME_REGRAS[p.modo.regras]}` : "";
+  const casas = p.modo.casasEspeciais ? " · Casas especiais" : "";
+  return `Partida ${quem}${regras}${casas}`;
+}
+
+function Historico({ progresso, aoRever }: { progresso: DadosProgresso; aoRever(p: PartidaSalva): void }) {
+  if (progresso.partidas.length === 0) {
+    return <p className="subtitulo">Nenhuma partida terminada ainda. Jogue uma e ela aparece aqui.</p>;
+  }
+  return (
+    <ul className="lista-partidas">
+      {progresso.partidas.map((p) => (
+        <li key={p.id}>
+          <span>
+            <strong>{textoVencedor(p)}</strong> · {descricaoModo(p)}
+            <span className="dica">
+              {new Date(p.data).toLocaleString("pt-BR")} · {Math.ceil(p.meioLances / 2)} lances
+            </span>
+          </span>
+          <button type="button" className="botao botao-secundario botao-pequeno" onClick={() => aoRever(p)}>
+            Rever
+          </button>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+function Estatisticas({ progresso }: { progresso: DadosProgresso }) {
+  const linhas = Object.entries(progresso.estatisticas)
+    .filter(([id]) => {
+      try {
+        obterCarta(id);
+        return true;
+      } catch {
+        return false; // carta criada que foi apagada
+      }
+    })
+    .map(([id, e]) => ({ carta: obterCarta(id), ...e, taxa: e.vitorias / e.jogos }))
+    .sort((a, b) => b.jogos - a.jogos || b.taxa - a.taxa);
+
+  if (linhas.length === 0) return <p className="subtitulo">As estatísticas aparecem depois da primeira partida.</p>;
+  return (
+    <>
+      <p className="subtitulo">
+        Taxa de vitória de quem tinha cada carta (partidas locais e contra a IA). Poder com taxa muito alta ou
+        desvantagem com taxa muito baixa pode pedir um peso maior.
+      </p>
+      <div className="tabela-rolagem">
+        <table className="tabela">
+          <thead>
+            <tr>
+              <th>Carta</th>
+              <th>Tipo</th>
+              <th>Peso</th>
+              <th>Partidas</th>
+              <th>Vitórias</th>
+              <th>Taxa</th>
+            </tr>
+          </thead>
+          <tbody>
+            {linhas.map((l) => (
+              <tr key={l.carta.id}>
+                <td>{l.carta.nome}</td>
+                <td>{l.carta.tipo === "poder" ? "Poder" : "Desvantagem"}</td>
+                <td>{l.carta.peso}</td>
+                <td>{l.jogos}</td>
+                <td>{l.vitorias}</td>
+                <td>
+                  {Math.round(l.taxa * 100)}%{l.jogos < 5 && <span className="dica"> (poucos dados)</span>}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </>
+  );
+}
+
+// ---------------------------------------------------------------------------
+
+// ---------------------------------------------------------------------------
+
+function Replay({ partida, aoVoltar }: { partida: PartidaSalva; aoVoltar(): void }) {
+  const estados = useMemo(() => reconstruirPartida(partida), [partida]);
+  const [passo, setPasso] = useState(estados.length - 1);
+  const estado = estados[passo]!;
+  const final = estados[estados.length - 1]!;
+  const orientacao = partida.modo.tipo === "ia" ? partida.modo.corHumano : "brancas";
+
+  return (
+    <div className="tela-progresso">
+      <header className="barra">
+        <button type="button" className="botao-link" onClick={aoVoltar}>
+          ← Histórico
+        </button>
+        <span className="barra-titulo">{descricaoModo(partida)}</span>
+        <span />
+      </header>
+
+      <div className="replay">
+        <div className="replay-tabuleiro">
+          <div className="area-tabuleiro">
+            <Tabuleiro
+              estado={estado}
+              orientacao={orientacao}
+              selecionada={null}
+              destinos={[]}
+              alvosPoder={null}
+              destaques={[]}
+              podeArrastar={() => false}
+              aoTocarCasa={SEM_ACAO}
+              aoSoltar={SEM_ACAO}
+            />
+          </div>
+          <div className="controles-replay">
+            <button type="button" className="botao-icone" aria-label="Início" onClick={() => setPasso(0)}>
+              ⏮
+            </button>
+            <button type="button" className="botao-icone" aria-label="Voltar" onClick={() => setPasso(Math.max(0, passo - 1))}>
+              ◀
+            </button>
+            <input
+              type="range"
+              min={0}
+              max={estados.length - 1}
+              value={passo}
+              aria-label="Momento da partida"
+              onChange={(e) => setPasso(Number(e.target.value))}
+            />
+            <button
+              type="button"
+              className="botao-icone"
+              aria-label="Avançar"
+              onClick={() => setPasso(Math.min(estados.length - 1, passo + 1))}
+            >
+              ▶
+            </button>
+            <button type="button" className="botao-icone" aria-label="Fim" onClick={() => setPasso(estados.length - 1)}>
+              ⏭
+            </button>
+          </div>
+          <p className="dica">
+            Passo {passo} de {estados.length - 1}
+            {final.resultado && ` · ${explicacaoResultado(final)}`}
+          </p>
+        </div>
+
+        <aside className="lateral replay-lateral">
+          <h2>Cartas</h2>
+          {(["brancas", "pretas"] as const).map((cor) => (
+            <div key={cor} className="replay-cartas">
+              <strong>{NOME_COR[cor]}</strong>
+              <div className="painel-cartas">
+                <CartaVisual cartaId={final.cartas[cor].poder} textoVazio={final.mao ? "Cartas da mão" : undefined} />
+                <CartaVisual cartaId={final.cartas[cor].desvantagem} />
+              </div>
+            </div>
+          ))}
+          <h2>Lances</h2>
+          <ol className="historico">
+            {final.historico.map((r, i) => (
+              <li key={i} className={i < estado.historico.length ? "" : "futuro"}>
+                <span className={`bolinha bolinha-${r.cor}`} aria-hidden="true" />
+                {r.texto}
+              </li>
+            ))}
+          </ol>
+          {final.eventos.length > 0 && (
+            <>
+              <h2>Momentos das cartas</h2>
+              <ul className="momentos">
+                {final.eventos.map((e, i) => (
+                  <li key={i}>
+                    {NOME_COR[e.cor]}: {e.texto}
+                  </li>
+                ))}
+              </ul>
+            </>
+          )}
+        </aside>
+      </div>
+    </div>
+  );
+}

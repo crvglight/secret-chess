@@ -1,0 +1,9 @@
+node_modules/
+dist/
+coverage/
+*.log
+.DS_Store
+
+# Cópia do site para publicar na Vercel (gerada por pnpm publicar)
+publicacao/
+.vercel/
