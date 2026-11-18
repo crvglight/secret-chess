@@ -189,6 +189,21 @@ export function Tabuleiro(props: Props) {
         );
       })}
 
+      {/* O piso das casas especiais cobre a casa: os realces vão por cima, meio transparentes. */}
+      {props.casasEspeciais?.map(({ casa: c }) => {
+        const realce =
+          props.reiEmXeque === c
+            ? "casa-xeque"
+            : selecionada === c
+              ? "casa-selecionada"
+              : visual.ultimoLance && ultimo && (ultimo.de === c || ultimo.para === c)
+                ? "casa-ultimo"
+                : null;
+        if (!realce) return null;
+        const { x, y } = posicao(c);
+        return <rect key={`realce-${c}`} className={`realce-especial ${realce}`} x={x} y={y} width={LADO} height={LADO} />;
+      })}
+
       {visual.coordenadas && <Coordenadas orientacao={orientacao} />}
 
       {alvosPoder?.map((c) => {
