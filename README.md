@@ -2,7 +2,7 @@
 
 *(antes chamado "Xadrez com Poderes")*
 
-Xadrez 1 contra 1 no navegador em que cada jogador recebe, em segredo, uma carta de **poder** e uma de **desvantagem**. Não existe xeque-mate: perde quem tiver o rei capturado ou ficar sem lance legal.
+Xadrez 1 contra 1 no navegador em que cada jogador recebe, em segredo, uma carta de **poder** e uma de **desvantagem**. Vence quem der xeque-mate, como no xadrez normal.
 
 ## Requisitos
 
@@ -41,9 +41,8 @@ Rode na raiz do projeto:
 
 ## Regras do motor
 
-- **Xeque (como no chess.com):** quando o rei está atacado, aparece o aviso e só valem lances que tiram o rei do xeque (mover o rei, capturar quem ataca ou bloquear); sem roque e sem lance de poder. Sem saída, é xeque-mate.
-- Fora do xeque, o rei pode ir para casa atacada e o roque pode passar por casa atacada (aí o adversário pode capturar o rei).
-- Perde quem tiver o rei capturado, ficar sem lance legal ou cair numa condição de derrota de carta.
+- **Xeque, como no xadrez normal:** nenhum lance (nem lance de poder) pode deixar o próprio rei atacado. O rei não vai para casa atacada, peça cravada não sai da frente, e o roque não sai do xeque, não passa por casa atacada nem cai nela. Um poder que não gasta o lance só vale se depois dele ainda houver lance legal.
+- **Fim:** sem lance legal e em xeque é xeque-mate (perde); sem lance e fora do xeque é afogamento (empate). Uma carta com condição de derrota também pode encerrar a partida.
 - Empate depois de 50 lances seguidos sem captura nem lance de peão, ou ao chegar a 200 lances.
 - Se uma carta tirar um rei do tabuleiro, o dono dele perde.
 - Promoção: dama por padrão, ou a peça escolhida.
@@ -99,7 +98,7 @@ Rode na raiz do projeto:
 | Centro proibido | desvantagem | 2 | Suas peças não podem parar em d4, d5, e4 e e5. |
 | Passos curtos | desvantagem | 3 | Suas damas e seus bispos andam no máximo 3 casas. |
 | Prazo | desvantagem | 3 | Você perde se fizer 12 lances seguidos sem capturar nada. |
-| Fronteira | desvantagem | 3 | Suas peças (menos os peões) não podem entrar nas 2 últimas fileiras do adversário. Capturar o rei sempre pode. |
+| Fronteira | desvantagem | 3 | Suas peças (menos os peões) não podem entrar nas 2 últimas fileiras do adversário. Dar xeque no rei sempre pode. |
 | Exército pequeno | desvantagem | 3 | Você perde se ficar com 4 peças ou menos (contando o rei). |
 | Rei impaciente | desvantagem | 3 | Seu rei precisa se mover pelo menos uma vez a cada 6 lances seus. No 6º lance sem mexer o rei, só ele pode jogar; se ele não tiver lance, você perde. |
 | Peças pesadas | desvantagem | 3 | Você não pode mover a mesma peça em duas rodadas seguidas. |

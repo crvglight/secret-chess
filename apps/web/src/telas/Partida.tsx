@@ -99,7 +99,7 @@ function opcoesDePromocao(estado: Estado, de: Casa, para: Casa): TipoPeca[] | un
 }
 
 function textoBloqueio(b: Bloqueio, vez: Cor): string {
-  if (b.xeque) return "Seu rei está em xeque: este lance não tira o rei do xeque.";
+  if (b.xeque) return "Este lance deixaria o seu rei em xeque.";
   if (b.casa) return `A casa especial “${b.nome}” impede este lance.`;
   if (b.evento) return `O evento “${b.nome}” impede este lance.`;
   return b.dono === vez

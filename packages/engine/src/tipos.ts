@@ -47,6 +47,8 @@ export interface EventoCarta {
 export type MotivoFim =
   | "rei-capturado"
   | "xeque-mate"
+  /** Sem lance e fora do xeque: empate. */
+  | "afogamento"
   | "sem-lances"
   | "carta"
   | "50-lances"

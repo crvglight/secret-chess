@@ -98,7 +98,7 @@ export function Inicio({ aoJogar, aoPersonalizar, aoVerProgresso }: Props) {
           Secret Chess
         </h1>
         <p className="subtitulo">
-          Cada lado recebe em segredo um poder e uma desvantagem. Vence quem capturar o rei — ou der xeque-mate.
+          Cada lado recebe em segredo um poder e uma desvantagem. Vence quem der xeque-mate.
         </p>
       </section>
 

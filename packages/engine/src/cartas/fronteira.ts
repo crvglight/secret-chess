@@ -7,7 +7,7 @@ export default definirCarta({
   tipo: "desvantagem",
   peso: 3,
   descricao:
-    "Suas peças (menos os peões) não podem entrar nas 2 últimas fileiras do adversário. Capturar o rei sempre pode.",
+    "Suas peças (menos os peões) não podem entrar nas 2 últimas fileiras do adversário. Dar xeque no rei sempre pode.",
 
   filtrarLances({ estado, dono }, lances, jogador) {
     if (jogador !== dono) return lances;

@@ -20,6 +20,8 @@ export function explicacaoResultado(estado: Estado): string {
       return `O rei das ${NOME_COR[corOposta(r.vencedor!)].toLowerCase()} foi capturado ${lance}.`;
     case "xeque-mate":
       return `Xeque-mate! O rei das ${NOME_COR[corOposta(r.vencedor!)].toLowerCase()} não tinha como escapar ${lance}.`;
+    case "afogamento":
+      return `Afogamento: as ${NOME_COR[estado.vez].toLowerCase()} não tinham lance e não estavam em xeque ${lance}.`;
     case "sem-lances":
       return `As ${NOME_COR[corOposta(r.vencedor!)].toLowerCase()} ficaram sem lance legal ${lance}.`;
     case "carta":

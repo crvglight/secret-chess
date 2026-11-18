@@ -103,17 +103,20 @@ export const CONQUISTAS: Conquista[] = [
   { id: "xeque-mate", nome: "Xeque-mate!", descricao: "Vença por xeque-mate.", checar: (c) => c.venceu && c.final.resultado?.motivo === "xeque-mate" },
   {
     id: "regicida",
-    nome: "Regicida",
-    descricao: "Vença capturando o rei.",
-    checar: (c) => c.venceu && c.final.resultado?.motivo === "rei-capturado",
+    nome: "Golpe de mestre",
+    descricao: "Dê xeque-mate com um lance de poder.",
+    checar: (c) => {
+      const ultimo = c.final.historico.at(-1);
+      return c.venceu && c.final.resultado?.motivo === "xeque-mate" && ultimo?.cor === c.humano && !!ultimo.lance.poder;
+    },
   },
   {
     id: "peao-regicida",
     nome: "O peão que derrubou o rei",
-    descricao: "Capture o rei com um peão.",
+    descricao: "Dê xeque-mate com um lance de peão.",
     checar: (c) => {
       const ultimo = c.final.historico.at(-1);
-      return c.venceu && ultimo?.cor === c.humano && ultimo.peca === "peao" && ultimo.captura === "rei";
+      return c.venceu && c.final.resultado?.motivo === "xeque-mate" && ultimo?.cor === c.humano && ultimo.peca === "peao";
     },
   },
   { id: "relampago", nome: "Relâmpago", descricao: "Vença em 15 lances ou menos.", checar: (c) => c.venceu && c.final.lancesFeitos[c.humano] <= 15 },

@@ -26,11 +26,6 @@ describe("regras básicas", () => {
     expect(lancesLegais(e)).toHaveLength(20);
   });
 
-  it("não existe xeque: o rei pode ir para uma casa atacada", () => {
-    const e = criarPartida({ fen: "4k3/8/8/8/8/8/3r4/4K3 w - - 0 1" });
-    expect(destinos(e, "e1")).toEqual(["d1", "d2", "e2", "f1", "f2"]);
-  });
-
   it("em xeque, só valem lances que tiram o rei do xeque", () => {
     // Torre preta em e2 ataca o rei em e1; a torre branca de a1 não ajuda.
     const e = criarPartida({ fen: "4k3/8/8/8/8/8/4r3/R3K3 w - - 0 1" });
@@ -51,24 +46,34 @@ describe("regras básicas", () => {
     expect(e.resultado).toEqual({ vencedor: "brancas", motivo: "xeque-mate" });
   });
 
-  it("fora do xeque, o rei ainda pode ir para casa atacada", () => {
+  it("o rei não pode ir para casa atacada", () => {
     const e = criarPartida({ fen: "4k3/8/8/8/8/8/3r4/4K3 w - - 0 1" });
     expect(emXeque(e)).toBe(false);
-    expect(destinos(e, "e1")).toContain("d1");
+    expect(destinos(e, "e1")).toEqual(["d2", "f1"]);
   });
 
-  it("capturar o rei encerra a partida", () => {
-    const e = jogar(criarPartida({ fen: "4k3/8/8/8/8/8/4r3/4K3 b - - 0 1" }), "e2", "e1");
-    expect(e.resultado).toEqual({ vencedor: "pretas", motivo: "rei-capturado" });
-    expect(lancesLegais(e)).toHaveLength(0);
-    expect(() => jogar(e, "e8", "e7")).toThrow("já terminou");
+  it("peça cravada não pode sair da frente do rei", () => {
+    const e = criarPartida({ fen: "4k3/4r3/8/8/8/8/4B3/4K3 w - - 0 1" });
+    expect(destinos(e, "e2")).toEqual([]);
   });
 
-  it("o roque pode passar por casa atacada", () => {
-    const e = jogar(criarPartida({ fen: "4k3/8/8/8/8/8/5r2/4K2R w K - 0 1" }), "e1", "g1");
-    expect(e.tabuleiro[c("g1")]?.tipo).toBe("rei");
-    expect(e.tabuleiro[c("f1")]?.tipo).toBe("torre");
-    expect(e.historico[0]?.texto).toBe("O-O");
+  it("o rei nunca é capturado: quem não tem saída leva xeque-mate", () => {
+    const e = sequencia(criarPartida(), "f2-f3 e7-e5 g2-g4 d8-h4");
+    expect(e.resultado).toEqual({ vencedor: "pretas", motivo: "xeque-mate" });
+  });
+
+  it("sem lance e fora do xeque é afogamento (empate)", () => {
+    const e = jogar(criarPartida({ fen: "7k/8/8/6Q1/8/8/8/K7 w - - 0 1" }), "g5", "g6");
+    expect(e.resultado).toEqual({ vencedor: null, motivo: "afogamento" });
+  });
+
+  it("o roque não passa por casa atacada", () => {
+    const e = criarPartida({ fen: "4k3/8/8/8/8/8/5r2/4K2R w K - 0 1" });
+    expect(destinos(e, "e1")).not.toContain("g1");
+    const livre = jogar(criarPartida({ fen: "4k3/8/8/8/8/8/r7/4K2R w K - 0 1" }), "e1", "g1");
+    expect(livre.tabuleiro[c("g1")]?.tipo).toBe("rei");
+    expect(livre.tabuleiro[c("f1")]?.tipo).toBe("torre");
+    expect(livre.historico[0]?.texto).toBe("O-O");
   });
 
   it("mover o rei tira o direito de roque", () => {
@@ -97,7 +102,7 @@ describe("regras básicas", () => {
     expect(depois.tabuleiro[c("e2")]).toBeNull();
   });
 
-  it("quem fica sem lance legal perde", () => {
+  it("quem fica sem lance (fora do xeque) empata por afogamento", () => {
     registrarCarta(
       definirCarta({
         id: "teste-trava",
@@ -110,7 +115,7 @@ describe("regras básicas", () => {
       }),
     );
     const e = jogar(criarPartida({ cartas: { pretas: { desvantagem: "teste-trava" } } }), "e2", "e4");
-    expect(e.resultado).toEqual({ vencedor: "brancas", motivo: "sem-lances" });
+    expect(e.resultado).toEqual({ vencedor: null, motivo: "afogamento" });
   });
 
   it("empata depois de 50 lances sem captura nem lance de peão", () => {

@@ -34,6 +34,7 @@ import type {
   Estado,
   Lance,
   Peca,
+  Resultado,
   SlotCarta,
   TipoPeca,
 } from "./tipos.ts";
@@ -160,9 +161,7 @@ export function criarPartida(opcoes: OpcoesPartida = {}): Estado {
         }
       : {}),
   };
-  if (lancesLegais(estado).length === 0) {
-    estado.resultado = { vencedor: corOposta(estado.vez), motivo: emXeque(estado) ? "xeque-mate" : "sem-lances" };
-  }
+  if (lancesLegais(estado).length === 0) estado.resultado = semLances(estado);
   return estado;
 }
 
@@ -207,6 +206,18 @@ function lancesSemXeque(estado: Estado, cor: Cor): Lance[] {
   return filtrarPorCasas(estado, lances);
 }
 
+/** Alguma carta ou casa especial cria lances além dos normais do xadrez? */
+function algoCriaLances(estado: Estado, cartas: CartaEmJogo[]): boolean {
+  return cartas.some((c) => c.carta.adicionarLances || (c.carta.ordemFiltro ?? 0) < 0) || casasCriamLances(estado);
+}
+
+/** As casas estão na mesma coluna, fileira ou diagonal? */
+function alinhadas(a: Casa, b: Casa): boolean {
+  const dc = (a % 8) - (b % 8);
+  const df = Math.floor(a / 8) - Math.floor(b / 8);
+  return dc === 0 || df === 0 || Math.abs(dc) === Math.abs(df);
+}
+
 /** O adversário de `cor`, se fosse a vez dele, poderia capturar o rei de `cor`? */
 function reiAtacado(estado: Estado, cor: Cor): boolean {
   const adversario = corOposta(cor);
@@ -226,8 +237,7 @@ function reiAtacado(estado: Estado, cor: Cor): boolean {
   //   pelas regras normais, ele não está atacado;
   // - sem nenhuma carta nem evento mexendo nos lances, a conta geométrica já é a resposta.
   const cartas = cartasEmJogo(estado);
-  const criaLances =
-    cartas.some((c) => c.carta.adicionarLances || (c.carta.ordemFiltro ?? 0) < 0) || casasCriamLances(estado);
+  const criaLances = algoCriaLances(estado, cartas);
   const geometrico = casaAtacada(t, casaRei, adversario);
   if (!criaLances && !geometrico) return false;
   const filtra = cartas.some((c) => c.carta.filtrarLances) || !!eventoAtivo(estado)?.filtrarLances || !!estado.casas;
@@ -253,7 +263,16 @@ export function casaDoReiEmXeque(estado: Estado): Casa | null {
 
 /** Depois deste lance, o rei de `cor` continua (ou fica) atacado? Só olha o tabuleiro. */
 function deixaReiAtacado(estado: Estado, cor: Cor, lance: Lance): boolean {
-  if (pecaCapturada(estado, lance)?.tipo === "rei") return false; // capturar o rei encerra a partida
+  if (pecaCapturada(estado, lance)?.tipo === "rei") return false; // só por efeito estranho de carta
+  if (lance.poder) {
+    // Lance de poder: a carta mexe no tabuleiro do jeito dela, então simula numa cópia.
+    const c = poderDe(estado, cor);
+    const acao = c?.carta.acaoAtiva;
+    if (!c || acao?.modo !== "lance") return true;
+    const depois = clonarEstado(estado);
+    acao.executar(ctxEscrita(depois, c, estado.meioLance), lance);
+    return reiAtacado(depois, cor);
+  }
   // Cópia leve: o teste só precisa do tabuleiro (e do roque, que executar() altera).
   const depois: Estado = {
     ...estado,
@@ -266,16 +285,35 @@ function deixaReiAtacado(estado: Estado, cor: Cor, lance: Lance): boolean {
 
 /**
  * Lances legais de `cor`, já com os efeitos de todas as cartas em jogo.
- * Regra do xeque (como no chess.com): em xeque, só valem lances que tiram o rei
- * do xeque (mover o rei, capturar quem ataca ou bloquear); sem roque e sem lance de poder.
+ * Regra do xeque, como no xadrez normal: nenhum lance pode deixar o próprio rei
+ * atacado. O roque não sai do xeque, não passa por casa atacada nem cai nela.
  */
 export function lancesLegais(estado: Estado, cor: Cor = estado.vez): Lance[] {
   const lances = lancesSemXeque(estado, cor);
-  if (lances.length === 0 || !reiAtacado(estado, cor)) return lances;
-  return lances.filter(
-    (l) =>
-      !l.poder && l.especial !== "roque-curto" && l.especial !== "roque-longo" && !deixaReiAtacado(estado, cor, l),
-  );
+  if (lances.length === 0) return lances;
+  const emXequeAgora = reiAtacado(estado, cor);
+  // Atalho: fora do xeque e só com lances normais de xadrez, uma peça (que não é o rei)
+  // fora da linha do próprio rei não tem como expô-lo ao sair da casa.
+  const casaRei = estado.tabuleiro.findIndex((p) => p?.tipo === "rei" && p.cor === cor);
+  const atalho = !emXequeAgora && casaRei >= 0 && !algoCriaLances(estado, cartasEmJogo(estado));
+  return lances.filter((l) => {
+    if (
+      atalho &&
+      !l.poder &&
+      !l.especial?.startsWith("roque") &&
+      l.especial !== "en-passant" &&
+      l.de !== casaRei &&
+      !alinhadas(l.de, casaRei)
+    ) {
+      return true;
+    }
+    if (l.especial === "roque-curto" || l.especial === "roque-longo") {
+      if (emXequeAgora) return false;
+      const passagem = l.especial === "roque-curto" ? l.de + 1 : l.de - 1;
+      if (deixaReiAtacado(estado, cor, { de: l.de, para: passagem })) return false;
+    }
+    return !deixaReiAtacado(estado, cor, l);
+  });
 }
 
 /** Lances normais (sem os de poder) que saem de `de`. */
@@ -478,9 +516,16 @@ export function aplicarLanceGerado(estado: Estado, legal: Lance): Estado {
   } else if (novo.meioLance >= LIMITE_MEIO_LANCES) {
     novo.resultado = { vencedor: null, motivo: "limite" };
   } else if (lancesLegais(novo).length === 0) {
-    novo.resultado = { vencedor: corOposta(novo.vez), motivo: emXeque(novo) ? "xeque-mate" : "sem-lances" };
+    novo.resultado = semLances(novo);
   }
   return novo;
+}
+
+/** Quem tem a vez ficou sem lance: em xeque é xeque-mate; fora do xeque é afogamento (empate). */
+function semLances(estado: Estado): Resultado {
+  return reiAtacado(estado, estado.vez)
+    ? { vencedor: corOposta(estado.vez), motivo: "xeque-mate" }
+    : { vencedor: null, motivo: "afogamento" };
 }
 
 /** Atalho com nomes de casas: jogar(estado, "e2", "e4"). */
@@ -527,12 +572,32 @@ export function infoPoder(estado: Estado, cor: Cor = estado.vez): InfoPoder {
   if (trava || !c || !acao) return { ...info, motivo: trava };
 
   let alvos: Casa[] = [];
-  if (acao.modo === "alvo") alvos = acao.alvosValidos(ctxConsulta(estado, c));
+  if (acao.modo === "alvo") {
+    alvos = acao.alvosValidos(ctxConsulta(estado, c)).filter((a) => !poderSemSaida(estado, c, a));
+  }
+  if (acao.modo === "imediato" && poderSemSaida(estado, c, null)) {
+    return { ...info, motivo: "Usar agora deixaria o seu rei sem saída" };
+  }
   if (acao.modo === "lance") {
     alvos = [...new Set(lancesLegais(estado, cor).filter((l) => l.poder).map((l) => l.de))];
   }
   if (acao.modo !== "imediato" && alvos.length === 0) return { ...info, motivo: "Não há onde usar o poder agora" };
   return { ...info, disponivel: true, alvos };
+}
+
+/**
+ * O poder (alvo ou imediato) não gasta o lance, mas depois dele ainda é preciso
+ * jogar sem deixar o rei atacado. Se não sobrar nenhum lance assim, o poder não vale.
+ */
+function poderSemSaida(estado: Estado, c: CartaEmJogo, alvo: Casa | null): boolean {
+  const acao = c.carta.acaoAtiva;
+  if (acao?.modo !== "alvo" && acao?.modo !== "imediato") return false;
+  const depois = clonarEstado(estado);
+  if (acao.modo === "alvo") acao.usar(ctxEscrita(depois, c), alvo!);
+  else acao.usar(ctxEscrita(depois, c));
+  depois.usosPoder[c.dono]--;
+  depois.poderUsadoNoTurno = true;
+  return lancesLegais(depois, c.dono).length === 0;
 }
 
 /** Lances especiais do poder (modo "lance") que saem de `de`. */
