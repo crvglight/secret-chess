@@ -1302,48 +1302,6 @@ input:focus-visible {
   border-radius: 6px;
   flex: none;
 }
-/* A lava do vulcão pulsa e a névoa flutua, devagar. */
-.casa-lava-pulsa {
-  animation: pulsar-lava 2.4s ease-in-out infinite alternate;
-}
-@keyframes pulsar-lava {
-  from {
-    opacity: 0.55;
-  }
-  to {
-    opacity: 0.95;
-  }
-}
-.casa-nevoa-flutua {
-  animation: flutuar-nevoa 5s ease-in-out infinite alternate;
-}
-@keyframes flutuar-nevoa {
-  to {
-    transform: translateX(4px);
-  }
-}
-@media (prefers-reduced-motion: reduce) {
-  .casa-lava-pulsa,
-  .casa-nevoa-flutua {
-    animation: none;
-  }
-}
-/* O portal gira devagar. */
-.casa-portal-giro {
-  transform-origin: 50px 50px;
-  transform-box: view-box;
-  animation: girar-portal 6s linear infinite;
-}
-@keyframes girar-portal {
-  to {
-    transform: rotate(360deg);
-  }
-}
-@media (prefers-reduced-motion: reduce) {
-  .casa-portal-giro {
-    animation: none;
-  }
-}
 .painel-casas {
   display: grid;
   gap: 6px;
