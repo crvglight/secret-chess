@@ -1,4 +1,5 @@
-import type { Cor, NivelIA } from "@xadrez/engine";
+import type { Cor } from "@xadrez/engine";
+import type { NivelAdversario } from "./ia/useIA.ts";
 
 /** O jeito de distribuir e usar as cartas na partida. */
 export type RegrasPartida = "padrao" | "draft" | "mao" | "caos";
@@ -12,15 +13,23 @@ interface Opcoes {
 
 export type ModoPartida =
   | ({ tipo: "local" } & Opcoes)
-  | ({ tipo: "ia"; nivel: NivelIA; corHumano: Cor } & Opcoes)
+  /** Contra o Stockfish, "forca" vai de 1 a 8. */
+  | ({ tipo: "ia"; nivel: NivelAdversario; forca?: number; corHumano: Cor } & Opcoes)
   /** Online: "corHumano" é a cor deste navegador. */
   | ({ tipo: "online"; corHumano: Cor; codigo: string } & Opcoes);
 
-export const NOME_NIVEL: Record<NivelIA, string> = {
+export const NOME_NIVEL: Record<NivelAdversario, string> = {
   facil: "Fácil",
   medio: "Médio",
   dificil: "Difícil",
+  stockfish: "Stockfish",
 };
+
+/** Nome do adversário IA (ex.: "IA média", "Stockfish força 5"). */
+export function nomeDaIA(nivel: NivelAdversario, forca?: number): string {
+  if (nivel === "stockfish") return `Stockfish força ${forca ?? 4}`;
+  return `IA ${NOME_NIVEL[nivel].toLowerCase()}`;
+}
 
 export const REGRAS: { id: RegrasPartida; nome: string; descricao: string; pronto: boolean }[] = [
   { id: "padrao", nome: "Padrão", descricao: "1 poder e 1 desvantagem sorteados em segredo.", pronto: true },

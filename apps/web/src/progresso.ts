@@ -100,6 +100,18 @@ export const CONQUISTAS: Conquista[] = [
   },
   { id: "vence-medio", nome: "Esquentando", descricao: "Vença a IA no nível médio.", checar: (c) => c.venceu && nivel(c) === "medio" },
   { id: "vence-dificil", nome: "Mestre das cartas", descricao: "Vença a IA no nível difícil.", checar: (c) => c.venceu && nivel(c) === "dificil" },
+  {
+    id: "vence-stockfish",
+    nome: "Contra a máquina",
+    descricao: "Vença o Stockfish (qualquer força).",
+    checar: (c) => c.venceu && nivel(c) === "stockfish",
+  },
+  {
+    id: "vence-stockfish-8",
+    nome: "Lenda",
+    descricao: "Vença o Stockfish na força 8.",
+    checar: (c) => c.venceu && nivel(c) === "stockfish" && c.partida.modo.tipo === "ia" && c.partida.modo.forca === 8,
+  },
   { id: "xeque-mate", nome: "Xeque-mate!", descricao: "Vença por xeque-mate.", checar: (c) => c.venceu && c.final.resultado?.motivo === "xeque-mate" },
   {
     id: "regicida",

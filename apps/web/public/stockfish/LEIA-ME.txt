@@ -1,0 +1,10 @@
+Stockfish 18 (versão "lite single-threaded" do Stockfish.js), sem modificações.
+
+- Stockfish: https://github.com/official-stockfish/Stockfish
+- Stockfish.js (compilação para o navegador): https://github.com/nmrugg/stockfish.js
+  pacote npm "stockfish" 18.0.8, arquivos bin/stockfish-18-lite-single.js e .wasm
+
+Licença: GNU GPL v3 (texto completo em COPYING.txt). O código-fonte está
+disponível nos endereços acima.
+
+O Secret Chess só conversa com o Stockfish pelo protocolo UCI, num Web Worker separado.

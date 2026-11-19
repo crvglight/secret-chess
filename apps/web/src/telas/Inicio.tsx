@@ -1,5 +1,7 @@
 import { useState, type ReactNode } from "react";
-import type { Cor, NivelIA } from "@xadrez/engine";
+import type { Cor } from "@xadrez/engine";
+import { FORCA_PADRAO, FORCAS_STOCKFISH } from "../ia/stockfish.ts";
+import type { NivelAdversario } from "../ia/useIA.ts";
 import { IconePeca } from "../componentes/PecaSvg.tsx";
 import { NOME_NIVEL, REGRAS, type ModoPartida, type RegrasPartida } from "../modo.ts";
 import { criarSala, ONLINE_DISPONIVEL } from "../online/conexao.ts";
@@ -7,10 +9,22 @@ import { lerProgresso } from "../progresso.ts";
 
 const CHAVE_APELIDO = "xadrez-apelido";
 
-const DESCRICAO_NIVEL: Record<NivelIA, string> = {
+const DESCRICAO_NIVEL: Record<NivelAdversario, string> = {
   facil: "Olha só 1 lance à frente e erra de propósito.",
   medio: "Pensa 3 lances à frente e usa o poder dela.",
   dificil: "Pensa 4 lances à frente, sem dar moleza.",
+  stockfish: "O motor de xadrez mais forte do mundo escolhe os lances; a IA do jogo cuida das cartas.",
+};
+
+const NOME_FORCA: Record<number, string> = {
+  1: "iniciante",
+  2: "aprendiz",
+  3: "casual",
+  4: "clube",
+  5: "forte",
+  6: "mestre",
+  7: "grande mestre",
+  8: "quase máximo",
 };
 
 type EscolhaCor = Cor | "aleatoria";
@@ -34,7 +48,8 @@ export function Inicio({ aoJogar, aoPersonalizar, aoVerProgresso }: Props) {
   const [apelido, setApelido] = useState(lerApelido);
   const [configurando, setConfigurando] = useState<Adversario | null>(null);
   const [regras, setRegras] = useState<RegrasPartida>("padrao");
-  const [nivel, setNivel] = useState<NivelIA>("medio");
+  const [nivel, setNivel] = useState<NivelAdversario>("medio");
+  const [forca, setForca] = useState(FORCA_PADRAO);
   const [cor, setCor] = useState<EscolhaCor>("brancas");
   const [casasEspeciais, setCasasEspeciais] = useState(false);
   const [minutos, setMinutos] = useState<3 | 5 | 10 | null>(5);
@@ -74,7 +89,7 @@ export function Inicio({ aoJogar, aoPersonalizar, aoVerProgresso }: Props) {
       return;
     }
     const corHumano: Cor = cor === "aleatoria" ? (Math.random() < 0.5 ? "brancas" : "pretas") : cor;
-    aoJogar({ tipo: "ia", nivel, corHumano, regras, casasEspeciais });
+    aoJogar({ tipo: "ia", nivel, corHumano, regras, casasEspeciais, ...(nivel === "stockfish" ? { forca } : {}) });
   }
 
   const progresso = lerProgresso();
@@ -164,7 +179,7 @@ export function Inicio({ aoJogar, aoPersonalizar, aoVerProgresso }: Props) {
             <>
               <fieldset className="grupo-opcoes">
                 <legend>Nível</legend>
-                {(Object.keys(NOME_NIVEL) as NivelIA[]).map((n) => (
+                {(Object.keys(NOME_NIVEL) as NivelAdversario[]).map((n) => (
                   <label key={n} className={`opcao ${nivel === n ? "opcao-ativa" : ""}`}>
                     <input type="radio" name="nivel" checked={nivel === n} onChange={() => setNivel(n)} />
                     <strong>{NOME_NIVEL[n]}</strong>
@@ -172,6 +187,22 @@ export function Inicio({ aoJogar, aoPersonalizar, aoVerProgresso }: Props) {
                   </label>
                 ))}
               </fieldset>
+
+              {nivel === "stockfish" && (
+                <label className="forca-stockfish">
+                  <span>
+                    Força do Stockfish: <strong>{forca}</strong> ({NOME_FORCA[forca]})
+                  </span>
+                  <input
+                    type="range"
+                    min={FORCAS_STOCKFISH[0]}
+                    max={FORCAS_STOCKFISH[FORCAS_STOCKFISH.length - 1]}
+                    step={1}
+                    value={forca}
+                    onChange={(ev) => setForca(Number(ev.target.value))}
+                  />
+                </label>
+              )}
 
               <fieldset className="grupo-opcoes grupo-linha">
                 <legend>Você joga com</legend>

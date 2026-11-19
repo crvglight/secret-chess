@@ -14,6 +14,7 @@ export * from "./eventos.ts";
 export * from "./casas.ts";
 export * from "./personalizadas.ts";
 export * from "./protocolo.ts";
+export * from "./stockfish.ts";
 export {
   analisarAoVivo,
   analisarPosicao,

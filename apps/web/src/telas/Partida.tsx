@@ -44,7 +44,7 @@ import { PainelJogador } from "../componentes/PainelJogador.tsx";
 import { Tabuleiro } from "../componentes/Tabuleiro.tsx";
 import { analiseLiberada } from "../dev/liberacao.ts";
 import { useIA } from "../ia/useIA.ts";
-import { NOME_NIVEL, NOME_REGRAS, type ModoPartida } from "../modo.ts";
+import { NOME_NIVEL, NOME_REGRAS, nomeDaIA, type ModoPartida } from "../modo.ts";
 import { NOME_COR, numeroDoLance, tituloResultado } from "../textos.ts";
 
 /**
@@ -203,7 +203,7 @@ export function Partida({ modo, cartas, aoSair, aoRevanche, online }: Props) {
     window.addEventListener("keydown", aoTeclar);
     return () => window.removeEventListener("keydown", aoTeclar);
   }, [mostrarVisual]);
-  const pedirJogada = useIA();
+  const pedirJogada = useIA(modo.tipo === "ia" && modo.nivel === "stockfish");
 
   // Análise ao vivo: Alt+A abre a janela de análise, que acompanha esta partida.
   // Vale no `pnpm dev` e, no site publicado, só no navegador liberado pela chave
@@ -295,7 +295,7 @@ export function Partida({ modo, cartas, aoSair, aoRevanche, online }: Props) {
     if (modo.tipo !== "ia" || estado.vez === modo.corHumano || estado.resultado) return;
     let cancelado = false;
     const inicio = Date.now();
-    pedirJogada(estado, modo.nivel)
+    pedirJogada(estado, modo.nivel, modo.forca)
       .then((jogada) => {
         const espera = Math.max(0, ESPERA_MINIMA_IA - (Date.now() - inicio));
         setTimeout(() => {
@@ -436,7 +436,7 @@ export function Partida({ modo, cartas, aoSair, aoRevanche, online }: Props) {
     if (online && espectador) return `${online.nomes[cor]} (${NOME_COR[cor].toLowerCase()})`;
     if (online) return cor === modo.corHumano ? `Você (${NOME_COR[cor].toLowerCase()})` : `${online.nomes[cor]} (${NOME_COR[cor].toLowerCase()})`;
     if (modo.tipo !== "ia") return NOME_COR[cor];
-    return cor === modo.corHumano ? `Você (${NOME_COR[cor].toLowerCase()})` : `IA ${NOME_NIVEL[modo.nivel].toLowerCase()} (${NOME_COR[cor].toLowerCase()})`;
+    return cor === modo.corHumano ? `Você (${NOME_COR[cor].toLowerCase()})` : `${nomeDaIA(modo.nivel, modo.forca)} (${NOME_COR[cor].toLowerCase()})`;
   };
 
   const painel = (cor: Cor) => (
@@ -464,7 +464,7 @@ export function Partida({ modo, cartas, aoSair, aoRevanche, online }: Props) {
   if (estado.resultado) textoAviso = tituloResultado(estado);
   else if (aviso) textoAviso = aviso;
   else if (espectador) textoAviso = `Vez das ${NOME_COR[estado.vez].toLowerCase()}`;
-  else if (vezDoOutro) textoAviso = contraIA ? "A IA está pensando…" : "Vez do adversário…";
+  else if (vezDoOutro) textoAviso = contraIA ? (modo.nivel === "stockfish" ? "O Stockfish está pensando…" : "A IA está pensando…") : "Vez do adversário…";
   else if (corHumano) textoAviso = "Sua vez";
   else textoAviso = `Vez das ${NOME_COR[estado.vez].toLowerCase()}`;
 
@@ -478,7 +478,9 @@ export function Partida({ modo, cartas, aoSair, aoRevanche, online }: Props) {
           {modo.tipo === "local"
             ? "Partida local"
             : modo.tipo === "ia"
-              ? `Contra a IA (${NOME_NIVEL[modo.nivel].toLowerCase()})`
+              ? modo.nivel === "stockfish"
+                ? `Contra o ${nomeDaIA(modo.nivel, modo.forca)}`
+                : `Contra a IA (${NOME_NIVEL[modo.nivel].toLowerCase()})`
               : `${espectador ? "Assistindo" : "Online"} · sala ${modo.codigo}`}
           {modo.regras !== "padrao" && ` · ${NOME_REGRAS[modo.regras]}`}
           {modo.casasEspeciais && " · Casas especiais"}
