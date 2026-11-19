@@ -330,7 +330,10 @@ export function escolherJogada(
   );
 
   const melhor = opcoes[0]!.nota;
-  const candidatas = opcoes.filter((op) => op.nota >= melhor - config.folga);
+  // Com mate à vista não há sorteio: vai no mate mais rápido (a folga faria um
+  // "mate em 2" empatar com o "mate em 1").
+  const folga = melhor > VITORIA / 2 ? 0 : config.folga;
+  const candidatas = opcoes.filter((op) => op.nota >= melhor - folga);
   const escolhida = candidatas[Math.floor(rng() * candidatas.length)]!;
   return {
     carta: escolhida.carta,

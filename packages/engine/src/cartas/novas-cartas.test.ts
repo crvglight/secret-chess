@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   criarPartida,
   destaquesDasCartas,
+  emXeque,
   infoPoder,
   jogar,
   jogarPoder,
@@ -261,9 +262,11 @@ describe("desvantagens novas", () => {
     expect(e.dadosCartas.brancas.desvantagem).toEqual({ semCapturar: 0 });
   });
 
-  it("Fronteira: não entra nas 2 últimas fileiras, mas pode capturar o rei", () => {
+  it("Fronteira: não entra nas 2 últimas fileiras, mas dá xeque através dela", () => {
     const e = criarPartida({ fen: "k7/8/8/8/8/8/8/R3K3 w - - 0 1", cartas: desv("fronteira") });
-    expect(destinos(e, "a1")).toEqual(["a2", "a3", "a4", "a5", "a6", "a8", "b1", "c1", "d1"]);
+    expect(destinos(e, "a1")).toEqual(["a2", "a3", "a4", "a5", "a6", "b1", "c1", "d1"]);
+    // A torre em a1 ataca o rei em a8: as pretas estão em xeque.
+    expect(emXeque({ ...e, vez: "pretas" })).toBe(true);
   });
 
   it("Exército pequeno: perde com 4 peças ou menos", () => {

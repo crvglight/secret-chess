@@ -297,6 +297,10 @@ export function lancesLegais(estado: Estado, cor: Cor = estado.vez): Lance[] {
   const casaRei = estado.tabuleiro.findIndex((p) => p?.tipo === "rei" && p.cor === cor);
   const atalho = !emXequeAgora && casaRei >= 0 && !algoCriaLances(estado, cartasEmJogo(estado));
   return lances.filter((l) => {
+    // O rei nunca é capturado: a partida acaba no xeque-mate. Sem isto, um poder de
+    // lance duplo (Cavalo saltador) daria xeque no 1º lance e pegaria o rei no 2º.
+    const alvo = pecaCapturada(estado, l);
+    if (alvo?.tipo === "rei" && alvo.cor !== cor) return false;
     if (
       atalho &&
       !l.poder &&

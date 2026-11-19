@@ -87,6 +87,13 @@ describe("Cavalo saltador", () => {
     expect(e.eventos.map((ev) => ev.meioLance)).toEqual([0, 0]);
   });
 
+  it("o segundo salto não captura o rei (a partida acaba no xeque-mate)", () => {
+    const inicio = criarPartida({ fen: "4k3/8/8/8/4N3/8/8/4K3 w - - 0 1", cartas: { brancas: { poder: "cavalo-saltador" } } });
+    const e = jogar(usarPoder(inicio, c("e4")), "e4", "d6"); // xeque no primeiro salto
+    expect(e.vez).toBe("brancas");
+    expect(lancesLegais(e).some((l) => nomeCasa(l.para) === "e8")).toBe(false);
+  });
+
   it("depois do salto duplo, os lances voltam ao normal", () => {
     let e = usarPoder(partida(), c("g1"));
     e = sequencia(e, "g1-f3 f3-g5 e7-e6");

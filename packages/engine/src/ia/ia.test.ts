@@ -14,9 +14,10 @@ function executar(estado: Estado, j: JogadaIA): Estado {
 const lanceTexto = (j: Pick<JogadaIA, "lance">) => `${nomeCasa(j.lance.de)}-${nomeCasa(j.lance.para)}`;
 
 describe("IA", () => {
-  it.each<NivelIA>(["facil", "medio", "dificil"])("captura o rei quando pode (%s)", (nivel) => {
-    const e = criarPartida({ fen: "4k3/8/8/8/8/8/4r3/4K3 b - - 0 1" });
-    expect(lanceTexto(escolherJogada(e, nivel))).toBe("e2-e1");
+  it.each<NivelIA>(["facil", "medio", "dificil"])("dá xeque-mate quando pode (%s)", (nivel) => {
+    // A torre de a2 fecha a 2ª fileira; b3-b1 é mate.
+    const e = criarPartida({ fen: "4k3/8/8/8/8/1r6/r7/7K b - - 0 1" });
+    expect(lanceTexto(escolherJogada(e, nivel))).toBe("b3-b1");
   });
 
   it.each<NivelIA>(["facil", "medio", "dificil"])("tira o rei de uma captura (%s)", (nivel) => {
