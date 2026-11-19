@@ -7,7 +7,7 @@ export default definirCarta({
   id: "rei-guerreiro",
   nome: "Rei guerreiro",
   tipo: "poder",
-  peso: 2,
+  peso: 1,
   descricao: "Seu rei pode andar até 2 casas em linha reta, se a casa do meio estiver livre.",
 
   // Adiciona no filtro (e não em adicionarLances) para não repetir o lance do roque.

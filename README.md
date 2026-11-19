@@ -69,7 +69,7 @@ Rode na raiz do projeto:
 | Promoção antecipada | poder | 3 | Seus peões já promovem ao chegar na 6ª fileira (3ª para as pretas). |
 | Cavalaria pesada | poder | 3 | Seus cavalos também andam 1 casa em qualquer direção, como o rei. |
 | Torres ágeis | poder | 2 | Suas torres também andam 1 casa na diagonal. |
-| Rei guerreiro | poder | 2 | Seu rei pode andar até 2 casas em linha reta, se a casa do meio estiver livre. |
+| Rei guerreiro | poder | 1 | Seu rei pode andar até 2 casas em linha reta, se a casa do meio estiver livre. |
 | Fantasma | poder | 3 | Suas torres e seus bispos podem atravessar uma peça sua no caminho. |
 | Avanço em massa | poder | 2 | Duas vezes por partida, mova dois peões diferentes no mesmo turno. |
 | Segunda chance | poder | 4 | Uma vez por partida, depois do lance do adversário, volte o tabuleiro para antes do seu último lance e jogue outro. |
