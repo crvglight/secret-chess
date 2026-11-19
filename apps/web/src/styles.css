@@ -1294,13 +1294,25 @@ input:focus-visible {
 .casa-especial {
   pointer-events: none;
 }
-.realce-especial {
-  fill-opacity: 0.55;
-  pointer-events: none;
+.casa-especial.casa-lama,
+.casa-especial.casa-portal {
+  opacity: 0.9;
 }
-.icone-casa {
-  border-radius: 6px;
-  flex: none;
+/* O portal gira devagar. */
+.casa-portal-giro {
+  transform-origin: 50px 50px;
+  transform-box: view-box;
+  animation: girar-portal 6s linear infinite;
+}
+@keyframes girar-portal {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .casa-portal-giro {
+    animation: none;
+  }
 }
 .painel-casas {
   display: grid;

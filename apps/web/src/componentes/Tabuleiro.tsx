@@ -183,25 +183,10 @@ export function Tabuleiro(props: Props) {
       {props.casasEspeciais?.map((e) => {
         const { x, y } = posicao(e.casa);
         return (
-          <g key={`casa-${e.casa}`} transform={`translate(${x} ${y})`} aria-hidden="true">
+          <g key={`casa-${e.casa}`} transform={`translate(${x + 12} ${y + 12}) scale(0.76)`} aria-hidden="true">
             <DesenhoCasa tipo={e.tipo} direcao={e.direcao} />
           </g>
         );
-      })}
-
-      {/* O piso das casas especiais cobre a casa: os realces vão por cima, meio transparentes. */}
-      {props.casasEspeciais?.map(({ casa: c }) => {
-        const realce =
-          props.reiEmXeque === c
-            ? "casa-xeque"
-            : selecionada === c
-              ? "casa-selecionada"
-              : visual.ultimoLance && ultimo && (ultimo.de === c || ultimo.para === c)
-                ? "casa-ultimo"
-                : null;
-        if (!realce) return null;
-        const { x, y } = posicao(c);
-        return <rect key={`realce-${c}`} className={`realce-especial ${realce}`} x={x} y={y} width={LADO} height={LADO} />;
       })}
 
       {visual.coordenadas && <Coordenadas orientacao={orientacao} />}
