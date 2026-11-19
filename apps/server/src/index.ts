@@ -43,6 +43,8 @@ function novoCodigo(): string {
 
 /** Canal de um jogador: pelo token (não pela cor, que troca na revanche). */
 const canal = (codigo: string, token: string) => `${codigo}:${token}`;
+/** Canal de quem só assiste à sala. */
+const canalEspectadores = (codigo: string) => `${codigo}:espectadores`;
 
 /** Manda a cada jogador a vista dele e agenda o fim por tempo, se houver relógio. */
 function enviarVistas(sala: Sala): void {
@@ -50,6 +52,7 @@ function enviarVistas(sala: Sala): void {
     const j = sala.jogadores[cor];
     if (j) io.to(canal(sala.codigo, j.token)).emit("sala", sala.vista(cor));
   }
+  if (sala.espectadores > 0) io.to(canalEspectadores(sala.codigo)).emit("sala", sala.vista("brancas", true));
   clearTimeout(timersRelogio.get(sala.codigo));
   const prazo = sala.msAteAcabarTempo();
   if (prazo !== null && sala.fase === "jogando") {
@@ -103,6 +106,8 @@ function acaoValida(v: unknown): AcaoPartida | null {
 io.on("connection", (socket: Socket<EventosDoCliente, EventosDoServidor>) => {
   /** A sala e o token deste navegador, depois que ele entra. A cor é consultada na hora. */
   let atual: { sala: Sala; token: string } | null = null;
+  /** A sala que este navegador está assistindo (não joga nela). */
+  let assistindo: Sala | null = null;
   const minhaCor = () => (atual ? atual.sala.corDe(atual.token) : null);
 
   function vincular(sala: Sala, token: string) {
@@ -136,6 +141,17 @@ io.on("connection", (socket: Socket<EventosDoCliente, EventosDoServidor>) => {
     enviarVistas(sala);
   });
 
+  socket.on("assistirSala", (dados, responder) => {
+    if (typeof responder !== "function" || atual || assistindo) return;
+    const sala = salas.get(texto(dados?.codigo, 8).toUpperCase());
+    if (!sala) return responder({ ok: false, erro: "Sala não encontrada. Confira o link." });
+    assistindo = sala;
+    sala.espectadores++;
+    void socket.join(canalEspectadores(sala.codigo));
+    responder({ ok: true, codigo: sala.codigo });
+    enviarVistas(sala);
+  });
+
   socket.on("escolherDraft", (escolha) => {
     const cor = minhaCor();
     if (!atual || !cor || !escolha || typeof escolha !== "object") return;
@@ -164,6 +180,7 @@ io.on("connection", (socket: Socket<EventosDoCliente, EventosDoServidor>) => {
       const j = atual.sala.jogadores[c];
       if (j) io.to(canal(atual.sala.codigo, j.token)).emit("reacao", { cor, reacao });
     }
+    io.to(canalEspectadores(atual.sala.codigo)).emit("reacao", { cor, reacao });
   });
 
   socket.on("desistir", () => {
@@ -181,6 +198,11 @@ io.on("connection", (socket: Socket<EventosDoCliente, EventosDoServidor>) => {
   });
 
   socket.on("disconnect", async () => {
+    if (assistindo) {
+      assistindo.espectadores = Math.max(0, assistindo.espectadores - 1);
+      enviarVistas(assistindo);
+      return;
+    }
     if (!atual) return;
     const { sala, token } = atual;
     const chave = canal(sala.codigo, token);

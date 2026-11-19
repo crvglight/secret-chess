@@ -5,7 +5,8 @@ import { explicacaoResultado, NOME_COR, numeroDoLance, tituloResultado } from ".
 
 interface Props {
   estado: Estado;
-  aoRevanche(): void;
+  /** Sem isso (quem só assiste), não há botão de revanche. */
+  aoRevanche?(): void;
   aoNovaPartida(): void;
   aoFechar(): void;
   /** Conquistas desta partida. */
@@ -90,9 +91,11 @@ export function FimDePartida({ estado, aoRevanche, aoNovaPartida, aoFechar, novi
         )}
 
         <div className="acoes">
-          <button type="button" className="botao" onClick={aoRevanche} disabled={pediu}>
-            {pediu ? "Esperando o adversário…" : adversarioPediu ? "Aceitar revanche" : "Revanche"}
-          </button>
+          {aoRevanche && (
+            <button type="button" className="botao" onClick={aoRevanche} disabled={pediu}>
+              {pediu ? "Esperando o adversário…" : adversarioPediu ? "Aceitar revanche" : "Revanche"}
+            </button>
+          )}
           <button type="button" className="botao botao-secundario" onClick={aoNovaPartida}>
             Nova partida
           </button>

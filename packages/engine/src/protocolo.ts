@@ -26,6 +26,10 @@ export const REACOES = ["Boa!", "GG", "Uau!", "Ops!", "Bom jogo!", "Hmm…"] as 
 export type Reacao = (typeof REACOES)[number];
 
 export type RespostaSala = { ok: true; codigo: string; token: string; cor: Cor } | { ok: false; erro: string };
+export type RespostaAssistir = { ok: true; codigo: string } | { ok: false; erro: string };
+
+/** Erro de quem tenta jogar numa sala cheia (a tela oferece assistir). */
+export const ERRO_SALA_CHEIA = "A sala já tem dois jogadores.";
 
 export type FaseSala = "aguardando" | "draft" | "jogando" | "fim";
 
@@ -33,7 +37,14 @@ export type FaseSala = "aguardando" | "draft" | "jogando" | "fim";
 export interface VistaSala {
   codigo: string;
   config: ConfigSala;
+  /** Para o espectador, sempre "brancas" (só define o lado de baixo do tabuleiro). */
   minhaCor: Cor;
+  /** Esta vista é de quem só assiste (não vê os segredos de nenhum dos lados). */
+  espectador: boolean;
+  /** Quantas pessoas estão assistindo. */
+  espectadores: number;
+  /** Conta as partidas da sala (muda na revanche). */
+  numeroPartida: number;
   fase: FaseSala;
   jogadores: Record<Cor, { apelido: string; conectado: boolean } | null>;
   /** Estado como este jogador pode ver (sem os segredos do adversário). */
@@ -54,6 +65,7 @@ export interface VistaSala {
 export interface EventosDoCliente {
   criarSala(dados: { apelido: string; config: ConfigSala }, responder: (r: RespostaSala) => void): void;
   entrarSala(dados: { codigo: string; apelido: string; token?: string }, responder: (r: RespostaSala) => void): void;
+  assistirSala(dados: { codigo: string }, responder: (r: RespostaAssistir) => void): void;
   escolherDraft(escolha: CartasDoJogador): void;
   acao(acao: AcaoPartida): void;
   reagir(reacao: Reacao): void;

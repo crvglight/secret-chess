@@ -1807,6 +1807,20 @@ input:focus-visible {
 .status-adversario.desconectado {
   color: #ffb4b6;
 }
+.selo-espectador {
+  margin: 0;
+  font-weight: 600;
+  color: var(--destaque);
+}
+.espectadores {
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 10px;
+  font-size: 0.85rem;
+  opacity: 0.85;
+}
 .reacoes {
   display: flex;
   flex-wrap: wrap;

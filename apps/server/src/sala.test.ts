@@ -136,6 +136,25 @@ describe("Sala online", () => {
     expect(sala.vista("brancas").destaques.some((d) => d.casa === c("e5"))).toBe(true);
   });
 
+  it("espectador não vê os segredos de nenhum lado (só no fim)", () => {
+    const { sala } = novaSala({ regras: "mao" });
+    sala.entrar("Ana");
+    sala.entrar("Bia");
+    sala.espectadores = 1;
+    const vista = sala.vista("brancas", true);
+    expect(vista).toMatchObject({ espectador: true, espectadores: 1, minhaCor: "brancas", oferta: null });
+    for (const cor of ["brancas", "pretas"] as const) {
+      expect(vista.estado!.cartas[cor].poder).toBeNull();
+      expect(vista.estado!.cartas[cor].desvantagem).toBeNull();
+      expect(vista.estado!.mao!.mao[cor].every((id) => id === "oculta")).toBe(true);
+      expect(vista.estado!.mao!.baralho[cor]).toEqual([]);
+    }
+    // O jogador continua vendo as próprias cartas.
+    expect(sala.vista("brancas").estado!.cartas.brancas.desvantagem).not.toBeNull();
+    sala.desistir("brancas");
+    expect(sala.vista("brancas", true).estado!.cartas.pretas.desvantagem).not.toBeNull();
+  });
+
   it("lance barrado por carta escondida: a recusa não diz qual é a carta", () => {
     const { sala } = novaSala();
     sala.entrar("Ana");

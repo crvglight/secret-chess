@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import type { AcaoPartida, CartasDoJogador, Cor, Reacao, RespostaSala, VistaSala } from "@xadrez/engine";
+import type { AcaoPartida, CartasDoJogador, Cor, Reacao, RespostaAssistir, RespostaSala, VistaSala } from "@xadrez/engine";
 import { conexao, guardarToken, lerApelido, lerToken } from "./conexao.ts";
 
 export interface EstadoSala {
@@ -20,8 +20,11 @@ export interface ReacaoRecebida {
   id: number;
 }
 
-/** Entra na sala (e volta nela sozinho se a conexão cair) e expõe as ações do jogador. */
-export function useSala(codigo: string) {
+/**
+ * Entra na sala (e volta nela sozinho se a conexão cair) e expõe as ações do jogador.
+ * Com `assistir`, entra só para ver a partida (sem cadeira e sem segredos).
+ */
+export function useSala(codigo: string, assistir = false) {
   const [estado, setEstado] = useState<EstadoSala>({
     vista: null,
     recebidaEm: 0,
@@ -34,6 +37,12 @@ export function useSala(codigo: string) {
   useEffect(() => {
     const s = conexao();
     const entrar = () => {
+      if (assistir) {
+        s.emit("assistirSala", { codigo }, (r: RespostaAssistir) =>
+          setEstado((e) => ({ ...e, erro: r.ok ? null : r.erro })),
+        );
+        return;
+      }
       s.emit("entrarSala", { codigo, apelido: lerApelido(), token: lerToken(codigo) }, (r: RespostaSala) => {
         if (!r.ok) {
           setEstado((e) => ({ ...e, erro: r.erro }));
@@ -57,7 +66,7 @@ export function useSala(codigo: string) {
           ...e.reacoes.slice(-9),
           {
             reacao: r.reacao,
-            meu: r.cor === e.vista?.minhaCor,
+            meu: !e.vista?.espectador && r.cor === e.vista?.minhaCor,
             nome: e.vista?.jogadores[r.cor]?.apelido ?? "Adversário",
             id: Date.now(),
           },
@@ -81,7 +90,7 @@ export function useSala(codigo: string) {
       s.off("recusado", aoRecusa);
       s.off("reacao", aoReagir);
     };
-  }, [codigo]);
+  }, [codigo, assistir]);
 
   const enviar = useCallback((acao: AcaoPartida) => conexao().emit("acao", acao), []);
   const escolherDraft = useCallback((escolha: CartasDoJogador) => conexao().emit("escolherDraft", escolha), []);

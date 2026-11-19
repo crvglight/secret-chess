@@ -41,12 +41,15 @@ function modoDoHash(): ModoPartida | null {
   return null;
 }
 
-/** Código da sala online no endereço (#sala-ABCDE), ou null. */
-const salaDaUrl = () => /^#sala-([A-Z0-9]{4,8})$/i.exec(location.hash)?.[1]?.toUpperCase() ?? null;
+/** Sala online no endereço: #sala-ABCDE (jogar) ou #assistir-ABCDE (só assistir). */
+function salaDaUrl(): { codigo: string; assistir: boolean } | null {
+  const m = /^#(sala|assistir)-([A-Z0-9]{4,8})$/i.exec(location.hash);
+  return m ? { codigo: m[2]!.toUpperCase(), assistir: m[1]!.toLowerCase() === "assistir" } : null;
+}
 
 export function App() {
   const [modo, setModo] = useState<ModoPartida | null>(modoDaUrl);
-  const [sala, setSala] = useState<string | null>(salaDaUrl);
+  const [sala, setSala] = useState(salaDaUrl);
   // O link da sala pode chegar com a página já aberta (ou o jogador criar uma sala).
   useEffect(() => {
     const aoMudar = () => setSala(salaDaUrl());
@@ -70,7 +73,9 @@ export function App() {
   if (sala) {
     return (
       <TelaOnline
-        codigo={sala}
+        key={`${sala.codigo}-${sala.assistir}`}
+        codigo={sala.codigo}
+        assistir={sala.assistir}
         aoSair={() => {
           history.replaceState(null, "", location.pathname + location.search);
           setSala(null);

@@ -11,6 +11,7 @@ import {
   criarPartida,
   destaquesDasCartas,
   disfarcesDasCartas,
+  ERRO_SALA_CHEIA,
   jogarCartaDaMao,
   ladosComVigia,
   motivoBloqueio,
@@ -60,6 +61,9 @@ export class Sala {
   relogio: Relogio | null = null;
   revanche: Record<Cor, boolean> = { brancas: false, pretas: false };
   ultimaAtividade: number;
+  /** Quantas pessoas estão assistindo (o index.ts conta as conexões). */
+  espectadores = 0;
+  numeroPartida = 0;
 
   constructor(
     readonly codigo: string,
@@ -85,7 +89,7 @@ export class Sala {
       }
     }
     const livre = this.corLivre();
-    if (!livre) return { ok: false, erro: "A sala já tem dois jogadores." };
+    if (!livre) return { ok: false, erro: ERRO_SALA_CHEIA };
     const j: Jogador = { token: novoToken(), apelido: apelido.trim() || "Jogador", conectado: true };
     this.jogadores[livre] = j;
     if (this.jogadores.brancas && this.jogadores.pretas && this.fase === "aguardando") this.comecar();
@@ -129,6 +133,7 @@ export class Sala {
   }
 
   private comecar(): void {
+    this.numeroPartida++;
     this.revanche = { brancas: false, pretas: false };
     this.escolhas = { brancas: null, pretas: null };
     if (this.config.regras === "draft") {
@@ -280,7 +285,11 @@ export class Sala {
   // Vista de cada jogador
   // ---------------------------------------------------------------------------
 
-  vista(cor: Cor): VistaSala {
+  /**
+   * O que cada um vê da sala. O jogador não vê os segredos do adversário; o
+   * espectador (espectador = true, cor ignorada) não vê os segredos de nenhum lado.
+   */
+  vista(cor: Cor, espectador = false): VistaSala {
     const adversario = corOposta(cor);
     const estado = this.estado;
     const fim = this.fase === "fim";
@@ -295,48 +304,53 @@ export class Sala {
       visivel = estado;
       destaques = destaquesDasCartas(estado);
     } else if (estado) {
-      // Vê os segredos do adversário com a desvantagem Espião dele ou numa torre de vigia.
-      const veSegredos = cartasAbertas(estado, adversario) || ladosComVigia(estado).has(cor);
-      const oculto = ocultarCartasDe(estado, adversario);
+      const escondidos: Cor[] = espectador ? ["brancas", "pretas"] : [adversario];
+      const vigias = ladosComVigia(estado);
+      // Vê os segredos de um lado escondido se ele tem a desvantagem Espião ou se o
+      // jogador está numa torre de vigia (o espectador não fica em torre nenhuma).
+      const veSegredosDe = (dono: Cor) =>
+        !escondidos.includes(dono) || cartasAbertas(estado, dono) || (!espectador && vigias.has(corOposta(dono)));
+
+      let oculto = estado;
+      for (const lado of escondidos) oculto = ocultarCartasDe(oculto, lado);
       const tabuleiro = oculto.tabuleiro.slice();
-      if (!veSegredos) {
-        for (const d of disfarcesDasCartas(estado)) {
-          const p = tabuleiro[d.casa];
-          if (d.dono === adversario && p) tabuleiro[d.casa] = { ...p, tipo: d.tipo };
-        }
+      for (const d of disfarcesDasCartas(estado)) {
+        const p = tabuleiro[d.casa];
+        if (!veSegredosDe(d.dono) && p) tabuleiro[d.casa] = { ...p, tipo: d.tipo };
       }
-      // Névoa: a peça do adversário parada nela vira "?" na tela. O tipo verdadeiro
+      // Névoa: a peça escondida parada nela vira "?" na tela. O tipo verdadeiro
       // não sai do servidor (vai como peão), para não dar para descobrir pelo navegador.
       for (const [c, dono] of casasNaNevoa(estado)) {
         const p = tabuleiro[c];
-        if (dono === adversario && p) tabuleiro[c] = { ...p, tipo: "peao" };
+        if (escondidos.includes(dono) && p) tabuleiro[c] = { ...p, tipo: "peao" };
+      }
+      let mao = oculto.mao;
+      if (mao) {
+        // Mostra só quantas cartas cada lado escondido tem na mão.
+        mao = { ...mao, mao: { ...mao.mao } };
+        for (const lado of escondidos) mao.mao[lado] = estado.mao!.mao[lado].map(() => "oculta");
       }
       visivel = {
         ...oculto,
         tabuleiro,
-        eventos: estado.eventos.filter((e) => e.cor === cor || cartasAbertas(estado, adversario)),
-        ...(oculto.mao
-          ? {
-              mao: {
-                ...oculto.mao,
-                // Mostra só quantas cartas o adversário tem na mão.
-                mao: { ...oculto.mao.mao, [adversario]: estado.mao!.mao[adversario].map(() => "oculta") },
-              },
-            }
-          : {}),
+        eventos: estado.eventos.filter((e) => !escondidos.includes(e.cor) || cartasAbertas(estado, e.cor)),
+        ...(mao ? { mao } : {}),
       };
-      destaques = destaquesDasCartas(estado).filter((d) => d.publico || d.dono === cor || veSegredos);
+      destaques = destaquesDasCartas(estado).filter((d) => d.publico || veSegredosDe(d.dono));
     }
 
     return {
       codigo: this.codigo,
       config: this.config,
-      minhaCor: cor,
+      minhaCor: espectador ? "brancas" : cor,
+      espectador,
+      espectadores: this.espectadores,
+      numeroPartida: this.numeroPartida,
       fase: this.fase,
       jogadores: { brancas: jogador("brancas"), pretas: jogador("pretas") },
       estado: visivel,
       destaques,
-      oferta: this.fase === "draft" && this.ofertas ? this.ofertas[cor] : null,
+      oferta: this.fase === "draft" && this.ofertas && !espectador ? this.ofertas[cor] : null,
       draftEscolhido: { brancas: !!this.escolhas.brancas, pretas: !!this.escolhas.pretas },
       relogio: this.relogio
         ? {

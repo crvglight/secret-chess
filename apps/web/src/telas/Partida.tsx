@@ -119,6 +119,11 @@ export interface ControleOnline {
   /** Último lance recusado pelo servidor (o id muda a cada recusa). */
   recusa: { texto: string; id: number } | null;
   adversarioConectado: boolean;
+  /** Quem está nesta tela só assiste (não joga e não vê segredos). */
+  espectador: boolean;
+  espectadores: number;
+  conectados: Record<Cor, boolean>;
+  linkAssistir: string;
   revanchePedida: Record<Cor, boolean>;
   aoRevanche(): void;
   aoDesistir(): void;
@@ -148,8 +153,10 @@ export function Partida({ modo, cartas, aoSair, aoRevanche, online }: Props) {
       ...(modo.casasEspeciais ? { casasEspeciais: modo.casasEspeciais === "todas" ? { quantos: 16 } : {} } : {}),
     });
   const contraIA = modo.tipo === "ia";
-  // Contra a IA e no online, só um lado é jogado nesta tela.
-  const corHumano: Cor | null = modo.tipo === "local" ? null : modo.corHumano;
+  // Espectador online: vê a partida, mas não mexe em nada.
+  const espectador = online?.espectador === true;
+  // Contra a IA e no online, só um lado é jogado nesta tela (o espectador não joga nenhum).
+  const corHumano: Cor | null = modo.tipo === "local" || espectador ? null : modo.corHumano;
   // Contra a IA, as cartas do humano ficam sempre à mostra. Na partida local, começam viradas.
   const visiveisIniciais: Record<Cor, boolean> = {
     brancas: corHumano === "brancas",
@@ -222,7 +229,7 @@ export function Partida({ modo, cartas, aoSair, aoRevanche, online }: Props) {
   }, []);
 
   // Vez do outro lado (IA ou adversário online): este navegador não mexe.
-  const vezDoOutro = corHumano !== null && estado.vez !== corHumano && !estado.resultado;
+  const vezDoOutro = espectador || (corHumano !== null && estado.vez !== corHumano && !estado.resultado);
 
   // Online: avisa o lance que o servidor recusou.
   const idRecusa = online?.recusa?.id;
@@ -268,7 +275,7 @@ export function Partida({ modo, cartas, aoSair, aoRevanche, online }: Props) {
   const olhando: Cor = corHumano ?? estado.vez;
   const misteriosas = new Set<Casa>();
   if (!estado.resultado) {
-    for (const [c, dono] of casasNaNevoa(estado)) if (dono !== olhando) misteriosas.add(c);
+    for (const [c, dono] of casasNaNevoa(estado)) if (espectador || dono !== olhando) misteriosas.add(c);
   }
   // Ilusão: a peça disfarçada aparece como peão para quem não vê as cartas do dono.
   const disfarces = new Map(
@@ -426,6 +433,7 @@ export function Partida({ modo, cartas, aoSair, aoRevanche, online }: Props) {
 
   const nomeDoLado = (cor: Cor) => {
     if (modo.tipo === "local") return NOME_COR[cor];
+    if (online && espectador) return `${online.nomes[cor]} (${NOME_COR[cor].toLowerCase()})`;
     if (online) return cor === modo.corHumano ? `Você (${NOME_COR[cor].toLowerCase()})` : `${online.nomes[cor]} (${NOME_COR[cor].toLowerCase()})`;
     if (modo.tipo !== "ia") return NOME_COR[cor];
     return cor === modo.corHumano ? `Você (${NOME_COR[cor].toLowerCase()})` : `IA ${NOME_NIVEL[modo.nivel].toLowerCase()} (${NOME_COR[cor].toLowerCase()})`;
@@ -436,7 +444,7 @@ export function Partida({ modo, cartas, aoSair, aoRevanche, online }: Props) {
       estado={estado}
       cor={cor}
       nome={nomeDoLado(cor)}
-      controlavel={!corHumano || cor === corHumano}
+      controlavel={!espectador && (!corHumano || cor === corHumano)}
       tempo={tempoDe(cor)}
       relogioCorrendo={online?.relogio?.correndo === cor}
       cartasVisiveis={visiveis[cor] || estado.resultado !== null || cartasAbertas(estado, cor)}
@@ -455,6 +463,7 @@ export function Partida({ modo, cartas, aoSair, aoRevanche, online }: Props) {
   let textoAviso: string;
   if (estado.resultado) textoAviso = tituloResultado(estado);
   else if (aviso) textoAviso = aviso;
+  else if (espectador) textoAviso = `Vez das ${NOME_COR[estado.vez].toLowerCase()}`;
   else if (vezDoOutro) textoAviso = contraIA ? "A IA está pensando…" : "Vez do adversário…";
   else if (corHumano) textoAviso = "Sua vez";
   else textoAviso = `Vez das ${NOME_COR[estado.vez].toLowerCase()}`;
@@ -470,7 +479,7 @@ export function Partida({ modo, cartas, aoSair, aoRevanche, online }: Props) {
             ? "Partida local"
             : modo.tipo === "ia"
               ? `Contra a IA (${NOME_NIVEL[modo.nivel].toLowerCase()})`
-              : `Online · sala ${modo.codigo}`}
+              : `${espectador ? "Assistindo" : "Online"} · sala ${modo.codigo}`}
           {modo.regras !== "padrao" && ` · ${NOME_REGRAS[modo.regras]}`}
           {modo.casasEspeciais && " · Casas especiais"}
         </span>
@@ -529,7 +538,7 @@ export function Partida({ modo, cartas, aoSair, aoRevanche, online }: Props) {
         </div>
 
         <aside className="lateral">
-          {online && <PainelOnline online={online} minhaCor={corHumano!} fim={!!estado.resultado} />}
+          {online && <PainelOnline online={online} minhaCor={modo.tipo === "online" ? modo.corHumano : "brancas"} fim={!!estado.resultado} />}
           <PainelCaos estado={estado} />
           <PainelCasas estado={estado} />
           <h2>Lances</h2>
@@ -576,11 +585,11 @@ export function Partida({ modo, cartas, aoSair, aoRevanche, online }: Props) {
       {estado.resultado && !fimFechado && (
         <FimDePartida
           estado={estado}
-          aoRevanche={reiniciar}
+          aoRevanche={espectador ? undefined : reiniciar}
           aoNovaPartida={aoSair}
           aoFechar={() => setFimFechado(true)}
           novidades={online ? online.novidades : novidades}
-          revanche={online ? { pedida: online.revanchePedida, minhaCor: corHumano! } : undefined}
+          revanche={online && !espectador ? { pedida: online.revanchePedida, minhaCor: corHumano! } : undefined}
         />
       )}
     </div>

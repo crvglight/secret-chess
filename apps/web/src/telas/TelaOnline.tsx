@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
-import { corOposta, type Cor, type VistaSala } from "@xadrez/engine";
+import { corOposta, ERRO_SALA_CHEIA, type Cor, type VistaSala } from "@xadrez/engine";
 import { CartaVisual } from "../componentes/CartaVisual.tsx";
 import { NOME_REGRAS, type ModoPartida } from "../modo.ts";
 import { ENDERECO_SERVIDOR, ONLINE_DISPONIVEL } from "../online/conexao.ts";
@@ -8,7 +8,7 @@ import { registrarFimDePartida, type Novidades } from "../progresso.ts";
 import { NOME_COR } from "../textos.ts";
 import { Partida } from "./Partida.tsx";
 
-export function TelaOnline({ codigo, aoSair }: { codigo: string; aoSair(): void }) {
+export function TelaOnline({ codigo, assistir = false, aoSair }: { codigo: string; assistir?: boolean; aoSair(): void }) {
   if (!ONLINE_DISPONIVEL) {
     return (
       <Cartaz titulo="Online ainda não disponível" aoSair={aoSair}>
@@ -16,18 +16,22 @@ export function TelaOnline({ codigo, aoSair }: { codigo: string; aoSair(): void 
       </Cartaz>
     );
   }
-  return <SalaConectada codigo={codigo} aoSair={aoSair} />;
+  return <SalaConectada codigo={codigo} assistir={assistir} aoSair={aoSair} />;
 }
 
-function SalaConectada({ codigo, aoSair }: { codigo: string; aoSair(): void }) {
-  const sala = useSala(codigo);
+/** Link para alguém só assistir à sala. */
+export const linkParaAssistir = (codigo: string) => `${location.origin}${location.pathname}#assistir-${codigo}`;
+
+function SalaConectada({ codigo, assistir, aoSair }: { codigo: string; assistir: boolean; aoSair(): void }) {
+  const sala = useSala(codigo, assistir);
   const v = sala.vista;
   const [novidades, setNovidades] = useState<Novidades | null>(null);
   const salvo = useRef(false);
 
   // Fim da partida: guarda no histórico (com o estado inicial e as ações completos).
+  // Quem só assistiu não guarda nada.
   useEffect(() => {
-    if (!v) return;
+    if (!v || v.espectador) return;
     if (v.fase !== "fim") {
       salvo.current = false;
       return;
@@ -41,6 +45,11 @@ function SalaConectada({ codigo, aoSair }: { codigo: string; aoSair(): void }) {
     return (
       <Cartaz titulo="Não deu para entrar na sala" aoSair={aoSair}>
         <p className="subtitulo">{sala.erro}</p>
+        {sala.erro === ERRO_SALA_CHEIA && (
+          <button type="button" className="botao" onClick={() => (location.hash = `#assistir-${codigo}`)}>
+            👁 Assistir a partida
+          </button>
+        )}
         <p className="dica">Servidor: {ENDERECO_SERVIDOR}. Para jogar, ele precisa estar rodando (pnpm dev).</p>
       </Cartaz>
     );
@@ -48,7 +57,18 @@ function SalaConectada({ codigo, aoSair }: { codigo: string; aoSair(): void }) {
   if (!v) {
     return (
       <Cartaz titulo="Conectando…" aoSair={aoSair}>
-        <p className="subtitulo">Entrando na sala {codigo}.</p>
+        <p className="subtitulo">{assistir ? "Abrindo a partida da" : "Entrando na"} sala {codigo}.</p>
+      </Cartaz>
+    );
+  }
+  if (v.espectador && (v.fase === "aguardando" || v.fase === "draft")) {
+    return (
+      <Cartaz titulo="Assistindo à sala" aoSair={aoSair}>
+        <p className="subtitulo">{resumoConfig(v)}</p>
+        <p className="esperando">
+          <span className="pontinhos" aria-hidden="true" />{" "}
+          {v.fase === "draft" ? "Os jogadores estão escolhendo as cartas…" : "Esperando o segundo jogador entrar…"}
+        </p>
       </Cartaz>
     );
   }
@@ -59,9 +79,9 @@ function SalaConectada({ codigo, aoSair }: { codigo: string; aoSair(): void }) {
   const adversario = corOposta(v.minhaCor);
   const nome = (c: Cor) => v.jogadores[c]?.apelido ?? "Adversário";
   return (
-    // A revanche troca as cores: a chave muda e a tela da partida recomeça do zero.
+    // Na revanche (as cores trocam), a chave muda e a tela da partida recomeça do zero.
     <Partida
-      key={v.minhaCor}
+      key={`${v.numeroPartida}-${v.minhaCor}`}
       modo={modoDa(v)}
       aoSair={aoSair}
       aoRevanche={sala.revanche}
@@ -73,6 +93,10 @@ function SalaConectada({ codigo, aoSair }: { codigo: string; aoSair(): void }) {
         relogio: v.relogio ? { ...v.relogio, recebidoEm: sala.recebidaEm } : null,
         recusa: sala.recusa,
         adversarioConectado: !!v.jogadores[adversario]?.conectado,
+        espectador: v.espectador,
+        espectadores: v.espectadores,
+        conectados: { brancas: !!v.jogadores.brancas?.conectado, pretas: !!v.jogadores.pretas?.conectado },
+        linkAssistir: linkParaAssistir(v.codigo),
         revanchePedida: v.revanchePedida,
         aoRevanche: sala.revanche,
         aoDesistir: sala.desistir,
