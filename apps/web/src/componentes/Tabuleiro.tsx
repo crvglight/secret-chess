@@ -17,6 +17,8 @@ interface Props {
   destaques: { casa: Casa; rotulo: string }[];
   /** Setas das melhores jogadas (painel de análise, só no modo de desenvolvimento). */
   setasAnalise?: { de: Casa; para: Casa }[];
+  /** Setas laranja fixas (ex.: o lance jogado, na análise da partida). */
+  setasFixas?: { de: Casa; para: Casa }[];
   /** Casa do rei em xeque (fica vermelha). */
   reiEmXeque?: Casa | null;
   /** Casas especiais (portal, lama, baú, muralha). */
@@ -253,7 +255,7 @@ export function Tabuleiro(props: Props) {
           const { x, y } = posicao(c);
           return <circle key={`m-${c}`} className="marca-analise" cx={x + 50} cy={y + 50} r={44} />;
         })}
-        {[...setas, ...(desenho && desenho.de !== desenho.para ? [desenho] : [])].map((s, i) => (
+        {[...(props.setasFixas ?? []), ...setas, ...(desenho && desenho.de !== desenho.para ? [desenho] : [])].map((s, i) => (
           <polyline
             key={`s-${s.de}-${s.para}-${i}`}
             className="seta-analise"

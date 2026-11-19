@@ -9,6 +9,8 @@ interface Props {
   aoRevanche?(): void;
   aoNovaPartida(): void;
   aoFechar(): void;
+  /** Abre a análise da partida (erros, acertos e o uso das cartas). */
+  aoAnalisar?(): void;
   /** Conquistas desta partida. */
   novidades?: Novidades | null;
   /** Online: quem já pediu revanche. */
@@ -26,7 +28,7 @@ function cartasDoLado(estado: Estado, cor: Cor): (string | null)[] {
   return [estado.cartas[cor].desvantagem, ...new Set(jogadas)];
 }
 
-export function FimDePartida({ estado, aoRevanche, aoNovaPartida, aoFechar, novidades, revanche }: Props) {
+export function FimDePartida({ estado, aoRevanche, aoNovaPartida, aoFechar, aoAnalisar, novidades, revanche }: Props) {
   const pediu = revanche?.pedida[revanche.minhaCor];
   const adversarioPediu = revanche && revanche.pedida[revanche.minhaCor === "brancas" ? "pretas" : "brancas"];
   return (
@@ -94,6 +96,11 @@ export function FimDePartida({ estado, aoRevanche, aoNovaPartida, aoFechar, novi
           {aoRevanche && (
             <button type="button" className="botao" onClick={aoRevanche} disabled={pediu}>
               {pediu ? "Esperando o adversário…" : adversarioPediu ? "Aceitar revanche" : "Revanche"}
+            </button>
+          )}
+          {aoAnalisar && (
+            <button type="button" className="botao botao-secundario" onClick={aoAnalisar}>
+              🔍 Analisar partida
             </button>
           )}
           <button type="button" className="botao botao-secundario" onClick={aoNovaPartida}>

@@ -278,6 +278,10 @@ function buscarOpcoes(
     comLinha?: boolean;
     /** Chamado a cada profundidade completa, com as opções já ordenadas. */
     aoCompletar?(opcoes: Opcao[], profundidade: number): void;
+    /** Quanto descontar das opções que gastam carta ou poder (padrão: CUSTO_PODER). */
+    custoPoder?: number;
+    /** Pensa com as cartas dos dois lados à mostra (análise depois da partida). */
+    verTudo?: boolean;
   } = {},
 ): { opcoes: Opcao[]; profundidade: number } {
   if (estado.resultado) throw new Error("A partida já terminou");
@@ -293,11 +297,12 @@ function buscarOpcoes(
     try {
       let alfa = -Infinity;
       const resultados = opcoes.map((op) => {
-        const filho = aplicarLanceGerado(ocultarCartasDe(op.origem, corOposta(cor)), op.lance);
+        const base = extras.verTudo ? op.origem : ocultarCartasDe(op.origem, corOposta(cor));
+        const filho = aplicarLanceGerado(base, op.lance);
         const linha: string[] | null = extras.comLinha ? [] : null;
         // A janela começa logo abaixo de `melhor - folga`: toda nota que fica dentro da folga
         // é exata; as de fora são só limites (por isso o "- 1", para um limite não empatar com o melhor).
-        const custo = op.carta !== null || op.poder || op.lance.poder ? CUSTO_PODER : 0;
+        const custo = op.carta !== null || op.poder || op.lance.poder ? (extras.custoPoder ?? CUSTO_PODER) : 0;
         const v =
           busca.valorFilho(op.origem, filho, prof - 1, alfa - config.folga + custo - 1, Infinity, 1, linha) - custo;
         if (v > alfa) alfa = v;
@@ -421,4 +426,93 @@ export function analisarAoVivo(
     comLinha: true,
     aoCompletar: (todas, profundidade) => aoAtualizar(montarAnalise(todas, profundidade, quantidade)),
   });
+}
+
+// ---------------------------------------------------------------------------
+// Análise depois da partida
+// ---------------------------------------------------------------------------
+
+/** Pensa um pouco mais raso que o difícil (são muitas posições), com todas as cartas à mostra. */
+const POS_JOGO: ConfigNivel = { profundidade: 3, quiescencia: 4, tempoMs: 500, folga: 300, usaPoder: true };
+
+export interface OpcaoAnalisada {
+  carta: number | null;
+  poder: { alvo: Casa | null } | null;
+  lance: Lance;
+  /** Centipeões para quem jogou (acima de VITORIA / 2 = mate). */
+  nota: number;
+  texto: string;
+  linha: string[];
+}
+
+export interface ResultadoJogadaFeita {
+  profundidade: number;
+  /** A melhor opção da posição (com ou sem cartas). */
+  melhor: OpcaoAnalisada;
+  /** A melhor opção sem gastar carta nem poder (null se toda opção usa carta). */
+  melhorSemCartas: OpcaoAnalisada | null;
+  /** A melhor opção que usa carta da mão ou poder (null se não havia). */
+  melhorComCartas: OpcaoAnalisada | null;
+  /** Nota exata (mesma profundidade) do que foi jogado. */
+  jogada: { nota: number; texto: string; linha: string[] };
+}
+
+export const NOTA_VITORIA = VITORIA;
+
+/** Acha o lance legal igual ao gravado (o online não grava o tipo especial do lance). */
+function lanceLegalIgual(estado: Estado, lance: Lance): Lance {
+  const legais = lancesLegais(estado);
+  const igual = (l: Lance, promocao: Lance["promocao"]) =>
+    l.de === lance.de && l.para === lance.para && (l.promocao ?? null) === (promocao ?? null) && (l.poder ?? null) === (lance.poder ?? null);
+  const achado = legais.find((l) => igual(l, lance.promocao)) ?? legais.find((l) => igual(l, "dama"));
+  if (!achado) throw new Error(`Lance ilegal: ${nomeCasa(lance.de)}-${nomeCasa(lance.para)}`);
+  return achado;
+}
+
+const usaCarta = (o: { carta: number | null; poder: unknown; lance: Lance }) => o.carta !== null || !!o.poder || !!o.lance.poder;
+
+/**
+ * Analisa uma jogada já feita em `estado` (a posição antes dela): a melhor opção
+ * que havia e a nota exata do que foi jogado, as duas na mesma profundidade.
+ * As cartas dos dois lados ficam à mostra (a partida já acabou).
+ */
+export function analisarJogadaFeita(
+  estado: Estado,
+  jogada: Pick<JogadaIA, "carta" | "poder" | "lance">,
+  tempoMs = POS_JOGO.tempoMs,
+): ResultadoJogadaFeita {
+  const { opcoes, profundidade } = buscarOpcoes(estado, POS_JOGO, tempoMs, { comLinha: true, custoPoder: 0, verTudo: true });
+  const analisada = (op: Opcao): OpcaoAnalisada => ({
+    carta: op.carta,
+    poder: op.poder,
+    lance: op.lance,
+    nota: op.nota,
+    texto: textoJogada(estado, op.poder, op.lance, op.carta),
+    linha: op.linha,
+  });
+  const semCartas = opcoes.find((o) => !usaCarta(o));
+  const comCartas = opcoes.find((o) => usaCarta(o));
+
+  // A jogada feita, avaliada até a mesma profundidade e sem janela (nota exata).
+  const comCarta = jogada.carta === null ? estado : jogarCartaDaMao(estado, jogada.carta);
+  const antes = jogada.poder ? usarPoder(comCarta, jogada.poder.alvo) : comCarta;
+  const lance = lanceLegalIgual(antes, jogada.lance);
+  const filho = aplicarLanceGerado(antes, lance);
+  const linha: string[] = [];
+  const nota = new Busca(POS_JOGO, Infinity).valorFilho(antes, filho, Math.max(0, profundidade - 1), -Infinity, Infinity, 1, linha);
+
+  return {
+    profundidade,
+    melhor: analisada(opcoes[0]!),
+    melhorSemCartas: semCartas ? analisada(semCartas) : null,
+    melhorComCartas: comCartas ? analisada(comCartas) : null,
+    jogada: { nota, texto: textoJogada(estado, jogada.poder, lance, jogada.carta), linha },
+  };
+}
+
+/** Só a melhor opção da posição (usada para medir o custo de uma desvantagem). */
+export function melhorOpcao(estado: Estado, tempoMs = POS_JOGO.tempoMs): OpcaoAnalisada {
+  const { opcoes } = buscarOpcoes(estado, POS_JOGO, tempoMs, { comLinha: true, custoPoder: 0, verTudo: true });
+  const op = opcoes[0]!;
+  return { carta: op.carta, poder: op.poder, lance: op.lance, nota: op.nota, texto: textoJogada(estado, op.poder, op.lance, op.carta), linha: op.linha };
 }

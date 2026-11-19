@@ -230,7 +230,7 @@ export function registrarFimDePartida(
 }
 
 /** Refaz a partida a partir do estado inicial e das ações (para o replay). */
-export function reconstruirPartida(partida: PartidaSalva): Estado[] {
+export function reconstruirPartida(partida: Pick<PartidaSalva, "inicial" | "acoes">): Estado[] {
   const estados = [partida.inicial];
   let e = partida.inicial;
   for (const a of partida.acoes) {

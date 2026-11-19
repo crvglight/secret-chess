@@ -97,6 +97,7 @@ function SalaConectada({ codigo, assistir, aoSair }: { codigo: string; assistir:
         espectadores: v.espectadores,
         conectados: { brancas: !!v.jogadores.brancas?.conectado, pretas: !!v.jogadores.pretas?.conectado },
         linkAssistir: linkParaAssistir(v.codigo),
+        final: v.final,
         revanchePedida: v.revanchePedida,
         aoRevanche: sala.revanche,
         aoDesistir: sala.desistir,

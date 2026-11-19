@@ -1974,3 +1974,198 @@ input:focus-visible {
     grid-template-columns: repeat(2, 1fr);
   }
 }
+
+/* ---------------------------------------------------------------------------
+   Análise da partida
+   --------------------------------------------------------------------------- */
+.tela-analise {
+  width: 100%;
+  box-sizing: border-box;
+  --cls-brilhante: #3fc1c9;
+  --cls-melhor: #5fb37a;
+  --cls-bom: #9bbf6a;
+  --cls-imprecisao: #f2c94c;
+  --cls-erro: #f08c1a;
+  --cls-erro-grave: #e5484d;
+}
+.progresso-analise {
+  display: grid;
+  gap: 6px;
+  max-width: 600px;
+  margin: 0 auto 16px;
+  color: var(--texto-suave);
+}
+.barra-progresso {
+  height: 8px;
+  border-radius: 999px;
+  background: var(--painel-borda);
+  overflow: hidden;
+}
+.barra-progresso div {
+  height: 100%;
+  background: var(--destaque);
+  transition: width 0.3s;
+}
+.resumos-analise {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  justify-content: center;
+  margin-bottom: 16px;
+}
+.resumo-lado {
+  display: grid;
+  gap: 10px;
+  width: min(100%, 420px);
+  padding: 14px 16px;
+  border: 1px solid var(--painel-borda);
+  border-radius: 10px;
+  background: var(--painel);
+}
+.resumo-topo {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+.resumo-topo .precisao {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--destaque);
+}
+.contagem-analise,
+.cartas-analise,
+.comentarios-analise,
+.momentos-chave,
+.lista-analise {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.contagem-analise {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 4px 12px;
+  font-size: 0.9rem;
+}
+.contagem-analise strong {
+  float: right;
+}
+.cartas-analise {
+  display: grid;
+  gap: 4px;
+  font-size: 0.9rem;
+  color: var(--texto-suave);
+}
+.selo-analise {
+  display: inline-block;
+  min-width: 1.9em;
+  padding: 1px 6px;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-align: center;
+  color: #1d1a17;
+}
+.selo-brilhante { background: var(--cls-brilhante); }
+.selo-melhor { background: var(--cls-melhor); }
+.selo-bom { background: var(--cls-bom); }
+.selo-imprecisao { background: var(--cls-imprecisao); }
+.selo-erro { background: var(--cls-erro); }
+.selo-erro-grave { background: var(--cls-erro-grave); color: #fff; }
+.grafico-analise {
+  max-width: 900px;
+  margin: 0 auto 16px;
+}
+.grafico-analise svg {
+  width: 100%;
+  height: auto;
+  border-radius: 8px;
+  overflow: hidden;
+}
+.grafico-brancas { fill: #e9e2d6; }
+.grafico-pretas { fill: #3a332c; }
+.grafico-linha {
+  fill: none;
+  stroke: var(--destaque);
+  stroke-width: 2;
+}
+.grafico-analise circle {
+  cursor: pointer;
+  stroke: #1d1a17;
+  stroke-width: 1;
+}
+.grafico-analise .ponto-ativo { stroke: var(--destaque); stroke-width: 3; }
+.ponto-brilhante { fill: var(--cls-brilhante); }
+.ponto-melhor { fill: var(--cls-melhor); }
+.ponto-bom { fill: var(--cls-bom); }
+.ponto-imprecisao { fill: var(--cls-imprecisao); }
+.ponto-erro { fill: var(--cls-erro); }
+.ponto-erro-grave { fill: var(--cls-erro-grave); }
+.detalhe-analise {
+  padding: 12px 14px;
+  border: 1px solid var(--painel-borda);
+  border-left-width: 5px;
+  border-radius: 8px;
+  background: var(--painel);
+}
+.detalhe-analise h3 {
+  margin: 0 0 4px;
+  font-size: 1.05rem;
+}
+.borda-brilhante { border-left-color: var(--cls-brilhante); }
+.borda-melhor { border-left-color: var(--cls-melhor); }
+.borda-bom { border-left-color: var(--cls-bom); }
+.borda-imprecisao { border-left-color: var(--cls-imprecisao); }
+.borda-erro { border-left-color: var(--cls-erro); }
+.borda-erro-grave { border-left-color: var(--cls-erro-grave); }
+.comentarios-analise {
+  display: grid;
+  gap: 8px;
+  margin-top: 8px;
+}
+.comentarios-analise li {
+  line-height: 1.4;
+}
+.momentos-chave {
+  display: grid;
+  gap: 4px;
+  margin-bottom: 12px;
+}
+.lista-analise {
+  display: grid;
+  gap: 2px;
+  max-height: 60vh;
+  overflow-y: auto;
+}
+.item-analise {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  padding: 4px 6px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--texto);
+  font: inherit;
+  font-size: 0.9rem;
+  text-align: left;
+  cursor: pointer;
+}
+.item-analise:hover,
+.item-analise.ativa {
+  background: var(--painel-borda);
+}
+.item-analise .item-texto {
+  flex: 1;
+}
+.botoes-partida {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+}
+.tela-analise > .barra,
+.tela-analise > .replay,
+.tela-analise > .resumos-analise {
+  width: 100%;
+}

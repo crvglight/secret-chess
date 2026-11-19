@@ -44,6 +44,7 @@ import { PainelJogador } from "../componentes/PainelJogador.tsx";
 import { Tabuleiro } from "../componentes/Tabuleiro.tsx";
 import { analiseLiberada } from "../dev/liberacao.ts";
 import { useIA } from "../ia/useIA.ts";
+import { AnalisePartida } from "./AnalisePartida.tsx";
 import { NOME_NIVEL, NOME_REGRAS, nomeDaIA, type ModoPartida } from "../modo.ts";
 import { NOME_COR, numeroDoLance, tituloResultado } from "../textos.ts";
 
@@ -124,6 +125,8 @@ export interface ControleOnline {
   espectadores: number;
   conectados: Record<Cor, boolean>;
   linkAssistir: string;
+  /** No fim: o estado inicial e as ações completos (para a análise). */
+  final: { inicial: Estado; acoes: AcaoPartida[] } | null;
   revanchePedida: Record<Cor, boolean>;
   aoRevanche(): void;
   aoDesistir(): void;
@@ -195,6 +198,7 @@ export function Partida({ modo, cartas, aoSair, aoRevanche, online }: Props) {
   const [orientacao, setOrientacao] = useState<Cor>(corHumano ?? "brancas");
   const [fimFechado, setFimFechado] = useState(false);
   const [mostrarVisual, setMostrarVisual] = useState(false);
+  const [analisando, setAnalisando] = useState(false);
 
   // Esc fecha a janela do visual.
   useEffect(() => {
@@ -468,6 +472,31 @@ export function Partida({ modo, cartas, aoSair, aoRevanche, online }: Props) {
   else if (corHumano) textoAviso = "Sua vez";
   else textoAviso = `Vez das ${NOME_COR[estado.vez].toLowerCase()}`;
 
+  const tituloPartida =
+    modo.tipo === "local"
+      ? "Partida local"
+      : modo.tipo === "ia"
+        ? modo.nivel === "stockfish"
+          ? `Contra o ${nomeDaIA(modo.nivel, modo.forca)}`
+          : `Contra a IA (${NOME_NIVEL[modo.nivel].toLowerCase()})`
+        : `${espectador ? "Assistindo" : "Online"} · sala ${modo.codigo}`;
+  // Dados para a análise: local e contra a IA, daqui; online, do servidor no fim.
+  const paraAnalisar = online ? online.final : { inicial, acoes: acoes.current };
+  if (analisando && paraAnalisar && estado.resultado) {
+    return (
+      <AnalisePartida
+        partida={{
+          inicial: paraAnalisar.inicial,
+          acoes: paraAnalisar.acoes,
+          cores: corHumano ? [corHumano] : ["brancas", "pretas"],
+          orientacao: corHumano ?? "brancas",
+          titulo: tituloPartida,
+        }}
+        aoVoltar={() => setAnalisando(false)}
+      />
+    );
+  }
+
   return (
     <div className="tela-partida">
       <header className="barra">
@@ -475,13 +504,7 @@ export function Partida({ modo, cartas, aoSair, aoRevanche, online }: Props) {
           ← Início
         </button>
         <span className="barra-titulo">
-          {modo.tipo === "local"
-            ? "Partida local"
-            : modo.tipo === "ia"
-              ? modo.nivel === "stockfish"
-                ? `Contra o ${nomeDaIA(modo.nivel, modo.forca)}`
-                : `Contra a IA (${NOME_NIVEL[modo.nivel].toLowerCase()})`
-              : `${espectador ? "Assistindo" : "Online"} · sala ${modo.codigo}`}
+          {tituloPartida}
           {modo.regras !== "padrao" && ` · ${NOME_REGRAS[modo.regras]}`}
           {modo.casasEspeciais && " · Casas especiais"}
         </span>
@@ -590,6 +613,7 @@ export function Partida({ modo, cartas, aoSair, aoRevanche, online }: Props) {
           aoRevanche={espectador ? undefined : reiniciar}
           aoNovaPartida={aoSair}
           aoFechar={() => setFimFechado(true)}
+          aoAnalisar={paraAnalisar ? () => setAnalisando(true) : undefined}
           novidades={online ? online.novidades : novidades}
           revanche={online && !espectador ? { pedida: online.revanchePedida, minhaCor: corHumano! } : undefined}
         />

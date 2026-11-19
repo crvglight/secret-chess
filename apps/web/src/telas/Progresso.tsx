@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { obterCarta } from "@xadrez/engine";
 import { CartaVisual } from "../componentes/CartaVisual.tsx";
+import { AnalisePartida } from "./AnalisePartida.tsx";
 import { Tabuleiro } from "../componentes/Tabuleiro.tsx";
 import { NOME_NIVEL, NOME_REGRAS } from "../modo.ts";
 import {
@@ -27,8 +28,21 @@ export function Progresso({ aoVoltar }: { aoVoltar(): void }) {
   const [progresso] = useState(lerProgresso);
   const [aba, setAba] = useState<Aba>("conquistas");
   const [revendo, setRevendo] = useState<PartidaSalva | null>(null);
+  const [analisando, setAnalisando] = useState<PartidaSalva | null>(null);
+  const paraAnalise = useMemo(
+    () =>
+      analisando && {
+        inicial: analisando.inicial,
+        acoes: analisando.acoes,
+        cores: analisando.modo.tipo === "local" ? (["brancas", "pretas"] as const).slice() : [analisando.modo.corHumano],
+        orientacao: analisando.modo.tipo === "local" ? ("brancas" as const) : analisando.modo.corHumano,
+        titulo: descricaoModo(analisando),
+      },
+    [analisando],
+  );
 
-  if (revendo) return <Replay partida={revendo} aoVoltar={() => setRevendo(null)} />;
+  if (paraAnalise) return <AnalisePartida partida={paraAnalise} aoVoltar={() => setAnalisando(null)} />;
+  if (revendo) return <Replay partida={revendo} aoVoltar={() => setRevendo(null)} aoAnalisar={() => setAnalisando(revendo)} />;
 
   return (
     <div className="tela-progresso">
@@ -57,7 +71,7 @@ export function Progresso({ aoVoltar }: { aoVoltar(): void }) {
 
       <section className="conteudo-aba" role="tabpanel">
         {aba === "conquistas" && <Conquistas progresso={progresso} />}
-        {aba === "historico" && <Historico progresso={progresso} aoRever={setRevendo} />}
+        {aba === "historico" && <Historico progresso={progresso} aoRever={setRevendo} aoAnalisar={setAnalisando} />}
         {aba === "estatisticas" && <Estatisticas progresso={progresso} />}
       </section>
     </div>
@@ -104,7 +118,15 @@ function descricaoModo(p: PartidaSalva): string {
   return `Partida ${quem}${regras}${casas}`;
 }
 
-function Historico({ progresso, aoRever }: { progresso: DadosProgresso; aoRever(p: PartidaSalva): void }) {
+function Historico({
+  progresso,
+  aoRever,
+  aoAnalisar,
+}: {
+  progresso: DadosProgresso;
+  aoRever(p: PartidaSalva): void;
+  aoAnalisar(p: PartidaSalva): void;
+}) {
   if (progresso.partidas.length === 0) {
     return <p className="subtitulo">Nenhuma partida terminada ainda. Jogue uma e ela aparece aqui.</p>;
   }
@@ -118,9 +140,14 @@ function Historico({ progresso, aoRever }: { progresso: DadosProgresso; aoRever(
               {new Date(p.data).toLocaleString("pt-BR")} · {Math.ceil(p.meioLances / 2)} lances
             </span>
           </span>
-          <button type="button" className="botao botao-secundario botao-pequeno" onClick={() => aoRever(p)}>
-            Rever
-          </button>
+          <span className="botoes-partida">
+            <button type="button" className="botao botao-secundario botao-pequeno" onClick={() => aoRever(p)}>
+              Rever
+            </button>
+            <button type="button" className="botao botao-pequeno" onClick={() => aoAnalisar(p)}>
+              Analisar
+            </button>
+          </span>
         </li>
       ))}
     </ul>
@@ -183,7 +210,7 @@ function Estatisticas({ progresso }: { progresso: DadosProgresso }) {
 
 // ---------------------------------------------------------------------------
 
-function Replay({ partida, aoVoltar }: { partida: PartidaSalva; aoVoltar(): void }) {
+function Replay({ partida, aoVoltar, aoAnalisar }: { partida: PartidaSalva; aoVoltar(): void; aoAnalisar(): void }) {
   const estados = useMemo(() => reconstruirPartida(partida), [partida]);
   const [passo, setPasso] = useState(estados.length - 1);
   const estado = estados[passo]!;
@@ -197,7 +224,11 @@ function Replay({ partida, aoVoltar }: { partida: PartidaSalva; aoVoltar(): void
           ← Histórico
         </button>
         <span className="barra-titulo">{descricaoModo(partida)}</span>
-        <span />
+        <span className="barra-acoes">
+          <button type="button" className="botao botao-pequeno" onClick={aoAnalisar}>
+            🔍 Analisar
+          </button>
+        </span>
       </header>
 
       <div className="replay">

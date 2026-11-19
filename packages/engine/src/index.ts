@@ -15,9 +15,13 @@ export * from "./casas.ts";
 export * from "./personalizadas.ts";
 export * from "./protocolo.ts";
 export * from "./stockfish.ts";
+export * from "./analise-partida.ts";
 export {
   analisarAoVivo,
+  analisarJogadaFeita,
   analisarPosicao,
+  melhorOpcao,
+  NOTA_VITORIA,
   escolherJogada,
   executarJogada,
   NIVEIS,
@@ -26,6 +30,8 @@ export {
   type Analise,
   type JogadaIA,
   type LanceAnalisado,
+  type OpcaoAnalisada,
+  type ResultadoJogadaFeita,
   type NivelIA,
 } from "./ia/busca.ts";
 export { avaliar } from "./ia/avaliacao.ts";
