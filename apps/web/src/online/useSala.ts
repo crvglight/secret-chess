@@ -94,9 +94,10 @@ export function useSala(codigo: string, assistir = false) {
 
   const enviar = useCallback((acao: AcaoPartida) => conexao().emit("acao", acao), []);
   const escolherDraft = useCallback((escolha: CartasDoJogador) => conexao().emit("escolherDraft", escolha), []);
+  const rerolarDraft = useCallback(() => conexao().emit("rerolarDraft"), []);
   const reagir = useCallback((r: Reacao) => conexao().emit("reagir", r), []);
   const desistir = useCallback(() => conexao().emit("desistir"), []);
   const revanche = useCallback(() => conexao().emit("revanche"), []);
 
-  return { ...estado, enviar, escolherDraft, reagir, desistir, revanche };
+  return { ...estado, enviar, escolherDraft, rerolarDraft, reagir, desistir, revanche };
 }

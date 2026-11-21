@@ -1,5 +1,13 @@
-import { useMemo, useState } from "react";
-import { cartasDoDraft, escolhaDraftIA, sortearDraft, type CartasDoJogador, type Cor, type EscolhaDraft } from "@xadrez/engine";
+import { useState } from "react";
+import {
+  cartasDoDraft,
+  escolhaDraftIA,
+  rerolarOferta,
+  sortearDraft,
+  type CartasDoJogador,
+  type Cor,
+  type EscolhaDraft,
+} from "@xadrez/engine";
 import { CartaVisual } from "../componentes/CartaVisual.tsx";
 import type { ModoPartida } from "../modo.ts";
 import { NOME_COR } from "../textos.ts";
@@ -16,7 +24,9 @@ interface Props {
  * Contra a IA, ela escolhe em segredo.
  */
 export function Draft({ modo, aoTerminar, aoSair }: Props) {
-  const ofertas = useMemo(() => sortearDraft(), []);
+  const [ofertas, setOfertas] = useState(() => sortearDraft());
+  // Cada lado tem um re-roll: troca as 6 opções por outras do mesmo peso.
+  const [rerollUsado, setRerollUsado] = useState<Record<Cor, boolean>>({ brancas: false, pretas: false });
   // Ordem de quem escolhe na tela: contra a IA, só o humano.
   const ordem: Cor[] = modo.tipo === "ia" ? [modo.corHumano] : ["brancas", "pretas"];
   const [indice, setIndice] = useState(0);
@@ -27,6 +37,15 @@ export function Draft({ modo, aoTerminar, aoSair }: Props) {
 
   const cor = ordem[indice]!;
   const oferta = ofertas[cor];
+
+  function rerolar() {
+    if (rerollUsado[cor]) return;
+    const todas = new Set([...ofertas.brancas.poderes, ...ofertas.brancas.desvantagens, ...ofertas.pretas.poderes, ...ofertas.pretas.desvantagens]);
+    setOfertas({ ...ofertas, [cor]: rerolarOferta(ofertas[cor], Math.random, undefined, false, todas) });
+    setRerollUsado({ ...rerollUsado, [cor]: true });
+    setPoder(null);
+    setDesvantagem(null);
+  }
 
   function confirmar() {
     if (!poder || !desvantagem) return;
@@ -110,6 +129,15 @@ export function Draft({ modo, aoTerminar, aoSair }: Props) {
           </div>
 
           <div className="acoes">
+            <button
+              type="button"
+              className="botao botao-secundario"
+              disabled={rerollUsado[cor]}
+              onClick={rerolar}
+              title="Troca as 6 opções por outras do mesmo peso (só uma vez)"
+            >
+              {rerollUsado[cor] ? "Re-roll usado" : "🎲 Re-roll (1×)"}
+            </button>
             <button type="button" className="botao" disabled={!poder || !desvantagem} onClick={confirmar}>
               {indice + 1 < ordem.length ? "Confirmar e passar a vez" : "Confirmar e começar"}
             </button>

@@ -73,7 +73,7 @@ function SalaConectada({ codigo, assistir, aoSair }: { codigo: string; assistir:
     );
   }
   if (v.fase === "aguardando") return <Aguardando vista={v} aoSair={aoSair} />;
-  if (v.fase === "draft") return <DraftOnline vista={v} escolher={sala.escolherDraft} aoSair={aoSair} />;
+  if (v.fase === "draft") return <DraftOnline vista={v} escolher={sala.escolherDraft} rerolar={sala.rerolarDraft} aoSair={aoSair} />;
   if (!v.estado) return null;
 
   const adversario = corOposta(v.minhaCor);
@@ -202,16 +202,24 @@ function Aguardando({ vista, aoSair }: { vista: VistaSala; aoSair(): void }) {
 function DraftOnline({
   vista,
   escolher,
+  rerolar,
   aoSair,
 }: {
   vista: VistaSala;
   escolher(e: { poder: string; desvantagem: string }): void;
+  rerolar(): void;
   aoSair(): void;
 }) {
   const [poder, setPoder] = useState<string | null>(null);
   const [desvantagem, setDesvantagem] = useState<string | null>(null);
   const jaEscolhi = vista.draftEscolhido[vista.minhaCor];
   const oferta = vista.oferta;
+  // Depois do re-roll as opções mudam: limpa o que estava marcado.
+  const chaveOferta = oferta ? [...oferta.poderes, ...oferta.desvantagens].join() : "";
+  useEffect(() => {
+    setPoder(null);
+    setDesvantagem(null);
+  }, [chaveOferta]);
 
   if (jaEscolhi || !oferta) {
     return (
@@ -261,6 +269,15 @@ function DraftOnline({
         {grupo("Poder", oferta.poderes, poder, setPoder)}
         {grupo("Desvantagem para o adversário", oferta.desvantagens, desvantagem, setDesvantagem)}
         <div className="acoes">
+          <button
+            type="button"
+            className="botao botao-secundario"
+            disabled={!vista.rerollDisponivel}
+            onClick={rerolar}
+            title="Troca as 6 opções por outras do mesmo peso (só uma vez)"
+          >
+            {vista.rerollDisponivel ? "🎲 Re-roll (1×)" : "Re-roll usado"}
+          </button>
           <button
             type="button"
             className="botao"

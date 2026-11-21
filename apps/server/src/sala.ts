@@ -19,6 +19,7 @@ import {
   sortearCartas,
   sortearDraft,
   cartasDoDraft,
+  rerolarOferta,
   usarPoder,
   type AcaoPartida,
   type CartasDoJogador,
@@ -59,6 +60,8 @@ export class Sala {
   acoes: AcaoPartida[] = [];
   ofertas: Record<Cor, OfertaDraft> | null = null;
   escolhas: Record<Cor, CartasDoJogador | null> = { brancas: null, pretas: null };
+  /** Quem já usou o re-roll do Draft nesta partida. */
+  rerollUsado: Record<Cor, boolean> = { brancas: false, pretas: false };
   relogio: Relogio | null = null;
   revanche: Record<Cor, boolean> = { brancas: false, pretas: false };
   ultimaAtividade: number;
@@ -137,12 +140,25 @@ export class Sala {
     this.numeroPartida++;
     this.revanche = { brancas: false, pretas: false };
     this.escolhas = { brancas: null, pretas: null };
+    this.rerollUsado = { brancas: false, pretas: false };
     if (this.config.regras === "draft") {
       this.ofertas = sortearDraft(this.rng, CARTAS_OFICIAIS, this.comRelogio);
       this.fase = "draft";
       return;
     }
     this.iniciarPartida(sortearCartas(this.rng, CARTAS_OFICIAIS, this.comRelogio));
+  }
+
+  /** Re-roll: troca as opções de `cor` por outras do mesmo peso (uma vez, antes de escolher). */
+  rerolarDraft(cor: Cor): string | null {
+    if (this.fase !== "draft" || !this.ofertas) return "Não é hora de escolher cartas.";
+    if (this.escolhas[cor]) return "Você já escolheu as suas cartas.";
+    if (this.rerollUsado[cor]) return "Você já usou o seu re-roll.";
+    const o = this.ofertas;
+    const ocupadas = new Set([...o.brancas.poderes, ...o.brancas.desvantagens, ...o.pretas.poderes, ...o.pretas.desvantagens]);
+    this.ofertas = { ...o, [cor]: rerolarOferta(o[cor], this.rng, CARTAS_OFICIAIS, this.comRelogio, ocupadas) };
+    this.rerollUsado[cor] = true;
+    return null;
   }
 
   escolherDraft(cor: Cor, escolha: CartasDoJogador): string | null {
@@ -355,6 +371,7 @@ export class Sala {
       destaques,
       oferta: this.fase === "draft" && this.ofertas && !espectador ? this.ofertas[cor] : null,
       draftEscolhido: { brancas: !!this.escolhas.brancas, pretas: !!this.escolhas.pretas },
+      rerollDisponivel: this.fase === "draft" && !espectador && !this.rerollUsado[cor] && !this.escolhas[cor],
       relogio: this.relogio
         ? {
             restante: { brancas: Math.max(0, this.tempoDe("brancas")), pretas: Math.max(0, this.tempoDe("pretas")) },

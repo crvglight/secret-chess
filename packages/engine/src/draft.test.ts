@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { obterCarta } from "./cartas/index.ts";
-import { cartasDoDraft, escolhaDraftIA, OPCOES_NO_DRAFT, sortearDraft } from "./draft.ts";
+import { cartasDoDraft, escolhaDraftIA, OPCOES_NO_DRAFT, rerolarOferta, sortearDraft } from "./draft.ts";
 import { aleatorioComSemente } from "./sorteio.ts";
 
 const pesos = (ids: string[]) => ids.map((id) => obterCarta(id).peso).sort();
@@ -49,5 +49,20 @@ describe("Draft", () => {
     const escolha = escolhaDraftIA(oferta, false, rng);
     expect(oferta.poderes).toContain(escolha.poder);
     expect(oferta.desvantagens).toContain(escolha.desvantagem);
+  });
+
+  it("o re-roll troca as cartas por outras do mesmo peso, sem repetir as das ofertas", () => {
+    const rng = aleatorioComSemente(5);
+    for (let i = 0; i < 200; i++) {
+      const { brancas, pretas } = sortearDraft(rng);
+      const ocupadas = new Set([...brancas.poderes, ...brancas.desvantagens, ...pretas.poderes, ...pretas.desvantagens]);
+      const nova = rerolarOferta(brancas, rng, undefined, false, ocupadas);
+      expect(pesos(nova.poderes)).toEqual(pesos(brancas.poderes));
+      expect(pesos(nova.desvantagens)).toEqual(pesos(brancas.desvantagens));
+      const todas = [...nova.poderes, ...nova.desvantagens];
+      expect(new Set(todas).size).toBe(todas.length);
+      // Nada da oferta das pretas aparece; quase sempre tudo muda.
+      for (const id of todas) expect([...pretas.poderes, ...pretas.desvantagens]).not.toContain(id);
+    }
   });
 });

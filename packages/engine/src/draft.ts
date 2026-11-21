@@ -48,6 +48,33 @@ export function sortearDraft(
   };
 }
 
+/**
+ * Re-roll do Draft: troca todas as cartas da oferta por outras do MESMO peso (assim a
+ * oferta continua tão boa quanto a do adversário). `ocupadas` são as cartas que não
+ * podem aparecer (as das duas ofertas atuais). Se não houver outra carta daquele peso,
+ * a carta fica.
+ */
+export function rerolarOferta(
+  oferta: OfertaDraft,
+  rng: Aleatorio = Math.random,
+  cartas: readonly CartaQualquer[] = CARTAS_OFICIAIS,
+  comRelogio = false,
+  ocupadas: ReadonlySet<string> = new Set(),
+): OfertaDraft {
+  const usadas = new Set([...ocupadas, ...oferta.poderes, ...oferta.desvantagens]);
+  const trocar = (id: string) => {
+    const atual = obterCarta(id);
+    const opcoes = cartas.filter(
+      (c) => c.tipo === atual.tipo && c.peso === atual.peso && !usadas.has(c.id) && (comRelogio || !c.exigeRelogio),
+    );
+    if (opcoes.length === 0) return id;
+    const nova = opcoes[Math.floor(rng() * opcoes.length)]!;
+    usadas.add(nova.id);
+    return nova.id;
+  };
+  return { poderes: oferta.poderes.map(trocar), desvantagens: oferta.desvantagens.map(trocar) };
+}
+
 /** Sorteia OPCOES_NO_DRAFT pares [carta das brancas, carta das pretas] de mesmo peso. */
 function montarVagas(cartas: CartaQualquer[], rng: Aleatorio): [string, string][] {
   const restantes = new Map<number, CartaQualquer[]>();

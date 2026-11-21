@@ -164,6 +164,14 @@ io.on("connection", (socket: Socket<EventosDoCliente, EventosDoServidor>) => {
     else enviarVistas(atual.sala);
   });
 
+  socket.on("rerolarDraft", () => {
+    const cor = minhaCor();
+    if (!atual || !cor) return;
+    const erro = atual.sala.rerolarDraft(cor);
+    if (erro) socket.emit("recusado", erro);
+    else enviarVistas(atual.sala);
+  });
+
   socket.on("acao", (dados) => {
     const cor = minhaCor();
     if (!atual || !cor) return;

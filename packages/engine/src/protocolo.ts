@@ -54,6 +54,8 @@ export interface VistaSala {
   /** Draft: as opções deste jogador e se cada lado já escolheu. */
   oferta: OfertaDraft | null;
   draftEscolhido: Record<Cor, boolean>;
+  /** Draft: este jogador ainda pode usar o re-roll (trocar as opções uma vez). */
+  rerollDisponivel: boolean;
   /** Tempo restante (ms) no momento do envio e de quem é o relógio que está correndo. */
   relogio: { restante: Record<Cor, number>; correndo: Cor | null } | null;
   revanchePedida: Record<Cor, boolean>;
@@ -67,6 +69,8 @@ export interface EventosDoCliente {
   entrarSala(dados: { codigo: string; apelido: string; token?: string }, responder: (r: RespostaSala) => void): void;
   assistirSala(dados: { codigo: string }, responder: (r: RespostaAssistir) => void): void;
   escolherDraft(escolha: CartasDoJogador): void;
+  /** Draft: troca as opções deste jogador (uma vez por partida). */
+  rerolarDraft(): void;
   acao(acao: AcaoPartida): void;
   reagir(reacao: Reacao): void;
   desistir(): void;

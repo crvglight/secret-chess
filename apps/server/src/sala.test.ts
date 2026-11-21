@@ -129,6 +129,23 @@ describe("Sala online", () => {
     expect(sala.estado!.cartas.pretas.desvantagem).toBe(ofertaB.desvantagens[0]);
   });
 
+  it("draft: cada um tem um re-roll, antes de escolher", () => {
+    const { sala } = novaSala({ regras: "draft" });
+    sala.entrar("Ana");
+    sala.entrar("Bia");
+    const antes = sala.vista("brancas").oferta!;
+    expect(sala.vista("brancas").rerollDisponivel).toBe(true);
+    expect(sala.rerolarDraft("brancas")).toBeNull();
+    const depois = sala.vista("brancas").oferta!;
+    expect(depois).not.toEqual(antes);
+    expect(sala.vista("brancas").rerollDisponivel).toBe(false);
+    expect(sala.rerolarDraft("brancas")).toBe("Você já usou o seu re-roll.");
+    // A escolha tem que vir da oferta nova.
+    expect(sala.escolherDraft("brancas", { poder: depois.poderes[0]!, desvantagem: depois.desvantagens[0]! })).toBeNull();
+    // As pretas ainda podem usar o delas.
+    expect(sala.vista("pretas").rerollDisponivel).toBe(true);
+  });
+
   it("revanche: com os dois pedindo, começa outra partida com as cores trocadas", () => {
     const { sala } = novaSala();
     sala.entrar("Ana");
