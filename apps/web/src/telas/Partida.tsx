@@ -304,22 +304,61 @@ export function Partida({ modo, cartas, aoSair, aoRevanche, online }: Props) {
   // Névoa: a peça do adversário parada numa névoa aparece como "?".
   // Contra a IA e online, quem olha é o humano; na partida local, quem tem a vez.
   const olhando: Cor = corHumano ?? estado.vez;
-  const misteriosas = new Set<Casa>();
-  if (!estado.resultado) {
-    for (const [c, dono] of casasNaNevoa(estado)) if (espectador || dono !== olhando) misteriosas.add(c);
-  }
+  const misteriosasDe = (e: Estado) => {
+    const casas = new Set<Casa>();
+    if (!estado.resultado) {
+      for (const [c, dono] of casasNaNevoa(e)) if (espectador || dono !== olhando) casas.add(c);
+    }
+    return casas;
+  };
   // Ilusão: a peça disfarçada aparece como peão para quem não vê as cartas do dono.
-  const disfarces = new Map(
-    disfarcesDasCartas(estado)
-      .filter((d) => !veSegredosDe(d.dono))
-      .map((d) => [d.casa, d.tipo] as const),
-  );
+  const disfarcesDe = (e: Estado) =>
+    new Map(
+      disfarcesDasCartas(e)
+        .filter((d) => !veSegredosDe(d.dono))
+        .map((d) => [d.casa, d.tipo] as const),
+    );
+  const destaquesDasCasas = (e: Estado) => [
+    ...casasAtoladas(e).map((casa) => ({ casa, rotulo: "Atolada" })),
+    ...casasNoTrampolim(e).map((casa) => ({ casa, rotulo: "Trampolim" })),
+  ];
   const destaques = [
     // Online, o servidor manda os destaques que este jogador pode ver.
     ...(online ? online.destaques : destaquesDasCartas(estado).filter((d) => d.publico || veSegredosDe(d.dono))),
-    ...casasAtoladas(estado).map((casa) => ({ casa, rotulo: "Atolada" })),
-    ...casasNoTrampolim(estado).map((casa) => ({ casa, rotulo: "Trampolim" })),
+    ...destaquesDasCasas(estado),
   ];
+
+  // Rever lances (como no chess.com): guarda a posição depois de cada lance e deixa
+  // voltar para olhar, sem mexer na partida. `vendo` = quantos lances (null = ao vivo).
+  const fotos = useRef<Estado[]>([]);
+  const feitos = estado.historico.length;
+  if (feitos === 0 || feitos < fotos.current.length - 1) fotos.current = fotos.current.slice(0, feitos);
+  fotos.current[feitos] ??= estado;
+  const [vendo, setVendo] = useState<number | null>(null);
+  const passado = vendo !== null && vendo < feitos && fotos.current[vendo] ? fotos.current[vendo]! : null;
+  const irPara = (n: number | null) => setVendo(n === null || n >= feitos ? null : Math.max(0, n));
+  /** Anda pelas posições guardadas (online, quem entrou no meio não tem as primeiras). */
+  const andar = (passo: -1 | 1) => {
+    let n = (vendo ?? feitos) + passo;
+    while (n >= 0 && n < feitos && !fotos.current[n]) n += passo;
+    if (n < 0) return;
+    irPara(n);
+  };
+  const primeiroGuardado = fotos.current.findIndex((f) => f !== undefined);
+  useEffect(() => {
+    const aoTeclar = (ev: KeyboardEvent) => {
+      const alvo = ev.target as HTMLElement | null;
+      if (alvo && ["INPUT", "TEXTAREA", "SELECT"].includes(alvo.tagName)) return;
+      if (ev.key === "ArrowLeft") andar(-1);
+      else if (ev.key === "ArrowRight") andar(1);
+      else if (ev.key === "Home") irPara(primeiroGuardado);
+      else if (ev.key === "End") irPara(null);
+      else return;
+      ev.preventDefault();
+    };
+    window.addEventListener("keydown", aoTeclar);
+    return () => window.removeEventListener("keydown", aoTeclar);
+  });
 
   // Quando é a vez da IA, pede a jogada ao Web Worker.
   useEffect(() => {
@@ -555,25 +594,66 @@ export function Partida({ modo, cartas, aoSair, aoRevanche, online }: Props) {
         <div className="coluna-tabuleiro">
           {painel(corOposta(orientacao))}
           <div className="area-tabuleiro">
-            <Tabuleiro
-              estado={estado}
-              orientacao={orientacao}
-              selecionada={selecionada}
-              destinos={destinos}
-              alvosPoder={alvosPoder}
-              destaques={destaques}
-              reiEmXeque={reiEmXeque}
-              casasEspeciais={casasVisiveis(estado)}
-              disfarces={disfarces}
-              misteriosas={misteriosas}
-              podeArrastar={(c) =>
-                !modoPoder && !estado.resultado && !vezDoOutro && estado.tabuleiro[c]?.cor === estado.vez
-              }
-              aoTocarCasa={aoTocarCasa}
-              aoSoltar={tentarLance}
-            />
+            {passado ? (
+              // Olhando um lance antigo: só mostra; um clique no tabuleiro volta ao jogo.
+              <Tabuleiro
+                estado={passado}
+                orientacao={orientacao}
+                selecionada={null}
+                destinos={[]}
+                alvosPoder={null}
+                destaques={destaquesDasCasas(passado)}
+                reiEmXeque={casaDoReiEmXeque(passado)}
+                casasEspeciais={casasVisiveis(passado)}
+                disfarces={disfarcesDe(passado)}
+                misteriosas={misteriosasDe(passado)}
+                podeArrastar={() => false}
+                aoTocarCasa={() => irPara(null)}
+                aoSoltar={() => irPara(null)}
+              />
+            ) : (
+              <Tabuleiro
+                estado={estado}
+                orientacao={orientacao}
+                selecionada={selecionada}
+                destinos={destinos}
+                alvosPoder={alvosPoder}
+                destaques={destaques}
+                reiEmXeque={reiEmXeque}
+                casasEspeciais={casasVisiveis(estado)}
+                disfarces={disfarcesDe(estado)}
+                misteriosas={misteriosasDe(estado)}
+                podeArrastar={(c) =>
+                  !modoPoder && !estado.resultado && !vezDoOutro && estado.tabuleiro[c]?.cor === estado.vez
+                }
+                aoTocarCasa={aoTocarCasa}
+                aoSoltar={tentarLance}
+              />
+            )}
           </div>
-          {reiEmXeque !== null && (
+          <div className="navegar-lances" role="group" aria-label="Rever lances">
+            <button type="button" className="botao-icone" aria-label="Primeiro lance" title="Início (Home)" onClick={() => irPara(primeiroGuardado)} disabled={feitos === 0 || vendo === primeiroGuardado}>
+              ⏮
+            </button>
+            <button type="button" className="botao-icone" aria-label="Lance anterior" title="Lance anterior (←)" onClick={() => andar(-1)} disabled={feitos === 0 || vendo === primeiroGuardado}>
+              ◀
+            </button>
+            <button type="button" className="botao-icone" aria-label="Próximo lance" title="Próximo lance (→)" onClick={() => andar(1)} disabled={vendo === null}>
+              ▶
+            </button>
+            <button type="button" className="botao-icone" aria-label="Voltar ao lance atual" title="Lance atual (End)" onClick={() => irPara(null)} disabled={vendo === null}>
+              ⏭
+            </button>
+            {passado && (
+              <span className="vendo-lance">
+                Vendo {vendo === 0 ? "o início" : `${numeroDoLance(vendo!)}. ${estado.historico[vendo! - 1]?.texto ?? ""}`} ·{" "}
+                <button type="button" className="botao-link" onClick={() => irPara(null)}>
+                  voltar ao jogo
+                </button>
+              </span>
+            )}
+          </div>
+          {reiEmXeque !== null && !passado && (
             <p className="aviso-xeque" role="alert">
               Xeque! {corHumano && estado.vez !== corHumano
                 ? contraIA
@@ -594,7 +674,7 @@ export function Partida({ modo, cartas, aoSair, aoRevanche, online }: Props) {
           <PainelCaos estado={estado} />
           <PainelCasas estado={estado} />
           <h2>Lances</h2>
-          <Historico estado={estado} />
+          <Historico estado={estado} vendo={passado ? vendo : null} aoEscolher={(n) => fotos.current[n] && irPara(n)} />
           <p className="dica">Botão direito: arraste para desenhar setas ou clique para marcar casas.</p>
           {estado.resultado && fimFechado && (
             <button type="button" className="botao" onClick={() => setFimFechado(false)}>
@@ -649,12 +729,26 @@ export function Partida({ modo, cartas, aoSair, aoRevanche, online }: Props) {
   );
 }
 
-function Historico({ estado }: { estado: Estado }) {
+/** Lista de lances. Clicar num lance mostra a posição depois dele (`vendo` = o que está na tela). */
+function Historico({
+  estado,
+  vendo,
+  aoEscolher,
+}: {
+  estado: Estado;
+  vendo: number | null;
+  aoEscolher(lancesFeitos: number): void;
+}) {
   if (estado.historico.length === 0) return <p className="dica">Nenhum lance ainda.</p>;
   return (
-    <ol className="historico">
+    <ol className="historico historico-clicavel">
       {estado.historico.map((r, i) => (
-        <li key={i} className={`lance-${r.cor}`}>
+        <li
+          key={i}
+          className={`lance-${r.cor} ${vendo === i + 1 ? "vendo" : ""} ${vendo !== null && i + 1 > vendo ? "futuro" : ""}`}
+          onClick={() => aoEscolher(i + 1)}
+          title="Ver a posição depois deste lance"
+        >
           <span className="historico-numero">{numeroDoLance(i + 1)}.</span>
           <span className={`bolinha bolinha-${r.cor}`} aria-hidden="true" />
           {r.texto}

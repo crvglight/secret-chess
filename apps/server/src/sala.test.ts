@@ -107,6 +107,9 @@ describe("Sala online", () => {
     sala.escolherDraft("pretas", { poder: ofertaP.poderes[1]!, desvantagem: ofertaP.desvantagens[2]! });
     expect(sala.fase).toBe("jogando");
     expect(sala.estado!.cartas.brancas.poder).toBe(ofertaB.poderes[0]);
+    // A desvantagem de cada um é a que o adversário escolheu.
+    expect(sala.estado!.cartas.brancas.desvantagem).toBe(ofertaP.desvantagens[2]);
+    expect(sala.estado!.cartas.pretas.desvantagem).toBe(ofertaB.desvantagens[0]);
   });
 
   it("revanche: com os dois pedindo, começa outra partida com as cores trocadas", () => {

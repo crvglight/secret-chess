@@ -3,10 +3,27 @@ import { CARTAS_OFICIAIS, obterCarta } from "./cartas/index.ts";
 import { chanceDoPeso, type Aleatorio } from "./sorteio.ts";
 import type { CartasDoJogador, Cor } from "./tipos.ts";
 
-/** As cartas oferecidas a um jogador no modo Draft. */
+/**
+ * As cartas oferecidas a um jogador no modo Draft: os poderes são para ele;
+ * as desvantagens são para ele escolher qual o ADVERSÁRIO vai ter.
+ */
 export interface OfertaDraft {
   poderes: string[];
   desvantagens: string[];
+}
+
+/**
+ * Escolha de um lado no Draft: o poder dele e a desvantagem que ele deu ao adversário.
+ * (Mesmo formato das cartas, mas `desvantagem` é a do outro lado.)
+ */
+export type EscolhaDraft = CartasDoJogador;
+
+/** Monta as cartas da partida a partir das escolhas: cada um fica com a desvantagem que o outro escolheu. */
+export function cartasDoDraft(escolhas: Record<Cor, EscolhaDraft>): Record<Cor, CartasDoJogador> {
+  return {
+    brancas: { poder: escolhas.brancas.poder, desvantagem: escolhas.pretas.desvantagem },
+    pretas: { poder: escolhas.pretas.poder, desvantagem: escolhas.brancas.desvantagem },
+  };
 }
 
 export const OPCOES_NO_DRAFT = 3;
@@ -69,9 +86,9 @@ function escolherPeso(pesos: number[], rng: Aleatorio): number {
 
 /**
  * Escolha da IA no Draft. No fácil, escolhe ao acaso; nos outros níveis, pega o poder
- * mais forte e a desvantagem mais leve (empates ao acaso).
+ * mais forte e dá ao adversário a desvantagem mais pesada (empates ao acaso).
  */
-export function escolhaDraftIA(oferta: OfertaDraft, esperta: boolean, rng: Aleatorio = Math.random): CartasDoJogador {
+export function escolhaDraftIA(oferta: OfertaDraft, esperta: boolean, rng: Aleatorio = Math.random): EscolhaDraft {
   const escolher = (ids: string[], melhor: (a: number, b: number) => boolean) => {
     if (!esperta) return ids[Math.floor(rng() * ids.length)]!;
     const embaralhadas = [...ids].sort(() => rng() - 0.5);
@@ -79,6 +96,6 @@ export function escolhaDraftIA(oferta: OfertaDraft, esperta: boolean, rng: Aleat
   };
   return {
     poder: escolher(oferta.poderes, (a, b) => a > b),
-    desvantagem: escolher(oferta.desvantagens, (a, b) => a < b),
+    desvantagem: escolher(oferta.desvantagens, (a, b) => a > b),
   };
 }

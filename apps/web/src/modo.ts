@@ -33,7 +33,7 @@ export function nomeDaIA(nivel: NivelAdversario, forca?: number): string {
 
 export const REGRAS: { id: RegrasPartida; nome: string; descricao: string; pronto: boolean }[] = [
   { id: "padrao", nome: "Padrão", descricao: "1 poder e 1 desvantagem sorteados em segredo.", pronto: true },
-  { id: "draft", nome: "Draft", descricao: "Veja 3 poderes e 3 desvantagens e escolha 1 de cada.", pronto: true },
+  { id: "draft", nome: "Draft", descricao: "Escolha o seu poder entre 3 e a desvantagem do adversário entre 3.", pronto: true },
   { id: "mao", nome: "Mão de cartas", descricao: "Comece com 3 poderes de uso único e compre 1 a cada 10 lances.", pronto: true },
   { id: "caos", nome: "Caos", descricao: "A cada 8 lances (4 de cada lado), um evento muda a partida para os dois lados.", pronto: true },
 ];

@@ -18,6 +18,7 @@ import {
   ocultarCartasDe,
   sortearCartas,
   sortearDraft,
+  cartasDoDraft,
   usarPoder,
   type AcaoPartida,
   type CartasDoJogador,
@@ -149,11 +150,12 @@ export class Sala {
     const oferta = this.ofertas[cor];
     if (!escolha.poder || !oferta.poderes.includes(escolha.poder)) return "Esse poder não estava na sua oferta.";
     if (!escolha.desvantagem || !oferta.desvantagens.includes(escolha.desvantagem)) {
-      return "Essa desvantagem não estava na sua oferta.";
+      return "Essa desvantagem não estava entre as que você podia dar ao adversário.";
     }
     this.escolhas[cor] = escolha;
     if (this.escolhas.brancas && this.escolhas.pretas) {
-      this.iniciarPartida({ brancas: this.escolhas.brancas, pretas: this.escolhas.pretas });
+      // Cada um fica com o próprio poder e a desvantagem que o adversário escolheu.
+      this.iniciarPartida(cartasDoDraft({ brancas: this.escolhas.brancas, pretas: this.escolhas.pretas }));
       this.ofertas = null;
     }
     return null;

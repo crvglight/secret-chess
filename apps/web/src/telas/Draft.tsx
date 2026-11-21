@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { escolhaDraftIA, sortearDraft, type CartasDoJogador, type Cor } from "@xadrez/engine";
+import { cartasDoDraft, escolhaDraftIA, sortearDraft, type CartasDoJogador, type Cor, type EscolhaDraft } from "@xadrez/engine";
 import { CartaVisual } from "../componentes/CartaVisual.tsx";
 import type { ModoPartida } from "../modo.ts";
 import { NOME_COR } from "../textos.ts";
@@ -11,7 +11,7 @@ interface Props {
 }
 
 /**
- * Modo Draft: cada lado escolhe 1 poder e 1 desvantagem entre 3 de cada.
+ * Modo Draft: cada lado escolhe o próprio poder entre 3 e a desvantagem do ADVERSÁRIO entre 3.
  * Na partida local, um lado escolhe de cada vez (o outro não olha).
  * Contra a IA, ela escolhe em segredo.
  */
@@ -20,7 +20,7 @@ export function Draft({ modo, aoTerminar, aoSair }: Props) {
   // Ordem de quem escolhe na tela: contra a IA, só o humano.
   const ordem: Cor[] = modo.tipo === "ia" ? [modo.corHumano] : ["brancas", "pretas"];
   const [indice, setIndice] = useState(0);
-  const [escolhas, setEscolhas] = useState<Partial<Record<Cor, CartasDoJogador>>>({});
+  const [escolhas, setEscolhas] = useState<Partial<Record<Cor, EscolhaDraft>>>({});
   const [revelado, setRevelado] = useState(modo.tipo === "ia");
   const [poder, setPoder] = useState<string | null>(null);
   const [desvantagem, setDesvantagem] = useState<string | null>(null);
@@ -43,7 +43,8 @@ export function Draft({ modo, aoTerminar, aoSair }: Props) {
       const corIA: Cor = modo.corHumano === "brancas" ? "pretas" : "brancas";
       novas[corIA] = escolhaDraftIA(ofertas[corIA], modo.nivel !== "facil");
     }
-    aoTerminar(novas as Record<Cor, CartasDoJogador>);
+    // Cada um fica com o próprio poder e a desvantagem que o outro escolheu.
+    aoTerminar(cartasDoDraft(novas as Record<Cor, EscolhaDraft>));
   }
 
   return (
@@ -72,8 +73,8 @@ export function Draft({ modo, aoTerminar, aoSair }: Props) {
             {modo.tipo === "ia" ? "Escolha suas cartas" : `${NOME_COR[cor]}: escolha suas cartas`}
           </h1>
           <p className="subtitulo">
-            Escolha 1 poder e 1 desvantagem. O adversário recebeu opções com os mesmos pesos
-            {modo.tipo === "ia" ? " e vai escolher em segredo." : "."}
+            Escolha o seu poder e a desvantagem que o adversário vai ter. Ele recebeu opções com os mesmos pesos
+            {modo.tipo === "ia" ? " e vai escolher a sua desvantagem em segredo." : " e escolhe a sua desvantagem."}
           </p>
 
           <h2>Poder</h2>
@@ -92,8 +93,8 @@ export function Draft({ modo, aoTerminar, aoSair }: Props) {
             ))}
           </div>
 
-          <h2>Desvantagem</h2>
-          <div className="draft-opcoes" role="radiogroup" aria-label="Desvantagem">
+          <h2>Desvantagem para o adversário</h2>
+          <div className="draft-opcoes" role="radiogroup" aria-label="Desvantagem para o adversário">
             {oferta.desvantagens.map((id) => (
               <button
                 key={id}

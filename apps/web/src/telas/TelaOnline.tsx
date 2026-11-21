@@ -255,10 +255,11 @@ function DraftOnline({
       <section className="draft-escolha">
         <h1>Escolha suas cartas</h1>
         <p className="subtitulo">
-          1 poder e 1 desvantagem. O adversário recebeu opções com os mesmos pesos e escolhe ao mesmo tempo.
+          O seu poder e a desvantagem que o adversário vai ter. Ele recebeu opções com os mesmos pesos e, ao mesmo
+          tempo, escolhe a sua desvantagem.
         </p>
         {grupo("Poder", oferta.poderes, poder, setPoder)}
-        {grupo("Desvantagem", oferta.desvantagens, desvantagem, setDesvantagem)}
+        {grupo("Desvantagem para o adversário", oferta.desvantagens, desvantagem, setDesvantagem)}
         <div className="acoes">
           <button
             type="button"

@@ -2169,3 +2169,40 @@ input:focus-visible {
 .tela-analise > .resumos-analise {
   width: 100%;
 }
+
+/* Rever lances durante a partida */
+.navegar-lances {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 6px;
+}
+.navegar-lances .botao-icone:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+.vendo-lance {
+  margin-left: 6px;
+  padding: 2px 10px;
+  border-radius: 999px;
+  background: var(--destaque);
+  color: var(--destaque-texto);
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+.vendo-lance .botao-link {
+  color: inherit;
+}
+.historico-clicavel li {
+  cursor: pointer;
+  border-radius: 4px;
+}
+.historico-clicavel li:hover {
+  background: var(--painel-borda);
+}
+.historico-clicavel li.vendo {
+  background: var(--destaque);
+  color: var(--destaque-texto);
+}
