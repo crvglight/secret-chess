@@ -98,6 +98,12 @@ export interface Carta<D extends object = object> {
   filtrarLances?(ctx: ContextoLeitura<D>, lances: Lance[], jogador: Cor): Lance[];
   /** Ordem do filtro: maior roda depois (padrão 0). A partir de ORDEM_FILTRO_FINAL, roda no fim de tudo. */
   ordemFiltro?: number;
+  /**
+   * Obrigações ("se puder X, tem que fazer X"): roda por último, só sobre lances JÁ
+   * legais (com a regra do xeque aplicada), para nunca obrigar um lance proibido.
+   * Nunca devolva lista vazia se recebeu lances. Não afeta o cálculo de xeque.
+   */
+  filtrarLegais?(ctx: ContextoLeitura<D>, lances: Lance[], jogador: Cor): Lance[];
   /** Efeitos depois de qualquer lance (de qualquer jogador). */
   aoMover?(ctx: ContextoEscrita<D>, info: InfoLance): void;
   /** Chamado quando a vez passa para `vez`. */

@@ -1,4 +1,4 @@
-import { definirCarta, ORDEM_FILTRO_FINAL } from "../carta.ts";
+import { definirCarta } from "../carta.ts";
 import { casaAtacada } from "../movimentos.ts";
 import { corOposta, direcaoPeao } from "../tabuleiro.ts";
 import type { Cor, Estado, Lance } from "../tipos.ts";
@@ -22,10 +22,9 @@ export default definirCarta({
   tipo: "desvantagem",
   peso: 3,
   descricao: "Se você puder dar xeque no rei do adversário, você é obrigado a dar.",
-  // Roda no fim, para só contar os xeques que são permitidos de verdade.
-  ordemFiltro: ORDEM_FILTRO_FINAL,
 
-  filtrarLances({ estado, dono }, lances, jogador) {
+  // Obrigação: só entre os lances legais (nunca deixa o jogador sem lance).
+  filtrarLegais({ estado, dono }, lances, jogador) {
     if (jogador !== dono) return lances;
     const xeques = lances.filter((l) => !l.poder && !l.montada && daXeque(estado, l, dono));
     return xeques.length > 0 ? xeques : lances;

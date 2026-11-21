@@ -1,4 +1,4 @@
-import { definirCarta, ORDEM_FILTRO_FINAL } from "../carta.ts";
+import { definirCarta } from "../carta.ts";
 import { pecaCapturada } from "../tabuleiro.ts";
 
 export default definirCarta({
@@ -6,14 +6,13 @@ export default definirCarta({
   nome: "Damas",
   tipo: "desvantagem",
   peso: 4,
-  descricao: "Como no jogo de damas: se puder capturar alguma peça, você é obrigado a capturar.",
-  // Roda no fim (depois das outras cartas, do evento do Caos e das casas especiais),
-  // para só contar as capturas permitidas de verdade.
-  ordemFiltro: ORDEM_FILTRO_FINAL,
+  descricao:
+    "Como no jogo de damas: se alguma peça sua (menos o rei) puder capturar, você é obrigado a capturar com ela. O rei fica de fora.",
 
-  filtrarLances({ estado, dono }, lances, jogador) {
+  // Só entre os lances legais: nunca obriga uma captura proibida (Trégua, Santuário, xeque...).
+  filtrarLegais({ estado, dono }, lances, jogador) {
     if (jogador !== dono) return lances;
-    const capturas = lances.filter((l) => !l.poder && pecaCapturada(estado, l));
+    const capturas = lances.filter((l) => !l.poder && estado.tabuleiro[l.de]?.tipo !== "rei" && pecaCapturada(estado, l));
     return capturas.length > 0 ? capturas : lances;
   },
 });

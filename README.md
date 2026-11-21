@@ -92,7 +92,7 @@ Rode na raiz do projeto:
 | Rainha preguiçosa | desvantagem | 2 | Sua dama não pode se mover nos 5 primeiros lances. |
 | Batalha de peões | desvantagem | 3 | Você perde se tiver menos peões que o adversário. |
 | Dama frágil | desvantagem | 4 | Você perde se ficar sem nenhuma dama no tabuleiro. |
-| Damas | desvantagem | 4 | Como no jogo de damas: se puder capturar alguma peça, você é obrigado a capturar. |
+| Damas | desvantagem | 4 | Como no jogo de damas: se alguma peça sua (menos o rei) puder capturar, você é obrigado a capturar com ela. O rei fica de fora. |
 | Sem roque | desvantagem | 1 | Você não pode fazer roque. |
 | Rei preso | desvantagem | 2 | Seu rei não pode se mover nos 10 primeiros lances. |
 | Cavalos cansados | desvantagem | 2 | Um cavalo seu que se moveu não pode se mover de novo na sua rodada seguinte. |

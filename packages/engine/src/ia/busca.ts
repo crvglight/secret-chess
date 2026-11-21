@@ -242,7 +242,9 @@ function montarOpcoes(estado: Estado, config: ConfigNivel): Opcao[] {
   const opcoes: Opcao[] = lancesLegais(estado)
     .filter((l) => !l.poder)
     .map((lance) => ({ carta: null, poder: null, origem: estado, lance, nota: 0, linha: [] }));
-  if (!config.usaPoder) return opcoes;
+  // O fácil não usa poderes, a menos que o poder seja a única saída (ex.: em xeque,
+  // só um teleporte bloqueia).
+  if (!config.usaPoder && opcoes.length > 0) return opcoes;
   opcoes.push(...opcoesDoPoder(estado, null));
 
   // Modo Mão de cartas: testa jogar cada carta da mão.

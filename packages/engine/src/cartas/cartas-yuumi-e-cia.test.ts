@@ -190,4 +190,25 @@ describe("Kamikaze, Regigigas e Damas", () => {
   it("Damas é o novo nome de Capturas obrigatórias", () => {
     expect(obterCarta("capturas-obrigatorias").nome).toBe("Damas");
   });
+
+  it("Damas: o rei não é obrigado a capturar", () => {
+    // Só o rei pode capturar (o cavalo preto em d2): o resto joga normal.
+    const e = criarPartida({ fen: "4k3/8/8/8/8/8/3n4/4K2R w - - 0 1", cartas: brancas(null, "capturas-obrigatorias") });
+    expect(lancesLegais(e).length).toBeGreaterThan(5);
+    // Se outra peça pode capturar, é obrigado a capturar com ela (e não com o rei).
+    const e2 = criarPartida({ fen: "4k3/8/8/8/8/8/3n4/3RK3 w - - 0 1", cartas: brancas(null, "capturas-obrigatorias") });
+    expect(lancesLegais(e2).map((l) => nomeCasa(l.de) + nomeCasa(l.para))).toEqual(["d1d2"]);
+  });
+
+  it("obrigações nunca dão xeque-mate falso: em xeque, valem só os lances que salvam o rei", () => {
+    // Rei branco em xeque pela torre de e8; a torre branca de a1 poderia capturar o peão de a7,
+    // mas isso não tira o xeque. Antes, a Damas deixava zero lances (mate falso).
+    const e = criarPartida({ fen: "k3r3/p7/8/8/8/8/8/R3K3 w - - 0 1", cartas: brancas(null, "capturas-obrigatorias") });
+    const legais = lancesLegais(e).map((l) => nomeCasa(l.de) + nomeCasa(l.para));
+    expect(legais.length).toBeGreaterThan(0);
+    expect(legais).not.toContain("a1a7");
+    // Kamikaze: um xeque que deixaria o próprio rei atacado não é obrigatório.
+    const k = criarPartida({ fen: "k3r3/8/8/8/8/8/8/R3K3 w - - 0 1", cartas: brancas(null, "kamikaze") });
+    expect(lancesLegais(k).length).toBeGreaterThan(0);
+  });
 });

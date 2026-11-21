@@ -1,4 +1,4 @@
-import { definirCarta, ORDEM_FILTRO_FINAL } from "../carta.ts";
+import { definirCarta } from "../carta.ts";
 
 /** Quantos lances seus ficam presos aos peões. */
 const LANCES_SO_DE_PEAO = 5;
@@ -9,9 +9,9 @@ export default definirCarta({
   tipo: "desvantagem",
   peso: 2,
   descricao: "Nos seus 5 primeiros lances, você só pode mover peões (se nenhum peão puder andar, as outras peças ficam livres).",
-  ordemFiltro: ORDEM_FILTRO_FINAL,
 
-  filtrarLances({ estado, dono }, lances, jogador) {
+  // Obrigação: só entre os lances legais (nunca deixa o jogador sem lance).
+  filtrarLegais({ estado, dono }, lances, jogador) {
     if (jogador !== dono || estado.lancesFeitos[dono] >= LANCES_SO_DE_PEAO) return lances;
     const dePeao = lances.filter((l) => {
       const p = estado.tabuleiro[l.de];

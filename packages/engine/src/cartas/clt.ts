@@ -1,4 +1,4 @@
-import { definirCarta, ORDEM_FILTRO_FINAL } from "../carta.ts";
+import { definirCarta } from "../carta.ts";
 import { casaAtacada } from "../movimentos.ts";
 import { corOposta } from "../tabuleiro.ts";
 
@@ -16,9 +16,9 @@ export default definirCarta({
   peso: 2,
   descricao:
     "A cada 6 lances seus, no 7º você só pode mover peões (menos se estiver em xeque ou se nenhum peão puder andar).",
-  ordemFiltro: ORDEM_FILTRO_FINAL,
 
-  filtrarLances({ estado, dono }, lances, jogador) {
+  // Obrigação: só entre os lances legais (nunca deixa o jogador sem lance).
+  filtrarLegais({ estado, dono }, lances, jogador) {
     if (jogador !== dono || (estado.lancesFeitos[dono] + 1) % CICLO !== 0) return lances;
     const rei = estado.tabuleiro.findIndex((p) => p?.tipo === "rei" && p.cor === dono);
     if (rei >= 0 && casaAtacada(estado.tabuleiro, rei, corOposta(dono))) return lances;

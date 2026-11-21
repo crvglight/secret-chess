@@ -294,6 +294,17 @@ function deixaReiAtacado(estado: Estado, cor: Cor, lance: Lance): boolean {
  * atacado. O roque não sai do xeque, não passa por casa atacada nem cai nela.
  */
 export function lancesLegais(estado: Estado, cor: Cor = estado.vez): Lance[] {
+  let lances = legaisSemObrigacoes(estado, cor);
+  if (lances.length === 0) return lances;
+  // Obrigações das cartas (Damas, Kamikaze...): só entre os lances já legais.
+  for (const c of cartasEmJogo(estado)) {
+    if (c.carta.filtrarLegais) lances = c.carta.filtrarLegais(ctxLeitura(estado, c), lances, cor);
+  }
+  return lances;
+}
+
+/** Lances legais antes das obrigações das cartas. */
+function legaisSemObrigacoes(estado: Estado, cor: Cor): Lance[] {
   const lances = lancesSemXeque(estado, cor);
   if (lances.length === 0) return lances;
   const emXequeAgora = reiAtacado(estado, cor);
@@ -377,8 +388,15 @@ export function motivoBloqueio(estado: Estado, de: Casa, para: Casa): Bloqueio |
     lances = c.carta.filtrarLances!(ctxLeitura(estado, c), lances, cor);
     if (antes && !existe(lances)) return { cartaId: c.carta.id, nome: c.carta.nome, dono: c.dono };
   }
-  if (existe(lances) && !existe(lancesLegais(estado, cor))) {
+  let legais = legaisSemObrigacoes(estado, cor);
+  if (existe(lances) && !existe(legais)) {
     return { cartaId: "xeque", nome: "Xeque", dono: cor, xeque: true };
+  }
+  for (const c of cartasEmJogo(estado)) {
+    if (!c.carta.filtrarLegais) continue;
+    const antes = existe(legais);
+    legais = c.carta.filtrarLegais(ctxLeitura(estado, c), legais, cor);
+    if (antes && !existe(legais)) return { cartaId: c.carta.id, nome: c.carta.nome, dono: c.dono };
   }
   return null;
 }
