@@ -34,14 +34,12 @@ describe("Yuumi (carona)", () => {
     expect(d.historico.at(-1)!.texto).toContain("carona");
   });
 
-  it("a de baixo anda levando a de cima; a de cima pode descer sozinha", () => {
+  it("na casa da carona, quem anda é sempre a de cima; a de baixo fica parada", () => {
     let e = montar(inicio());
     e = jogar(e, "e8", "f8");
-    // Clicar na base: só o peão anda (o cavalo vai junto).
-    expect(destinos(lancesDaCasa(e, c("d2")))).toEqual(["d3", "d4"]);
-    const andou = jogar(e, "d2", "d4");
-    expect(montadaEm(andou, c("d4"))?.tipo).toBe("cavalo");
-    // Clicar em cima: o cavalo desce e anda como cavalo.
+    // Mexer na casa d2 move o cavalo (que desce); o peão de baixo não tem lances.
+    expect(destinos(lancesDaCasa(e, c("d2")))).toEqual(["b1", "b3", "c4", "e4", "f1", "f3"]);
+    expect(lancesDaCasa(e, c("d2")).every((l) => l.montada === "descer")).toBe(true);
     expect(destinos(lancesDaCarona(e, c("d2")))).toEqual(["b1", "b3", "c4", "e4", "f1", "f3"]);
     const desceu = aplicarLance(e, { de: c("d2"), para: c("f3"), montada: "descer" });
     expect(desceu.tabuleiro[c("f3")]?.tipo).toBe("cavalo");
@@ -50,14 +48,12 @@ describe("Yuumi (carona)", () => {
   });
 
   it("se a de baixo é capturada, as duas morrem", () => {
-    const e0 = criarPartida({ fen: "4k3/8/8/8/2b5/8/3P4/1N2K3 w - - 0 1", cartas: brancas("yuumi") });
-    let e = aplicarLance(e0, { de: c("b1"), para: c("d2"), montada: "montar" });
-    // Bispo preto captura o peão de d2 (que leva o cavalo). O rei branco foge do xeque depois.
-    e = jogar(e, "c4", "a6");
-    e = jogar(e, "d2", "d3");
-    e = jogar(e, "a6", "d3");
-    expect(e.tabuleiro[c("d3")]?.tipo).toBe("bispo");
-    expect(Object.keys(e.montadas ?? {})).toHaveLength(0);
+    const e0 = criarPartida({ fen: "4k3/8/8/b7/8/8/3P4/1N2K3 w - - 0 1", cartas: brancas("yuumi") });
+    const e = aplicarLance(e0, { de: c("b1"), para: c("d2"), montada: "montar" });
+    // O bispo preto de a5 captura o peão de d2, que levava o cavalo.
+    const d = jogar(e, "a5", "d2");
+    expect(d.tabuleiro[c("d2")]?.tipo).toBe("bispo");
+    expect(Object.keys(d.montadas ?? {})).toHaveLength(0);
   });
 
   it("o rei nunca entra na carona", () => {

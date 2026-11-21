@@ -325,9 +325,9 @@ export function lancesLegais(estado: Estado, cor: Cor = estado.vez): Lance[] {
   });
 }
 
-/** Lances normais (sem os de poder) que saem de `de`. A peça de carona em cima não conta. */
+/** Lances normais (sem os de poder) que saem de `de`. Numa casa com carona, são os da peça de cima. */
 export function lancesDaCasa(estado: Estado, de: Casa): Lance[] {
-  return lancesLegais(estado).filter((l) => l.de === de && !l.poder && l.montada !== "descer");
+  return lancesLegais(estado).filter((l) => l.de === de && !l.poder);
 }
 
 /** Lances da peça de carona que está em cima da peça da casa `de` (poder Yuumi). */

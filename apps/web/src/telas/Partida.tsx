@@ -16,7 +16,6 @@ import {
   gerarLancesBase,
   infoPoder,
   jogarCartaDaMao,
-  lancesDaCarona,
   lancesDaCasa,
   pecasMontadas,
   lancesDePoderDaCasa,
@@ -194,13 +193,7 @@ export function Partida({ modo, cartas, aoSair, aoRevanche, online }: Props) {
     salvo.current = true;
     setNovidades(registrarFimDePartida(modo, inicial, acoes.current, estado));
   }, [estado, inicial, modo, online]);
-  const [selecionada, setSelecionadaBruta] = useState<Casa | null>(null);
-  /** A peça escolhida é a de cima de uma carona (poder Yuumi), não a da casa. */
-  const [carona, setCarona] = useState(false);
-  const setSelecionada = (c: Casa | null) => {
-    setSelecionadaBruta(c);
-    setCarona(false);
-  };
+  const [selecionada, setSelecionada] = useState<Casa | null>(null);
   const [modoPoder, setModoPoder] = useState(false);
   const [aviso, setAviso] = useState<string | null>(null);
   const [promocao, setPromocao] = useState<{ de: Casa; para: Casa } | null>(null);
@@ -298,7 +291,7 @@ export function Partida({ modo, cartas, aoSair, aoRevanche, online }: Props) {
   // Poder em forma de lance (teleporte, troca): primeiro escolhe a peça, depois o destino.
   const poderDeLance = poder?.modo === "lance";
   let destinos: Lance[] = [];
-  if (selecionada !== null && !modoPoder) destinos = (carona ? lancesDaCarona : lancesDaCasa)(estado, selecionada);
+  if (selecionada !== null && !modoPoder) destinos = lancesDaCasa(estado, selecionada);
   if (selecionada !== null && poderDeLance) destinos = lancesDePoderDaCasa(estado, selecionada);
   const alvosPoder = poder && !(poderDeLance && selecionada !== null) ? poder.alvos : null;
 
@@ -434,7 +427,7 @@ export function Partida({ modo, cartas, aoSair, aoRevanche, online }: Props) {
   }
 
   function tentarLance(de: Casa, para: Casa) {
-    const opcoes = (carona && de === selecionada ? lancesDaCarona : lancesDaCasa)(estado, de).filter((l) => l.para === para);
+    const opcoes = lancesDaCasa(estado, de).filter((l) => l.para === para);
     if (opcoes.length === 0) {
       const bloqueio = motivoBloqueio(estado, de, para);
       setAviso(bloqueio ? textoBloqueio(bloqueio, estado.vez) : null);
@@ -483,21 +476,10 @@ export function Partida({ modo, cartas, aoSair, aoRevanche, online }: Props) {
     }
     const peca = estado.tabuleiro[c];
     if (peca?.cor === estado.vez) {
-      if (c !== selecionada || carona) selecionar(c);
+      if (c !== selecionada) selecionar(c);
       return;
     }
     if (selecionada !== null) tentarLance(selecionada, c);
-  }
-
-  /** Clique na peça de cima de uma carona: ela desce e anda sozinha. */
-  function aoTocarCarona(c: Casa) {
-    if (estado.resultado || vezDoOutro || modoPoder || estado.tabuleiro[c]?.cor !== estado.vez) {
-      aoTocarCasa(c);
-      return;
-    }
-    setSelecionadaBruta(c);
-    setCarona(true);
-    setAviso(lancesDaCarona(estado, c).length > 0 ? "Carona: escolha para onde a peça de cima desce." : "A peça de cima não tem para onde descer agora.");
   }
 
   function aoJogarCarta(indice: number) {
@@ -649,7 +631,6 @@ export function Partida({ modo, cartas, aoSair, aoRevanche, online }: Props) {
                 disfarces={disfarcesDe(estado)}
                 misteriosas={misteriosasDe(estado)}
                 montadas={pecasMontadas(estado)}
-                aoTocarCarona={aoTocarCarona}
                 podeArrastar={(c) =>
                   !modoPoder && !estado.resultado && !vezDoOutro && estado.tabuleiro[c]?.cor === estado.vez
                 }

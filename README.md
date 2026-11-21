@@ -82,7 +82,7 @@ Rode na raiz do projeto:
 | Contra-ataque | poder | 3 | Uma vez por partida, quando o adversário capturar uma peça sua, a sua peça mais barata que alcança captura de volta na hora, de graça. |
 | Rainha das sombras | poder | 3 | Sua dama também pode se mover como um cavalo. |
 | Bomba | poder | 3 | Uma vez por partida, marque em segredo uma peça sua: se ela for capturada, explode e leva junto quem capturou e as peças vizinhas (menos os reis). |
-| Yuumi | poder | 3 | Uma peça sua (menos o rei) pode subir de carona em outra peça sua: as duas andam juntas e a de cima pode descer quando quiser. Se a de baixo for capturada, as duas caem. |
+| Yuumi | poder | 3 | Uma peça sua (menos o rei) pode subir de carona em outra peça sua (menos o rei). Enquanto a carona durar, quem anda é sempre a peça de cima (ela desce e segue sozinha); a de baixo fica parada. Se a de baixo for capturada, as duas caem. |
 | C4 | poder | 3 | A casa c4 (f5 para as pretas) é uma mina secreta: a peça do adversário que parar nela explode (o rei escapa). |
 | F5 | poder | 2 | A casa f5 (c4 para as pretas) é secreta: a sua peça que parar nela vira outra peça sorteada (menos rei). |
 | Daltônico | poder | 4 | Uma vez por partida, mova uma peça do adversário (menos o rei) como se fosse sua: ela pode até capturar outra peça dele. |

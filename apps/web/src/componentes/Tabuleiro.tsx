@@ -27,10 +27,8 @@ interface Props {
   disfarces?: ReadonlyMap<Casa, TipoPeca>;
   /** Peças na névoa para quem está olhando: aparecem como "?" (casa especial Névoa). */
   misteriosas?: ReadonlySet<Casa>;
-  /** Caronas (poder Yuumi): casa da peça de baixo → a peça que está em cima. */
+  /** Caronas (poder Yuumi): casa da peça de baixo → a peça que está em cima (é ela que anda). */
   montadas?: ReadonlyMap<Casa, Peca>;
-  /** Clique na peça de cima de uma carona (sem isso, conta como clique na casa). */
-  aoTocarCarona?(casa: Casa): void;
   podeArrastar(casa: Casa): boolean;
   aoTocarCasa(casa: Casa): void;
   aoSoltar(de: Casa, para: Casa): void;
@@ -50,8 +48,6 @@ interface Seta {
 }
 
 const BOTAO_ESQUERDO = 0;
-/** Onde fica a peça de cima de uma carona: à direita de x e acima de y (fração da casa). */
-const ZONA_CARONA = { x: 0.4, y: 0.5 };
 const BOTAO_DIREITO = 2;
 
 export function Tabuleiro(props: Props) {
@@ -99,14 +95,6 @@ export function Tabuleiro(props: Props) {
     setSetas([]);
     setMarcas([]);
     setSemAnimacao(null);
-    // Carona: o canto de cima à direita da casa é a peça de cima.
-    if (props.montadas?.has(c) && props.aoTocarCarona) {
-      const canto = posicao(c);
-      if (x - canto.x > LADO * ZONA_CARONA.x && y - canto.y < LADO * ZONA_CARONA.y) {
-        props.aoTocarCarona(c);
-        return;
-      }
-    }
     const arrastavel = props.podeArrastar(c);
     props.aoTocarCasa(c);
     if (arrastavel) {
@@ -298,7 +286,8 @@ export function Tabuleiro(props: Props) {
 
       {arraste?.moveu &&
         (() => {
-          const p = estado.tabuleiro[arraste.de];
+          // Na casa de uma carona, quem sai arrastada é a peça de cima.
+          const p = props.montadas?.get(arraste.de) ?? estado.tabuleiro[arraste.de];
           return p ? (
             <g transform={`translate(${arraste.x - 50} ${arraste.y - 55})`} className="peca-arrastada">
               <PecaSvg tipo={p.tipo} cor={p.cor} />

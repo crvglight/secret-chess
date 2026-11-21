@@ -5,9 +5,9 @@ import type { Casa, Estado, Lance, Peca } from "../tipos.ts";
 
 /**
  * Yuumi: uma peça sua (menos o rei) pode subir de carona em outra peça sua (menos o rei).
- * As duas ficam na mesma casa: clicar na de baixo move as duas juntas; clicar na de
- * cima faz só ela descer e andar. Se a de baixo for capturada, as duas morrem juntas.
- * O motor cuida da execução (lance.montada); esta carta só cria os lances.
+ * As duas ficam na mesma casa. Enquanto carrega, a de baixo fica parada: mexer na casa
+ * sempre move a de cima (que desce e anda sozinha). Se a de baixo for capturada, as duas
+ * morrem juntas. O motor cuida da execução (lance.montada); esta carta cria os lances.
  */
 export default definirCarta({
   id: "yuumi",
@@ -15,11 +15,20 @@ export default definirCarta({
   tipo: "poder",
   peso: 3,
   descricao:
-    "Uma peça sua (menos o rei) pode subir de carona em outra peça sua: as duas andam juntas e a de cima pode descer quando quiser. Se a de baixo for capturada, as duas caem.",
+    "Uma peça sua (menos o rei) pode subir de carona em outra peça sua (menos o rei). Enquanto a carona durar, quem anda é sempre a peça de cima (ela desce e segue sozinha); a de baixo fica parada. Se a de baixo for capturada, as duas caem.",
 
   // Subir na carona nunca captura: só quem já está em cima (e pode descer capturando) conta.
   lancesExtrasAtacam: ({ estado, dono }) =>
     !!estado.montadas && estado.tabuleiro.some((p) => p?.cor === dono && !!estado.montadas![p.id]),
+
+  // Enquanto carrega alguém, a peça de baixo não anda (só a de cima desce).
+  filtrarLances({ estado, dono }, lances, jogador) {
+    if (jogador !== dono || !estado.montadas) return lances;
+    return lances.filter((l) => {
+      const base = estado.tabuleiro[l.de];
+      return l.poder || l.montada === "descer" || !base || !estado.montadas![base.id];
+    });
+  },
 
   adicionarLances({ estado, dono }, jogador) {
     if (jogador !== dono) return [];
