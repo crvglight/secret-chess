@@ -7,6 +7,15 @@ services:
     plan: free
     buildCommand: corepack enable && pnpm install --frozen-lockfile
     startCommand: pnpm --filter @xadrez/server start
+    # Só reinstala (e reinicia, o que apaga as salas abertas) quando muda algo do servidor.
+    buildFilter:
+      paths:
+        - apps/server/**
+        - packages/engine/**
+        - package.json
+        - pnpm-lock.yaml
+        - pnpm-workspace.yaml
+        - render.yaml
     envVars:
       - key: NODE_VERSION
         value: "22"

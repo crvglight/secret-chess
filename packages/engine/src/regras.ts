@@ -1,4 +1,5 @@
 import type { ContextoConsulta, ContextoEscrita, ContextoLeitura, CartaQualquer, Destaque } from "./carta.ts";
+import { ORDEM_FILTRO_FINAL } from "./carta.ts";
 import { obterCarta } from "./cartas/index.ts";
 import {
   aplicarCasaEspecial,
@@ -64,10 +65,10 @@ function cartasEmJogo(estado: Estado): CartaEmJogo[] {
   return lista;
 }
 
-/** Cartas com filtro, na ordem em que os filtros rodam. */
-function cartasComFiltro(cartas: CartaEmJogo[]): CartaEmJogo[] {
+/** Cartas com filtro, na ordem em que os filtros rodam (`final`: só as do fim, ou só as de antes). */
+function cartasComFiltro(cartas: CartaEmJogo[], final = false): CartaEmJogo[] {
   return cartas
-    .filter((c) => c.carta.filtrarLances)
+    .filter((c) => c.carta.filtrarLances && ((c.carta.ordemFiltro ?? 0) >= ORDEM_FILTRO_FINAL) === final)
     .sort((a, b) => (a.carta.ordemFiltro ?? 0) - (b.carta.ordemFiltro ?? 0));
 }
 
@@ -203,7 +204,9 @@ function lancesSemXeque(estado: Estado, cor: Cor): Lance[] {
   for (const c of cartasComFiltro(cartas)) lances = c.carta.filtrarLances!(ctxLeitura(estado, c), lances, cor);
   const evento = eventoAtivo(estado);
   if (evento?.filtrarLances) lances = evento.filtrarLances(estado, lances, cor);
-  return filtrarPorCasas(estado, lances);
+  lances = filtrarPorCasas(estado, lances);
+  for (const c of cartasComFiltro(cartas, true)) lances = c.carta.filtrarLances!(ctxLeitura(estado, c), lances, cor);
+  return lances;
 }
 
 /** Alguma carta ou casa especial cria lances além dos normais do xadrez? */
@@ -357,9 +360,16 @@ export function motivoBloqueio(estado: Estado, de: Casa, para: Casa): Bloqueio |
   if (evento?.filtrarLances && existe(lances) && !existe(evento.filtrarLances(estado, lances, cor))) {
     return { cartaId: evento.id, nome: evento.nome, dono: cor, evento: true };
   }
+  if (evento?.filtrarLances) lances = evento.filtrarLances(estado, lances, cor);
   const daCasa = lances.find((l) => l.de === de && l.para === para && !l.poder);
   const tipoCasa = daCasa ? bloqueioDaCasa(estado, daCasa) : null;
   if (tipoCasa) return { cartaId: tipoCasa, nome: DESCRICAO_CASA[tipoCasa].nome, dono: cor, casa: true };
+  lances = filtrarPorCasas(estado, lances);
+  for (const c of cartasComFiltro(cartas, true)) {
+    const antes = existe(lances);
+    lances = c.carta.filtrarLances!(ctxLeitura(estado, c), lances, cor);
+    if (antes && !existe(lances)) return { cartaId: c.carta.id, nome: c.carta.nome, dono: c.dono };
+  }
   if (existe(lances) && !existe(lancesLegais(estado, cor))) {
     return { cartaId: "xeque", nome: "Xeque", dono: cor, xeque: true };
   }

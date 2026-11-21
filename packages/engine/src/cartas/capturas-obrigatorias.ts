@@ -1,4 +1,4 @@
-import { definirCarta } from "../carta.ts";
+import { definirCarta, ORDEM_FILTRO_FINAL } from "../carta.ts";
 import { pecaCapturada } from "../tabuleiro.ts";
 
 export default definirCarta({
@@ -7,8 +7,9 @@ export default definirCarta({
   tipo: "desvantagem",
   peso: 4,
   descricao: "Se puder capturar alguma peça, você é obrigado a capturar.",
-  // Roda depois dos outros filtros, para só contar as capturas que sobraram.
-  ordemFiltro: 10,
+  // Roda no fim (depois das outras cartas, do evento do Caos e das casas especiais),
+  // para só contar as capturas permitidas de verdade.
+  ordemFiltro: ORDEM_FILTRO_FINAL,
 
   filtrarLances({ estado, dono }, lances, jogador) {
     if (jogador !== dono) return lances;

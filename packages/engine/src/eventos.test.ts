@@ -104,4 +104,18 @@ describe("Caos", () => {
     for (let i = 0; i < 40 && !e.resultado; i++) e = executarJogada(e, escolherJogada(e, "medio", { rng, tempoMs: 50 }));
     expect(e.caos!.registro.length).toBeGreaterThan(0);
   }, 60_000);
+
+  it("Trégua + Capturas obrigatórias: a desvantagem não obriga a capturar (e o jogo continua)", () => {
+    // O cavalo preto vai para d4 (onde as brancas podem capturar) e a Trégua começa.
+    const e = caos(["tregua"], {
+      fen: "r1bqkbnr/ppp2ppp/2n5/3pP3/8/4PN2/P2P1PPP/RNBQKB1R b KQkq - 0 4",
+      cartas: { brancas: { poder: null, desvantagem: "capturas-obrigatorias" } },
+    });
+    const depois = jogar({ ...e, meioLance: LANCES_ENTRE_EVENTOS - 1 }, "c6", "d4");
+    expect(eventoAtivo(depois)?.id).toBe("tregua");
+    expect(depois.resultado).toBeNull();
+    const legais = lancesLegais(depois).map((l) => nomeCasa(l.de) + nomeCasa(l.para));
+    expect(legais).toContain("e3e4");
+    expect(legais).not.toContain("f3d4");
+  });
 });

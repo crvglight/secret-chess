@@ -117,6 +117,15 @@ describe("Casas especiais", () => {
     expect(motivoBloqueio(e, c("d5"), c("e4"))).toMatchObject({ casa: true, nome: "Santuário" });
   });
 
+  it("Santuário + Capturas obrigatórias: a peça protegida não obriga a capturar", () => {
+    const e = comCasas([["e4", "santuario"]], {
+      fen: "4k3/8/8/3p4/4P3/8/8/4K3 b - - 0 1",
+      cartas: { pretas: { poder: null, desvantagem: "capturas-obrigatorias" } },
+    });
+    expect(destinos(e, "d5")).toEqual(["d4"]);
+    expect(lancesLegais(e).length).toBeGreaterThan(1);
+  });
+
   it("Forja: o peão vira cavalo ou bispo", () => {
     const e = comCasas([["e3", "forja"]]);
     expect(lancesLegais(e).filter((l) => nomeCasa(l.para) === "e3").map((l) => l.promocao).sort()).toEqual(["bispo", "cavalo"]);

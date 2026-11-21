@@ -89,7 +89,7 @@ export interface Carta<D extends object = object> {
   adicionarLances?(ctx: ContextoLeitura<D>, jogador: Cor): Lance[];
   /** Remove (ou troca) lances de `jogador`. Roda depois de todos os adicionarLances. */
   filtrarLances?(ctx: ContextoLeitura<D>, lances: Lance[], jogador: Cor): Lance[];
-  /** Ordem do filtro: maior roda depois (padrão 0). */
+  /** Ordem do filtro: maior roda depois (padrão 0). A partir de ORDEM_FILTRO_FINAL, roda no fim de tudo. */
   ordemFiltro?: number;
   /** Efeitos depois de qualquer lance (de qualquer jogador). */
   aoMover?(ctx: ContextoEscrita<D>, info: InfoLance): void;
@@ -114,3 +114,10 @@ export type CartaQualquer = Carta<any>;
 export function definirCarta<D extends object>(carta: Carta<D>): Carta<D> {
   return carta;
 }
+
+/**
+ * Filtros com esta ordem (ou maior) rodam no fim de tudo: depois do evento do Caos e
+ * das casas especiais. Ex.: Capturas obrigatórias só conta as capturas que são permitidas
+ * de verdade (na Trégua, ou com a peça no Santuário, não obriga nada).
+ */
+export const ORDEM_FILTRO_FINAL = 10;

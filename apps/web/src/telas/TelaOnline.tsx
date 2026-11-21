@@ -78,9 +78,27 @@ function SalaConectada({ codigo, assistir, aoSair }: { codigo: string; assistir:
 
   const adversario = corOposta(v.minhaCor);
   const nome = (c: Cor) => v.jogadores[c]?.apelido ?? "Adversário";
+  // A sala sumiu do servidor (ele reiniciou, ou a sala expirou): a partida não continua.
+  const salaPerdida = sala.erro !== null && v.fase !== "fim";
   return (
-    // Na revanche (as cores trocam), a chave muda e a tela da partida recomeça do zero.
-    <Partida
+    <>
+      {salaPerdida && (
+        <div className="sobreposicao" role="alertdialog" aria-modal="true" aria-labelledby="titulo-sala-perdida">
+          <div className="janela">
+            <h2 id="titulo-sala-perdida">A partida foi interrompida</h2>
+            <p className="subtitulo">
+              O servidor reiniciou e esta sala deixou de existir, então os lances não chegam mais ao adversário.
+              Desculpe! Crie uma sala nova para jogar de novo.
+            </p>
+            <p className="dica">{sala.erro}</p>
+            <button type="button" className="botao" onClick={aoSair}>
+              Voltar ao início
+            </button>
+          </div>
+        </div>
+      )}
+      {/* Na revanche (as cores trocam), a chave muda e a tela da partida recomeça do zero. */}
+      <Partida
       key={`${v.numeroPartida}-${v.minhaCor}`}
       modo={modoDa(v)}
       aoSair={aoSair}
@@ -106,6 +124,7 @@ function SalaConectada({ codigo, assistir, aoSair }: { codigo: string; assistir:
         novidades,
       }}
     />
+    </>
   );
 }
 
