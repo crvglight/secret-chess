@@ -15,7 +15,7 @@ export default definirCarta({
   tipo: "poder",
   peso: 3,
   descricao:
-    "Uma peça sua (menos o rei) pode subir de carona em outra peça sua (menos o rei). Enquanto a carona durar, quem anda é sempre a peça de cima (ela desce e segue sozinha); a de baixo fica parada. Se a de baixo for capturada, as duas caem.",
+    "Uma peça sua pode subir de carona em outra peça sua (menos o rei). Quando na carona, quem anda primeiro é sempre a peça de cima, assim descendo.",
 
   // Subir na carona nunca captura: só quem já está em cima (e pode descer capturando) conta.
   lancesExtrasAtacam: ({ estado, dono }) =>

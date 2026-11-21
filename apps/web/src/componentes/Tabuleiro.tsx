@@ -29,6 +29,8 @@ interface Props {
   misteriosas?: ReadonlySet<Casa>;
   /** Caronas (poder Yuumi): casa da peça de baixo → a peça que está em cima (é ela que anda). */
   montadas?: ReadonlyMap<Casa, Peca>;
+  /** Desenha todas as peças desta cor (poder Daltônico em uso). */
+  corUnica?: Cor;
   podeArrastar(casa: Casa): boolean;
   aoTocarCasa(casa: Casa): void;
   aoSoltar(de: Casa, para: Casa): void;
@@ -227,7 +229,7 @@ export function Tabuleiro(props: Props) {
               const base = props.misteriosas?.has(c) ? (
                 <PecaMisteriosa cor={p.cor} />
               ) : (
-                <PecaSvg tipo={props.disfarces?.get(c) ?? p.tipo} cor={p.cor} />
+                <PecaSvg tipo={props.disfarces?.get(c) ?? p.tipo} cor={props.corUnica ?? p.cor} />
               );
               const cima = props.montadas?.get(c);
               if (!cima) return base;
@@ -237,7 +239,7 @@ export function Tabuleiro(props: Props) {
                   <g transform="translate(0 16) scale(0.78)">{base}</g>
                   <g className="peca-carona" transform="translate(46 -2) scale(0.56)">
                     <circle cx="50" cy="50" r="46" className="aro-carona" />
-                    <PecaSvg tipo={cima.tipo} cor={cima.cor} />
+                    <PecaSvg tipo={cima.tipo} cor={props.corUnica ?? cima.cor} />
                   </g>
                 </>
               );

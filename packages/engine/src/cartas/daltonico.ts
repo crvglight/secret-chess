@@ -14,7 +14,7 @@ export default definirCarta({
   tipo: "poder",
   peso: 4,
   descricao:
-    "Uma vez por partida, mova uma peça do adversário (menos o rei) como se fosse sua: ela pode até capturar outra peça dele.",
+    "Uma vez por partida, é como se todas as peças ficassem da mesma cor que as suas: mova uma peça do adversário (menos o rei) como se fosse sua; ela pode até capturar outra peça dele.",
 
   acaoAtiva: {
     usos: 1,

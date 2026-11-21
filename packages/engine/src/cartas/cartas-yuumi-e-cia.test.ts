@@ -75,17 +75,23 @@ describe("C4 e F5", () => {
     expect(explodiu.dadosCartas.brancas.poder).toMatchObject({ descoberta: true });
   });
 
-  it("C4 das pretas é f5 (espelhada)", () => {
-    const e = criarPartida({ fen: "4k3/8/8/8/8/8/8/4K1N1 w - - 0 1", cartas: { pretas: { poder: "c4", desvantagem: null } } });
-    let d = jogar(e, "g1", "h3");
-    d = jogar(d, "e8", "e7");
-    expect(jogar(d, "h3", "f4").tabuleiro[c("f4")]?.tipo).toBe("cavalo");
-    expect(jogar(jogar(jogar(d, "h3", "g5"), "e7", "e8"), "g5", "f3").tabuleiro[c("f3")]?.tipo).toBe("cavalo");
-    const e2 = criarPartida({ fen: "4k3/8/8/8/4N3/8/8/4K3 w - - 0 1", cartas: { pretas: { poder: "c4", desvantagem: null } } });
-    expect(jogar(e2, "e4", "f6").tabuleiro[c("f6")]?.tipo).toBe("cavalo");
-    // f5 não é alcançável de e4 por cavalo; usa um bispo.
-    const e3 = criarPartida({ fen: "4k3/8/8/8/4B3/8/8/4K3 w - - 0 1", cartas: { pretas: { poder: "c4", desvantagem: null } } });
-    expect(jogar(e3, "e4", "f5").tabuleiro[c("f5")]).toBeNull();
+  it("C4 é sempre c4, também quando a carta é das pretas", () => {
+    const pretas = { pretas: { poder: "c4", desvantagem: null } };
+    const e = criarPartida({ fen: "4k3/8/8/8/8/8/1N6/4K3 w - - 0 1", cartas: pretas });
+    expect(jogar(e, "b2", "c4").tabuleiro[c("c4")]).toBeNull();
+    const e2 = criarPartida({ fen: "4k3/8/8/8/4B3/8/8/4K3 w - - 0 1", cartas: pretas });
+    expect(jogar(e2, "e4", "f5").tabuleiro[c("f5")]?.tipo).toBe("bispo");
+  });
+
+  it("F5 é sempre f5, também quando a carta é das pretas", () => {
+    const pretas = { pretas: { poder: "f5", desvantagem: null } };
+    // c4 não faz nada para as pretas; f5 transforma a peça.
+    const e = criarPartida({ fen: "4k3/8/8/8/8/8/2b5/4K3 b - - 0 1", cartas: pretas });
+    expect(jogar(e, "c2", "b3").tabuleiro[c("b3")]?.tipo).toBe("bispo");
+    const e2 = criarPartida({ fen: "4k3/8/4b3/8/8/8/8/4K3 b - - 0 1", cartas: pretas });
+    expect(jogar(e2, "e6", "f5").tabuleiro[c("f5")]?.tipo).not.toBe("bispo");
+    const e3 = criarPartida({ fen: "4k3/8/8/8/8/1b6/8/4K3 b - - 0 1", cartas: pretas });
+    expect(jogar(e3, "b3", "c4").tabuleiro[c("c4")]?.tipo).toBe("bispo");
   });
 
   it("F5: a sua peça que para em f5 vira outra (sempre a mesma no mesmo lance)", () => {

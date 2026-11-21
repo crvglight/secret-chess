@@ -631,6 +631,8 @@ export function Partida({ modo, cartas, aoSair, aoRevanche, online }: Props) {
                 disfarces={disfarcesDe(estado)}
                 misteriosas={misteriosasDe(estado)}
                 montadas={pecasMontadas(estado)}
+                // Daltônico em uso: todas as peças ficam da cor de quem joga.
+                corUnica={modoPoder && estado.cartas[estado.vez].poder === "daltonico" ? estado.vez : undefined}
                 podeArrastar={(c) =>
                   !modoPoder && !estado.resultado && !vezDoOutro && estado.tabuleiro[c]?.cor === estado.vez
                 }

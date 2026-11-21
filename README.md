@@ -82,10 +82,10 @@ Rode na raiz do projeto:
 | Contra-ataque | poder | 3 | Uma vez por partida, quando o adversário capturar uma peça sua, a sua peça mais barata que alcança captura de volta na hora, de graça. |
 | Rainha das sombras | poder | 3 | Sua dama também pode se mover como um cavalo. |
 | Bomba | poder | 3 | Uma vez por partida, marque em segredo uma peça sua: se ela for capturada, explode e leva junto quem capturou e as peças vizinhas (menos os reis). |
-| Yuumi | poder | 3 | Uma peça sua (menos o rei) pode subir de carona em outra peça sua (menos o rei). Enquanto a carona durar, quem anda é sempre a peça de cima (ela desce e segue sozinha); a de baixo fica parada. Se a de baixo for capturada, as duas caem. |
-| C4 | poder | 3 | A casa c4 (f5 para as pretas) é uma mina secreta: a peça do adversário que parar nela explode (o rei escapa). |
-| F5 | poder | 2 | A casa f5 (c4 para as pretas) é secreta: a sua peça que parar nela vira outra peça sorteada (menos rei). |
-| Daltônico | poder | 4 | Uma vez por partida, mova uma peça do adversário (menos o rei) como se fosse sua: ela pode até capturar outra peça dele. |
+| Yuumi | poder | 3 | Uma peça sua pode subir de carona em outra peça sua (menos o rei). Quando na carona, quem anda primeiro é sempre a peça de cima, assim descendo. |
+| C4 | poder | 3 | A casa c4 é uma mina secreta: a peça do adversário que parar nela explode (o rei escapa). Vale a partida toda. |
+| F5 | poder | 2 | A casa f5 é secreta: a sua peça que parar nela vira outra peça sorteada (menos rei). Vale a partida toda. |
+| Daltônico | poder | 4 | Uma vez por partida, é como se todas as peças ficassem da mesma cor que as suas: mova uma peça do adversário (menos o rei) como se fosse sua; ela pode até capturar outra peça dele. |
 | Bispos tímidos | desvantagem | 3 | Seus bispos não podem capturar. |
 | Rainha preguiçosa | desvantagem | 2 | Sua dama não pode se mover nos 5 primeiros lances. |
 | Batalha de peões | desvantagem | 3 | Você perde se tiver menos peões que o adversário. |
