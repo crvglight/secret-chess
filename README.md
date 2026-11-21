@@ -57,7 +57,7 @@ Rode na raiz do projeto:
 | Carta | Tipo | Peso | Efeito |
 | ----- | ---- | ---- | ------ |
 | Escudo | poder | 3 | Uma vez por partida, escolha uma peça sua: ela não pode ser capturada na próxima rodada do adversário. |
-| Cavalo saltador | poder | 3 | Duas vezes por partida, um cavalo seu pode fazer dois lances seguidos. |
+| Cavalo saltador | poder | 3 | Uma vez por partida, um cavalo seu pode fazer dois lances seguidos. |
 | Peão veloz | poder | 2 | Seus peões podem andar 2 casas de qualquer fileira, se o caminho estiver livre. |
 | Teleporte | poder | 3 | Uma vez por partida, leve uma peça sua (menos o rei) para qualquer casa vazia da sua metade do tabuleiro. |
 | Congelar | poder | 3 | Uma vez por partida, escolha uma peça do adversário (menos o rei): ela não pode se mover na próxima rodada dele. |

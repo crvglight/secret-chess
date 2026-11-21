@@ -82,7 +82,8 @@ describe("Cavalo saltador", () => {
     expect(new Set(lancesLegais(e).map((l) => nomeCasa(l.de)))).toEqual(new Set(["f3"]));
     e = jogar(e, "f3", "g5");
     expect(e.vez).toBe("pretas");
-    expect(e.usosPoder.brancas).toBe(1);
+    // Era o único uso: o poder acabou.
+    expect(e.usosPoder.brancas).toBe(0);
     // Os dois eventos são do primeiro meio-lance (índice 0).
     expect(e.eventos.map((ev) => ev.meioLance)).toEqual([0, 0]);
   });
@@ -100,11 +101,9 @@ describe("Cavalo saltador", () => {
     expect(lancesLegais(e).length).toBeGreaterThan(20);
   });
 
-  it("pode ser usado duas vezes", () => {
+  it("só pode ser usado uma vez", () => {
     let e = usarPoder(partida(), c("g1"));
     e = sequencia(e, "g1-f3 f3-g5 e7-e6");
-    e = usarPoder(e, c("b1"));
-    e = sequencia(e, "b1-c3 c3-d5 d7-d6");
     expect(infoPoder(e).usosRestantes).toBe(0);
     expect(infoPoder(e).disponivel).toBe(false);
   });

@@ -12,7 +12,7 @@ export default definirCarta<Dados>({
   nome: "Cavalo saltador",
   tipo: "poder",
   peso: 3,
-  descricao: "Duas vezes por partida, um cavalo seu pode fazer dois lances seguidos.",
+  descricao: "Uma vez por partida, um cavalo seu pode fazer dois lances seguidos.",
   dadosIniciais: () => ({ fase: null, pecaId: null }),
 
   filtrarLances({ estado, dono, dados }, lances, jogador) {
@@ -36,7 +36,7 @@ export default definirCarta<Dados>({
   },
 
   acaoAtiva: {
-    usos: 2,
+    usos: 1,
     instrucao: "Escolha o cavalo que vai fazer dois lances",
     modo: "alvo",
     alvosValidos({ estado, dono, lancesLegais }) {
