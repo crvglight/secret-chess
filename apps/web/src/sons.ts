@@ -5,11 +5,20 @@
 
 export type Som = "meu-lance" | "sua-vez" | "captura" | "capturado" | "xeque" | "fim" | "poder";
 
+/** Volume geral dos sons (1 = original). */
+const VOLUME_GERAL = 0.75;
+
 let contexto: AudioContext | null = null;
+let saida: GainNode | null = null;
 
 function audio(): AudioContext | null {
   if (typeof window === "undefined" || !("AudioContext" in window)) return null;
-  contexto ??= new AudioContext();
+  if (!contexto) {
+    contexto = new AudioContext();
+    saida = contexto.createGain();
+    saida.gain.value = VOLUME_GERAL;
+    saida.connect(contexto.destination);
+  }
   // O navegador só libera o som depois de um clique/toque na página.
   if (contexto.state === "suspended") void contexto.resume().catch(() => undefined);
   return contexto;
@@ -40,7 +49,7 @@ function batida(ac: AudioContext, inicio: number, freq: number, volume: number, 
   filtro.Q.value = 3.5;
   const ganho = ac.createGain();
   ganho.gain.value = volume;
-  fonte.connect(filtro).connect(ganho).connect(ac.destination);
+  fonte.connect(filtro).connect(ganho).connect(saida!);
   fonte.start(inicio);
 }
 
@@ -53,7 +62,7 @@ function nota(ac: AudioContext, inicio: number, freq: number, volume: number, du
   ganho.gain.setValueAtTime(0.0001, inicio);
   ganho.gain.exponentialRampToValueAtTime(volume, inicio + 0.008);
   ganho.gain.exponentialRampToValueAtTime(0.0001, inicio + duracao);
-  osc.connect(ganho).connect(ac.destination);
+  osc.connect(ganho).connect(saida!);
   osc.start(inicio);
   osc.stop(inicio + duracao + 0.02);
 }

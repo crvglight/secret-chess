@@ -549,7 +549,8 @@ export function aplicarLanceGerado(estado: Estado, legal: Lance): Estado {
   // Uma carta pode ter tirado um rei do tabuleiro.
   const semRei = CORES.filter((c) => contarPecas(novo, c, "rei") === 0);
   if (semRei.length > 0) {
-    novo.resultado =
+    // Uma carta pode já ter dito o resultado (ex.: o rei explodiu no C4).
+    novo.resultado ??=
       semRei.length === 2 ? { vencedor: null, motivo: "rei-capturado" } : { vencedor: corOposta(semRei[0]!), motivo: "rei-capturado" };
     return novo;
   }

@@ -35,6 +35,7 @@ import maldicao from "./maldicao.ts";
 import necromante from "./necromante.ts";
 import pacifista from "./pacifista.ts";
 import passosCurtos from "./passos-curtos.ts";
+import peaogonista from "./peaogonista.ts";
 import peaoVeloz from "./peao-veloz.ts";
 import pecasPesadas from "./pecas-pesadas.ts";
 import peoesGuerreiros from "./peoes-guerreiros.ts";
@@ -93,6 +94,7 @@ export const CARTAS_OFICIAIS: readonly CartaQualquer[] = [
   c4,
   f5,
   daltonico,
+  peaogonista,
   // Desvantagens
   bisposTimidos,
   rainhaPreguicosa,

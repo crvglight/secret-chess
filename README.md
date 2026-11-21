@@ -83,9 +83,10 @@ Rode na raiz do projeto:
 | Rainha das sombras | poder | 3 | Sua dama também pode se mover como um cavalo. |
 | Bomba | poder | 3 | Uma vez por partida, marque em segredo uma peça sua: se ela for capturada, explode e leva junto quem capturou e as peças vizinhas (menos os reis). |
 | Yuumi | poder | 3 | Uma peça sua pode subir de carona em outra peça sua (menos o rei). Quando na carona, quem anda primeiro é sempre a peça de cima, assim descendo. |
-| C4 | poder | 3 | A casa c4 é uma mina secreta: a peça do adversário que parar nela explode (o rei escapa). Vale a partida toda. |
+| C4 | poder | 3 | A casa c4 é uma mina secreta: a peça do adversário que parar nela explode. Se for o rei, você vence! Vale a partida toda. |
 | F5 | poder | 2 | A casa f5 é secreta: a sua peça que parar nela vira outra peça sorteada (menos rei). Vale a partida toda. |
 | Daltônico | poder | 4 | Uma vez por partida, é como se todas as peças ficassem da mesma cor que as suas: mova uma peça do adversário (menos o rei) como se fosse sua; ela pode até capturar outra peça dele. |
+| Peãogonista | poder | 2 | Um dos seus peões é sorteado em segredo e ganha uma vida extra: na primeira vez que for capturado, ele fica intacto no lugar e o adversário perde o lance. |
 | Bispos tímidos | desvantagem | 3 | Seus bispos não podem capturar. |
 | Rainha preguiçosa | desvantagem | 2 | Sua dama não pode se mover nos 5 primeiros lances. |
 | Batalha de peões | desvantagem | 3 | Você perde se tiver menos peões que o adversário. |

@@ -107,6 +107,47 @@ describe("C4 e F5", () => {
   });
 });
 
+describe("C4 com o rei", () => {
+  it("o rei do adversário que pisa em c4 explode e quem tem a carta vence", () => {
+    const e = criarPartida({ fen: "4k3/8/8/8/8/3K4/8/8 w - - 0 1", cartas: { pretas: { poder: "c4", desvantagem: null } } });
+    const d = jogar(e, "d3", "c4");
+    expect(d.resultado).toEqual({ vencedor: "pretas", motivo: "carta", cartaId: "c4" });
+  });
+});
+
+describe("Peãogonista", () => {
+  /** Partida em que o peão escolhido das brancas é o de e4. */
+  function comPeaoEm(fen: string): Estado {
+    const e = criarPartida({ fen, cartas: brancas("peaogonista") });
+    const id = e.tabuleiro[c("e4")]!.id;
+    return { ...e, dadosCartas: { ...e.dadosCartas, brancas: { ...e.dadosCartas.brancas, poder: { sorteio: 0, pecaId: id, usada: false } } } };
+  }
+
+  it("na primeira captura o peão fica e o adversário perde o lance", () => {
+    const e = comPeaoEm("4k3/8/8/3p4/4P3/8/8/4K3 b - - 0 1");
+    const d = jogar(e, "d5", "e4");
+    expect(d.tabuleiro[c("e4")]).toMatchObject({ tipo: "peao", cor: "brancas" });
+    expect(d.tabuleiro[c("d5")]).toMatchObject({ tipo: "peao", cor: "pretas" });
+    expect(d.vez).toBe("brancas");
+    expect(d.dadosCartas.brancas.poder).toMatchObject({ usada: true });
+  });
+
+  it("na segunda captura ele cai normalmente", () => {
+    let e = comPeaoEm("4k3/8/8/3p4/4P3/8/8/4K3 b - - 0 1");
+    e = jogar(e, "d5", "e4"); // gasta a vida
+    e = jogar(e, "e1", "e2");
+    e = jogar(e, "d5", "e4");
+    expect(e.tabuleiro[c("e4")]).toMatchObject({ tipo: "peao", cor: "pretas" });
+  });
+
+  it("o sorteio escolhe um dos seus peões e fica marcado só para você", () => {
+    const e = criarPartida({ cartas: brancas("peaogonista") });
+    const [d] = [jogar(e, "a2", "a3")];
+    const id = (d.dadosCartas.brancas.poder as { pecaId: number }).pecaId;
+    expect(d.tabuleiro.find((p) => p?.id === id)).toMatchObject({ tipo: "peao", cor: "brancas" });
+  });
+});
+
 describe("Daltônico", () => {
   it("move a peça do adversário e ela captura outra peça dele", () => {
     // O bispo preto de b7 captura a dama preta de e4 (mesma diagonal).

@@ -597,8 +597,13 @@ export function Partida({ modo, cartas, aoSair, aoRevanche, online }: Props) {
       </header>
 
       <div className="mesa">
-        <div className="coluna-tabuleiro">
+        {/* Cartas à esquerda: as do lado de cima do tabuleiro em cima, as de baixo embaixo. */}
+        <div className="coluna-cartas">
           {painel(corOposta(orientacao))}
+          <div className="espaco-cartas" aria-hidden="true" />
+          {painel(orientacao)}
+        </div>
+        <div className="coluna-tabuleiro">
           <div className="area-tabuleiro">
             {passado ? (
               // Olhando um lance antigo: só mostra; um clique no tabuleiro volta ao jogo.
@@ -641,19 +646,7 @@ export function Partida({ modo, cartas, aoSair, aoRevanche, online }: Props) {
               />
             )}
           </div>
-          <div className="navegar-lances" role="group" aria-label="Rever lances">
-            <button type="button" className="botao-icone" aria-label="Primeiro lance" title="Início (Home)" onClick={() => irPara(primeiroGuardado)} disabled={feitos === 0 || vendo === primeiroGuardado}>
-              ⏮
-            </button>
-            <button type="button" className="botao-icone" aria-label="Lance anterior" title="Lance anterior (←)" onClick={() => andar(-1)} disabled={feitos === 0 || vendo === primeiroGuardado}>
-              ◀
-            </button>
-            <button type="button" className="botao-icone" aria-label="Próximo lance" title="Próximo lance (→)" onClick={() => andar(1)} disabled={vendo === null}>
-              ▶
-            </button>
-            <button type="button" className="botao-icone" aria-label="Voltar ao lance atual" title="Lance atual (End)" onClick={() => irPara(null)} disabled={vendo === null}>
-              ⏭
-            </button>
+          <div className="navegar-lances">
             {passado && (
               <span className="vendo-lance">
                 Vendo {vendo === 0 ? "o início" : `${numeroDoLance(vendo!)}. ${estado.historico[vendo! - 1]?.texto ?? ""}`} ·{" "}
@@ -676,14 +669,29 @@ export function Partida({ modo, cartas, aoSair, aoRevanche, online }: Props) {
           <p className="aviso" role="status" aria-live="polite">
             {textoAviso}
           </p>
-          {painel(orientacao)}
         </div>
 
         <aside className="lateral">
           {online && <PainelOnline online={online} minhaCor={modo.tipo === "online" ? modo.corHumano : "brancas"} fim={!!estado.resultado} />}
           <PainelCaos estado={estado} />
           <PainelCasas estado={estado} />
-          <h2>Lances</h2>
+          <div className="topo-lances">
+            <h2>Lances</h2>
+            <div className="navegar-lances navegar-no-topo" role="group" aria-label="Rever lances">
+              <button type="button" className="botao-icone" aria-label="Primeiro lance" title="Início (Home)" onClick={() => irPara(primeiroGuardado)} disabled={feitos === 0 || vendo === primeiroGuardado}>
+                ⏮
+              </button>
+              <button type="button" className="botao-icone" aria-label="Lance anterior" title="Lance anterior (←)" onClick={() => andar(-1)} disabled={feitos === 0 || vendo === primeiroGuardado}>
+                ◀
+              </button>
+              <button type="button" className="botao-icone" aria-label="Próximo lance" title="Próximo lance (→)" onClick={() => andar(1)} disabled={vendo === null}>
+                ▶
+              </button>
+              <button type="button" className="botao-icone" aria-label="Voltar ao lance atual" title="Lance atual (End)" onClick={() => irPara(null)} disabled={vendo === null}>
+                ⏭
+              </button>
+            </div>
+          </div>
           <Historico estado={estado} vendo={passado ? vendo : null} aoEscolher={(n) => fotos.current[n] && irPara(n)} />
           <p className="dica">Botão direito: arraste para desenhar setas ou clique para marcar casas.</p>
           {estado.resultado && fimFechado && (

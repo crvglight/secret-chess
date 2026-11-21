@@ -15,7 +15,7 @@ export default definirCarta<Dados>({
   tipo: "poder",
   peso: 3,
   descricao:
-    "A casa c4 é uma mina secreta: a peça do adversário que parar nela explode (o rei escapa). Vale a partida toda.",
+    "A casa c4 é uma mina secreta: a peça do adversário que parar nela explode. Se for o rei, você vence! Vale a partida toda.",
   dadosIniciais: () => ({ descoberta: false }),
 
   aoMover(ctx, { jogador, lance }) {
@@ -23,10 +23,12 @@ export default definirCarta<Dados>({
     const c = CASA_DO_C4;
     if (lance.para !== c) return;
     const peca = ctx.estado.tabuleiro[c];
-    if (!peca || peca.cor === ctx.dono || peca.tipo === "rei") return;
+    if (!peca || peca.cor === ctx.dono) return;
     ctx.estado.tabuleiro[c] = null;
     ctx.dados.descoberta = true;
     ctx.registrar(`C4: o ${NOME_PECA[peca.tipo]} do adversário explodiu em ${nomeCasa(c)}`);
+    // O rei também explode: vitória de quem tem a carta.
+    if (peca.tipo === "rei") ctx.estado.resultado = { vencedor: ctx.dono, motivo: "carta", cartaId: "c4" };
   },
 
   destaques: ({ dados }) => [{ casa: CASA_DO_C4, publico: dados.descoberta, rotulo: "C4" }],
