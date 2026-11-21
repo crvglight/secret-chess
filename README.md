@@ -82,11 +82,15 @@ Rode na raiz do projeto:
 | Contra-ataque | poder | 3 | Uma vez por partida, quando o adversário capturar uma peça sua, a sua peça mais barata que alcança captura de volta na hora, de graça. |
 | Rainha das sombras | poder | 3 | Sua dama também pode se mover como um cavalo. |
 | Bomba | poder | 3 | Uma vez por partida, marque em segredo uma peça sua: se ela for capturada, explode e leva junto quem capturou e as peças vizinhas (menos os reis). |
+| Yuumi | poder | 3 | Uma peça sua (menos o rei) pode subir de carona em outra peça sua: as duas andam juntas e a de cima pode descer quando quiser. Se a de baixo for capturada, as duas caem. |
+| C4 | poder | 3 | A casa c4 (f5 para as pretas) é uma mina secreta: a peça do adversário que parar nela explode (o rei escapa). |
+| F5 | poder | 2 | A casa f5 (c4 para as pretas) é secreta: a sua peça que parar nela vira outra peça sorteada (menos rei). |
+| Daltônico | poder | 4 | Uma vez por partida, mova uma peça do adversário (menos o rei) como se fosse sua: ela pode até capturar outra peça dele. |
 | Bispos tímidos | desvantagem | 3 | Seus bispos não podem capturar. |
 | Rainha preguiçosa | desvantagem | 2 | Sua dama não pode se mover nos 5 primeiros lances. |
 | Batalha de peões | desvantagem | 3 | Você perde se tiver menos peões que o adversário. |
 | Dama frágil | desvantagem | 4 | Você perde se ficar sem nenhuma dama no tabuleiro. |
-| Capturas obrigatórias | desvantagem | 4 | Se puder capturar alguma peça, você é obrigado a capturar. |
+| Damas | desvantagem | 4 | Como no jogo de damas: se puder capturar alguma peça, você é obrigado a capturar. |
 | Sem roque | desvantagem | 1 | Você não pode fazer roque. |
 | Rei preso | desvantagem | 2 | Seu rei não pode se mover nos 10 primeiros lances. |
 | Cavalos cansados | desvantagem | 2 | Um cavalo seu que se moveu não pode se mover de novo na sua rodada seguinte. |
@@ -107,6 +111,8 @@ Rode na raiz do projeto:
 | Maldição | desvantagem | 3 | A cada 10 lances seus, uma peça sua (menos o rei) some do tabuleiro. |
 | Lado errado | desvantagem | 1 | Você só faz o roque longo, e seus peões não capturam para a esquerda (do seu ponto de vista). |
 | Lentidão | desvantagem | 2 | Você começa com 1 minuto a menos no relógio (só em partidas com relógio). |
+| Kamikaze | desvantagem | 3 | Se você puder dar xeque no rei do adversário, você é obrigado a dar. |
+| Regigigas | desvantagem | 2 | Nos seus 5 primeiros lances, você só pode mover peões. |
 
 O sorteio compara o saldo de cada lado (peso do poder menos peso da desvantagem) e mantém a diferença em no máximo 1. Cartas de peso maior saem menos: a chance relativa é 6 − peso (peso 1 sai 5 vezes mais que peso 5).
 

@@ -211,7 +211,9 @@ function lancesSemXeque(estado: Estado, cor: Cor): Lance[] {
 
 /** Alguma carta ou casa especial cria lances além dos normais do xadrez? */
 function algoCriaLances(estado: Estado, cartas: CartaEmJogo[]): boolean {
-  return cartas.some((c) => c.carta.adicionarLances || (c.carta.ordemFiltro ?? 0) < 0) || casasCriamLances(estado);
+  const extrasAtacam = (c: CartaEmJogo) =>
+    !!c.carta.adicionarLances && (c.carta.lancesExtrasAtacam?.(ctxLeitura(estado, c)) ?? true);
+  return cartas.some((c) => extrasAtacam(c) || (c.carta.ordemFiltro ?? 0) < 0) || casasCriamLances(estado);
 }
 
 /** As casas estão na mesma coluna, fileira ou diagonal? */
@@ -323,9 +325,14 @@ export function lancesLegais(estado: Estado, cor: Cor = estado.vez): Lance[] {
   });
 }
 
-/** Lances normais (sem os de poder) que saem de `de`. */
+/** Lances normais (sem os de poder) que saem de `de`. A peça de carona em cima não conta. */
 export function lancesDaCasa(estado: Estado, de: Casa): Lance[] {
-  return lancesLegais(estado).filter((l) => l.de === de && !l.poder);
+  return lancesLegais(estado).filter((l) => l.de === de && !l.poder && l.montada !== "descer");
+}
+
+/** Lances da peça de carona que está em cima da peça da casa `de` (poder Yuumi). */
+export function lancesDaCarona(estado: Estado, de: Casa): Lance[] {
+  return lancesLegais(estado).filter((l) => l.de === de && l.montada === "descer");
 }
 
 export interface Bloqueio {
@@ -381,7 +388,8 @@ function mesmoLance(a: Lance, b: Lance): boolean {
     a.de === b.de &&
     a.para === b.para &&
     (a.promocao ?? null) === (b.promocao ?? null) &&
-    (a.poder ?? null) === (b.poder ?? null)
+    (a.poder ?? null) === (b.poder ?? null) &&
+    (a.montada ?? null) === (b.montada ?? null)
   );
 }
 
@@ -389,14 +397,42 @@ function textoLance(lance: Lance, peca: Peca, captura: Peca | null): string {
   if (lance.especial === "roque-curto") return "O-O";
   if (lance.especial === "roque-longo") return "O-O-O";
   const promocao = lance.promocao ? `=${LETRA_PECA[lance.promocao]}` : "";
-  return `${LETRA_PECA[peca.tipo]}${nomeCasa(lance.de)}${captura ? "x" : "-"}${nomeCasa(lance.para)}${promocao}`;
+  if (lance.montada === "montar") return `${LETRA_PECA[peca.tipo] || "P"}${nomeCasa(lance.de)}⤴${nomeCasa(lance.para)} (carona)`;
+  const texto = `${LETRA_PECA[peca.tipo]}${nomeCasa(lance.de)}${captura ? "x" : "-"}${nomeCasa(lance.para)}${promocao}`;
+  return lance.montada === "descer" ? `${texto} (desceu da carona)` : texto;
 }
 
 /** Move as peças no tabuleiro (que já é uma cópia) e atualiza roque, en passant e contadores. */
 function executar(e: Estado, lance: Lance): { peca: Peca; captura: Peca | null } {
   const t = e.tabuleiro;
-  const peca = t[lance.de]!;
+  // Carona (Yuumi). As caronas são trocadas por um objeto novo (nunca alteradas no lugar),
+  // porque a simulação do xeque usa uma cópia leve do estado.
+  if (lance.montada === "montar") {
+    const peca = t[lance.de]!;
+    const base = t[lance.para]!;
+    e.montadas = { ...e.montadas, [base.id]: peca };
+    t[lance.de] = null;
+    e.enPassant = null;
+    e.semProgresso++;
+    return { peca, captura: null };
+  }
+  let peca = t[lance.de]!;
+  if (lance.montada === "descer") {
+    // A peça de cima sai sozinha; a de baixo continua na casa.
+    const base = peca;
+    peca = e.montadas![base.id]!;
+    e.montadas = semCarona(e.montadas!, base.id);
+    const captura = t[lance.para] ?? null;
+    if (captura && e.montadas[captura.id]) e.montadas = semCarona(e.montadas, captura.id);
+    t[lance.para] = lance.promocao ? { ...peca, tipo: lance.promocao } : peca;
+    atualizarRoque(e, [lance.para]);
+    e.enPassant = lance.especial === "duplo" && !lance.promocao ? (lance.de + lance.para) / 2 : null;
+    e.semProgresso = peca.tipo === "peao" || captura ? 0 : e.semProgresso + 1;
+    return { peca, captura };
+  }
   let captura = t[lance.para] ?? null;
+  // Capturar a peça de baixo de uma carona leva as duas.
+  if (captura && e.montadas?.[captura.id]) e.montadas = semCarona(e.montadas, captura.id);
 
   if (lance.especial === "en-passant") {
     const casaCapturada = lance.para - 8 * direcaoPeao(peca.cor);
@@ -420,6 +456,21 @@ function executar(e: Estado, lance: Lance): { peca: Peca; captura: Peca | null }
   e.enPassant = lance.especial === "duplo" && !lance.promocao ? (lance.de + lance.para) / 2 : null;
   e.semProgresso = peca.tipo === "peao" || captura ? 0 : e.semProgresso + 1;
   return { peca, captura };
+}
+
+function semCarona(montadas: Record<number, Peca>, id: number): Record<number, Peca> {
+  const resto = { ...montadas };
+  delete resto[id];
+  return resto;
+}
+
+/** Tira as caronas cuja peça de baixo saiu do tabuleiro (capturada por carta, bomba...). */
+function limparCaronas(e: Estado): void {
+  if (!e.montadas) return;
+  const noTabuleiro = new Set(e.tabuleiro.filter((p) => p).map((p) => p!.id));
+  for (const id of Object.keys(e.montadas)) {
+    if (!noTabuleiro.has(Number(id))) e.montadas = semCarona(e.montadas, Number(id));
+  }
 }
 
 /** Uma torre que sai do canto (ou é capturada lá) tira aquele roque. */
@@ -492,6 +543,8 @@ export function aplicarLanceGerado(estado: Estado, legal: Lance): Estado {
   for (const c of cartas) {
     c.carta.aoMover?.(ctxEscrita(novo, c, estado.meioLance), { jogador: cor, lance: legal, peca, captura, antes: estado });
   }
+
+  limparCaronas(novo);
 
   // Uma carta pode ter tirado um rei do tabuleiro.
   const semRei = CORES.filter((c) => contarPecas(novo, c, "rei") === 0);

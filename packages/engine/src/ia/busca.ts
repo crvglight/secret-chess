@@ -463,7 +463,8 @@ export const NOTA_VITORIA = VITORIA;
 function lanceLegalIgual(estado: Estado, lance: Lance): Lance {
   const legais = lancesLegais(estado);
   const igual = (l: Lance, promocao: Lance["promocao"]) =>
-    l.de === lance.de && l.para === lance.para && (l.promocao ?? null) === (promocao ?? null) && (l.poder ?? null) === (lance.poder ?? null);
+    l.de === lance.de && l.para === lance.para && (l.promocao ?? null) === (promocao ?? null) && (l.poder ?? null) === (lance.poder ?? null) &&
+    (l.montada ?? null) === (lance.montada ?? null);
   const achado = legais.find((l) => igual(l, lance.promocao)) ?? legais.find((l) => igual(l, "dama"));
   if (!achado) throw new Error(`Lance ilegal: ${nomeCasa(lance.de)}-${nomeCasa(lance.para)}`);
   return achado;

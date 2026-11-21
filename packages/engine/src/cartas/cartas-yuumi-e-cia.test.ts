@@ -1,0 +1,150 @@
+import { describe, expect, it } from "vitest";
+import {
+  aplicarLance,
+  casaDoNome as c,
+  criarPartida,
+  jogar,
+  jogarPoder,
+  lancesDaCarona,
+  lancesDaCasa,
+  lancesLegais,
+  montadaEm,
+  nomeCasa,
+  obterCarta,
+  type Estado,
+  type OpcoesPartida,
+} from "../index.ts";
+
+const brancas = (poder: string | null, desvantagem: string | null = null): OpcoesPartida["cartas"] => ({
+  brancas: { poder, desvantagem },
+});
+const destinos = (lances: { para: number }[]) => lances.map((l) => nomeCasa(l.para)).sort();
+
+describe("Yuumi (carona)", () => {
+  const inicio = () => criarPartida({ fen: "4k3/8/8/8/8/8/3P4/1N2K3 w - - 0 1", cartas: brancas("yuumi") });
+  const montar = (e: Estado) => aplicarLance(e, { de: c("b1"), para: c("d2"), montada: "montar" });
+
+  it("o cavalo sobe no peão e as duas ficam na mesma casa", () => {
+    const e = inicio();
+    expect(lancesDaCasa(e, c("b1")).some((l) => l.montada === "montar" && nomeCasa(l.para) === "d2")).toBe(true);
+    const d = montar(e);
+    expect(d.tabuleiro[c("b1")]).toBeNull();
+    expect(d.tabuleiro[c("d2")]?.tipo).toBe("peao");
+    expect(montadaEm(d, c("d2"))?.tipo).toBe("cavalo");
+    expect(d.historico.at(-1)!.texto).toContain("carona");
+  });
+
+  it("a de baixo anda levando a de cima; a de cima pode descer sozinha", () => {
+    let e = montar(inicio());
+    e = jogar(e, "e8", "f8");
+    // Clicar na base: só o peão anda (o cavalo vai junto).
+    expect(destinos(lancesDaCasa(e, c("d2")))).toEqual(["d3", "d4"]);
+    const andou = jogar(e, "d2", "d4");
+    expect(montadaEm(andou, c("d4"))?.tipo).toBe("cavalo");
+    // Clicar em cima: o cavalo desce e anda como cavalo.
+    expect(destinos(lancesDaCarona(e, c("d2")))).toEqual(["b1", "b3", "c4", "e4", "f1", "f3"]);
+    const desceu = aplicarLance(e, { de: c("d2"), para: c("f3"), montada: "descer" });
+    expect(desceu.tabuleiro[c("f3")]?.tipo).toBe("cavalo");
+    expect(desceu.tabuleiro[c("d2")]?.tipo).toBe("peao");
+    expect(montadaEm(desceu, c("d2"))).toBeNull();
+  });
+
+  it("se a de baixo é capturada, as duas morrem", () => {
+    const e0 = criarPartida({ fen: "4k3/8/8/8/2b5/8/3P4/1N2K3 w - - 0 1", cartas: brancas("yuumi") });
+    let e = aplicarLance(e0, { de: c("b1"), para: c("d2"), montada: "montar" });
+    // Bispo preto captura o peão de d2 (que leva o cavalo). O rei branco foge do xeque depois.
+    e = jogar(e, "c4", "a6");
+    e = jogar(e, "d2", "d3");
+    e = jogar(e, "a6", "d3");
+    expect(e.tabuleiro[c("d3")]?.tipo).toBe("bispo");
+    expect(Object.keys(e.montadas ?? {})).toHaveLength(0);
+  });
+
+  it("o rei nunca entra na carona", () => {
+    const e = criarPartida({ fen: "4k3/8/8/8/8/8/3PP3/4K3 w - - 0 1", cartas: brancas("yuumi") });
+    expect(lancesLegais(e).some((l) => l.montada && nomeCasa(l.de) === "e1")).toBe(false);
+    expect(lancesLegais(e).some((l) => l.montada && nomeCasa(l.para) === "e1")).toBe(false);
+  });
+});
+
+describe("C4 e F5", () => {
+  it("C4: a peça do adversário que para em c4 explode (e a casa deixa de ser segredo)", () => {
+    const e = criarPartida({ fen: "4k3/8/8/8/8/1n6/8/4K3 b - - 0 1", cartas: brancas("c4") });
+    expect(jogar(e, "b3", "d4").tabuleiro[c("d4")]?.tipo).toBe("cavalo");
+    const boom = jogar(e, "b3", "c5");
+    expect(boom.tabuleiro[c("c5")]?.tipo).toBe("cavalo");
+    const e2 = criarPartida({ fen: "4k3/8/8/8/8/8/1n6/4K3 b - - 0 1", cartas: brancas("c4") });
+    const explodiu = jogar(e2, "b2", "c4");
+    expect(explodiu.tabuleiro[c("c4")]).toBeNull();
+    expect(explodiu.dadosCartas.brancas.poder).toMatchObject({ descoberta: true });
+  });
+
+  it("C4 das pretas é f5 (espelhada)", () => {
+    const e = criarPartida({ fen: "4k3/8/8/8/8/8/8/4K1N1 w - - 0 1", cartas: { pretas: { poder: "c4", desvantagem: null } } });
+    let d = jogar(e, "g1", "h3");
+    d = jogar(d, "e8", "e7");
+    expect(jogar(d, "h3", "f4").tabuleiro[c("f4")]?.tipo).toBe("cavalo");
+    expect(jogar(jogar(jogar(d, "h3", "g5"), "e7", "e8"), "g5", "f3").tabuleiro[c("f3")]?.tipo).toBe("cavalo");
+    const e2 = criarPartida({ fen: "4k3/8/8/8/4N3/8/8/4K3 w - - 0 1", cartas: { pretas: { poder: "c4", desvantagem: null } } });
+    expect(jogar(e2, "e4", "f6").tabuleiro[c("f6")]?.tipo).toBe("cavalo");
+    // f5 não é alcançável de e4 por cavalo; usa um bispo.
+    const e3 = criarPartida({ fen: "4k3/8/8/8/4B3/8/8/4K3 w - - 0 1", cartas: { pretas: { poder: "c4", desvantagem: null } } });
+    expect(jogar(e3, "e4", "f5").tabuleiro[c("f5")]).toBeNull();
+  });
+
+  it("F5: a sua peça que para em f5 vira outra (sempre a mesma no mesmo lance)", () => {
+    const e = criarPartida({ fen: "4k3/8/8/8/8/8/8/2B1K3 w - - 0 1", cartas: brancas("f5") });
+    const a = jogar(e, "c1", "f4"); // não é f5
+    expect(a.tabuleiro[c("f4")]?.tipo).toBe("bispo");
+    const e2 = criarPartida({ fen: "4k3/8/8/8/8/8/8/1B2K3 w - - 0 1", cartas: brancas("f5") });
+    const b1 = jogar(e2, "b1", "f5");
+    const b2 = jogar(e2, "b1", "f5");
+    expect(b1.tabuleiro[c("f5")]?.tipo).not.toBe("bispo");
+    expect(b1.tabuleiro[c("f5")]?.tipo).not.toBe("rei");
+    expect(b1.tabuleiro[c("f5")]?.tipo).toBe(b2.tabuleiro[c("f5")]?.tipo);
+  });
+});
+
+describe("Daltônico", () => {
+  it("move a peça do adversário e ela captura outra peça dele", () => {
+    // O bispo preto de b7 captura a dama preta de e4 (mesma diagonal).
+    const e = criarPartida({ fen: "4k3/1b6/8/8/4q3/8/8/4K2R w - - 0 1", cartas: brancas("daltonico") });
+    const d = jogarPoder(e, "b7", "e4");
+    expect(d.tabuleiro[c("e4")]).toMatchObject({ tipo: "bispo", cor: "pretas" });
+    expect(d.vez).toBe("pretas");
+    expect(d.usosPoder.brancas).toBe(0);
+  });
+
+  it("não move o rei dele nem captura peça sua", () => {
+    const e = criarPartida({ fen: "4k3/8/8/8/4q3/8/8/R3K3 w - - 0 1", cartas: brancas("daltonico") });
+    const poder = lancesLegais(e).filter((l) => l.poder === "daltonico");
+    expect(poder.some((l) => nomeCasa(l.de) === "e8")).toBe(false);
+    expect(poder.some((l) => nomeCasa(l.para) === "a1" || nomeCasa(l.para) === "e1")).toBe(false);
+  });
+});
+
+describe("Kamikaze, Regigigas e Damas", () => {
+  it("Kamikaze: se pode dar xeque, tem que dar", () => {
+    const e = criarPartida({ fen: "4k3/8/8/8/8/8/8/R3K3 w - - 0 1", cartas: brancas(null, "kamikaze") });
+    // A torre de a1 dá xeque em a8: é o único lance permitido.
+    expect(lancesLegais(e).map((l) => nomeCasa(l.de) + nomeCasa(l.para))).toEqual(["a1a8"]);
+  });
+
+  it("Kamikaze: sem xeque possível, joga normal", () => {
+    const e = criarPartida({ fen: "7k/8/8/8/8/8/8/K7 w - - 0 1", cartas: brancas(null, "kamikaze") });
+    expect(lancesLegais(e).length).toBe(3);
+  });
+
+  it("Regigigas: só peões nos 5 primeiros lances", () => {
+    let e = criarPartida({ cartas: brancas(null, "regigigas") });
+    expect(new Set(lancesLegais(e).map((l) => e.tabuleiro[l.de]!.tipo))).toEqual(new Set(["peao"]));
+    for (const [b, p] of [["a2", "a3"], ["a7", "a6"], ["b2", "b3"], ["b7", "b6"], ["c2", "c3"], ["c7", "c6"], ["d2", "d3"], ["d7", "d6"], ["e2", "e3"], ["e7", "e6"]] as const) {
+      e = jogar(e, b, p);
+    }
+    expect(lancesLegais(e).some((l) => e.tabuleiro[l.de]!.tipo === "cavalo")).toBe(true);
+  });
+
+  it("Damas é o novo nome de Capturas obrigatórias", () => {
+    expect(obterCarta("capturas-obrigatorias").nome).toBe("Damas");
+  });
+});

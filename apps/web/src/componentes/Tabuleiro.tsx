@@ -1,5 +1,5 @@
 import { useId, useRef, useState } from "react";
-import { casa, coluna, fileira, type Casa, type CasaEspecial, type Cor, type Estado, type Lance, type TipoPeca } from "@xadrez/engine";
+import { casa, coluna, fileira, type Casa, type CasaEspecial, type Cor, type Estado, type Lance, type Peca, type TipoPeca } from "@xadrez/engine";
 import { DesenhoCasa } from "./IconeCasa.tsx";
 import { useVisual } from "../visual.tsx";
 import { PecaSvg } from "./PecaSvg.tsx";
@@ -27,6 +27,10 @@ interface Props {
   disfarces?: ReadonlyMap<Casa, TipoPeca>;
   /** Peças na névoa para quem está olhando: aparecem como "?" (casa especial Névoa). */
   misteriosas?: ReadonlySet<Casa>;
+  /** Caronas (poder Yuumi): casa da peça de baixo → a peça que está em cima. */
+  montadas?: ReadonlyMap<Casa, Peca>;
+  /** Clique na peça de cima de uma carona (sem isso, conta como clique na casa). */
+  aoTocarCarona?(casa: Casa): void;
   podeArrastar(casa: Casa): boolean;
   aoTocarCasa(casa: Casa): void;
   aoSoltar(de: Casa, para: Casa): void;
@@ -46,6 +50,8 @@ interface Seta {
 }
 
 const BOTAO_ESQUERDO = 0;
+/** Onde fica a peça de cima de uma carona: à direita de x e acima de y (fração da casa). */
+const ZONA_CARONA = { x: 0.4, y: 0.5 };
 const BOTAO_DIREITO = 2;
 
 export function Tabuleiro(props: Props) {
@@ -93,6 +99,14 @@ export function Tabuleiro(props: Props) {
     setSetas([]);
     setMarcas([]);
     setSemAnimacao(null);
+    // Carona: o canto de cima à direita da casa é a peça de cima.
+    if (props.montadas?.has(c) && props.aoTocarCarona) {
+      const canto = posicao(c);
+      if (x - canto.x > LADO * ZONA_CARONA.x && y - canto.y < LADO * ZONA_CARONA.y) {
+        props.aoTocarCarona(c);
+        return;
+      }
+    }
     const arrastavel = props.podeArrastar(c);
     props.aoTocarCasa(c);
     if (arrastavel) {
@@ -221,11 +235,25 @@ export function Tabuleiro(props: Props) {
             style={{ transform: `translate(${x}px, ${y}px)` }}
             opacity={arrastando ? 0.3 : 1}
           >
-            {props.misteriosas?.has(c) ? (
-              <PecaMisteriosa cor={p.cor} />
-            ) : (
-              <PecaSvg tipo={props.disfarces?.get(c) ?? p.tipo} cor={p.cor} />
-            )}
+            {(() => {
+              const base = props.misteriosas?.has(c) ? (
+                <PecaMisteriosa cor={p.cor} />
+              ) : (
+                <PecaSvg tipo={props.disfarces?.get(c) ?? p.tipo} cor={p.cor} />
+              );
+              const cima = props.montadas?.get(c);
+              if (!cima) return base;
+              // Carona: a de baixo um pouco menor embaixo à esquerda, a de cima no canto de cima.
+              return (
+                <>
+                  <g transform="translate(0 16) scale(0.78)">{base}</g>
+                  <g className="peca-carona" transform="translate(46 -2) scale(0.56)">
+                    <circle cx="50" cy="50" r="46" className="aro-carona" />
+                    <PecaSvg tipo={cima.tipo} cor={cima.cor} />
+                  </g>
+                </>
+              );
+            })()}
           </g>
         );
       })}
@@ -234,6 +262,9 @@ export function Tabuleiro(props: Props) {
         destinos.map((l) => {
         const { x, y } = posicao(l.para);
         const captura = estado.tabuleiro[l.para] || l.especial === "en-passant";
+        if (l.montada === "montar") {
+          return <circle key={`d-${l.para}-carona`} className="marca-carona" cx={x + 50} cy={y + 50} r={40} />;
+        }
         return captura ? (
           <circle key={`d-${l.para}-${l.promocao ?? ""}`} className="marca-captura" cx={x + 50} cy={y + 50} r={44} />
         ) : (

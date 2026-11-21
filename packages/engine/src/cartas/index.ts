@@ -5,6 +5,12 @@ import batalhaDePeoes from "./batalha-de-peoes.ts";
 import bispoCamaleao from "./bispo-camaleao.ts";
 import bisposTimidos from "./bispos-timidos.ts";
 import bomba from "./bomba.ts";
+import c4 from "./c4.ts";
+import daltonico from "./daltonico.ts";
+import f5 from "./f5.ts";
+import kamikaze from "./kamikaze.ts";
+import regigigas from "./regigigas.ts";
+import yuumi from "./yuumi.ts";
 import capturasObrigatorias from "./capturas-obrigatorias.ts";
 import cavalariaPesada from "./cavalaria-pesada.ts";
 import cavaloSaltador from "./cavalo-saltador.ts";
@@ -83,6 +89,10 @@ export const CARTAS_OFICIAIS: readonly CartaQualquer[] = [
   contraAtaque,
   rainhaDasSombras,
   bomba,
+  yuumi,
+  c4,
+  f5,
+  daltonico,
   // Desvantagens
   bisposTimidos,
   rainhaPreguicosa,
@@ -109,6 +119,8 @@ export const CARTAS_OFICIAIS: readonly CartaQualquer[] = [
   maldicao,
   ladoErrado,
   lentidao,
+  kamikaze,
+  regigigas,
 ];
 
 const registro = new Map<string, CartaQualquer>(CARTAS_OFICIAIS.map((c) => [c.id, c]));

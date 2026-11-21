@@ -54,6 +54,8 @@ export const ultimaFileira = (cor: Cor): number => (cor === "brancas" ? 7 : 0);
 
 /** A peça que o lance captura (considera en passant), ou null. */
 export function pecaCapturada(estado: Estado, lance: Lance): Peca | null {
+  // Montar numa peça sua (Yuumi) não é captura.
+  if (lance.montada === "montar") return null;
   if (lance.especial === "en-passant") {
     const p = estado.tabuleiro[lance.de];
     return p ? (estado.tabuleiro[lance.para - 8 * direcaoPeao(p.cor)] ?? null) : null;
@@ -140,7 +142,25 @@ export function clonarEstado(e: Estado): Estado {
     ...(e.mao ? { mao: clonarMao(e.mao) } : {}),
     ...(e.caos ? { caos: { ...e.caos, registro: e.caos.registro.slice() } } : {}),
     ...(e.casas ? { casas: { ...e.casas, registro: e.casas.registro.slice() } } : {}),
+    ...(e.montadas ? { montadas: { ...e.montadas } } : {}),
   };
+}
+
+/** A peça de carona em cima da peça da casa `c` (poder Yuumi), se houver. */
+export function montadaEm(estado: Estado, c: Casa): Peca | null {
+  const base = estado.tabuleiro[c];
+  return (base && estado.montadas?.[base.id]) ?? null;
+}
+
+/** Todas as caronas do tabuleiro: casa da peça de baixo → a peça de cima. */
+export function pecasMontadas(estado: Estado): Map<Casa, Peca> {
+  const mapa = new Map<Casa, Peca>();
+  if (!estado.montadas) return mapa;
+  estado.tabuleiro.forEach((p, c) => {
+    const cima = p && estado.montadas![p.id];
+    if (cima) mapa.set(c, cima);
+  });
+  return mapa;
 }
 
 export function clonarMao(m: MaoDeCartas): MaoDeCartas {

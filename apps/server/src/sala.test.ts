@@ -11,6 +11,20 @@ function novaSala(config: Partial<ConfigSala> = {}) {
   return { sala, passar: (ms: number) => (agora += ms) };
 }
 
+/** Tira as cartas sorteadas (para o teste não depender do que o sorteio trouxe). */
+function semCartas(sala: Sala): void {
+  const limpo = (e: Estado): Estado => ({
+    ...e,
+    cartas: { brancas: { poder: null, desvantagem: null }, pretas: { poder: null, desvantagem: null } },
+    dadosCartas: { brancas: { poder: {}, desvantagem: {} }, pretas: { poder: {}, desvantagem: {} } },
+    usosPoder: { brancas: 0, pretas: 0 },
+  });
+  sala.estado = limpo(sala.estado!);
+  sala.inicial = limpo(sala.inicial!);
+  // Lentidão mudaria o relógio: volta os dois lados ao tempo cheio.
+  if (sala.relogio) sala.relogio.restante = { brancas: sala.config.minutos! * 60_000, pretas: sala.config.minutos! * 60_000 };
+}
+
 const lance = (de: string, para: string) => ({ tipo: "lance" as const, lance: { de: c(de), para: c(para) } });
 
 describe("Sala online", () => {
@@ -39,6 +53,7 @@ describe("Sala online", () => {
     const { sala } = novaSala();
     sala.entrar("Ana");
     sala.entrar("Bia");
+    semCartas(sala);
     expect(sala.agir("pretas", lance("e7", "e5"))).toContain("vez");
     expect(sala.agir("brancas", lance("e2", "e5"))).toBeTruthy();
     expect(sala.agir("brancas", lance("e2", "e4"))).toBeNull();
@@ -61,6 +76,7 @@ describe("Sala online", () => {
     const { sala } = novaSala();
     sala.entrar("Ana");
     sala.entrar("Bia");
+    semCartas(sala);
     sala.agir("brancas", lance("e2", "e4"));
     sala.desistir("pretas");
     const vista = sala.vista("brancas");
@@ -74,6 +90,7 @@ describe("Sala online", () => {
     const { sala, passar } = novaSala({ minutos: 3 });
     sala.entrar("Ana");
     sala.entrar("Bia");
+    semCartas(sala);
     const inicioBrancas = sala.tempoDe("brancas");
     passar(10_000);
     sala.agir("brancas", lance("e2", "e4"));

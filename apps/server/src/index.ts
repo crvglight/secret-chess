@@ -95,6 +95,7 @@ function acaoValida(v: unknown): AcaoPartida | null {
         para: l.para,
         ...(typeof l.promocao === "string" ? { promocao: l.promocao as never } : {}),
         ...(typeof l.poder === "string" ? { poder: l.poder } : {}),
+        ...(l.montada === "montar" || l.montada === "descer" ? { montada: l.montada } : {}),
       },
     };
   }

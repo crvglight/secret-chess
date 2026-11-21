@@ -29,6 +29,16 @@ export function gerarLancesBase(estado: Estado, cor: Cor): Lance[] {
   for (let de = 0; de < 64; de++) {
     const p = t[de];
     if (!p || p.cor !== cor) continue;
+    lancesDaPecaEm(estado, de, p, lances, true);
+  }
+  return lances;
+}
+
+/** Lances do xadrez normal da peça `p` na casa `de` (com `roque` = false, sem roque). */
+export function lancesDaPecaEm(estado: Estado, de: Casa, p: Peca, lances: Lance[] = [], roque = false): Lance[] {
+  const t = estado.tabuleiro;
+  const cor = p.cor;
+  {
     switch (p.tipo) {
       case "peao":
         lancesPeao(estado, de, cor, lances);
@@ -47,7 +57,7 @@ export function gerarLancesBase(estado: Estado, cor: Cor): Lance[] {
         break;
       case "rei":
         saltos(t, de, cor, VIZINHOS, lances);
-        roques(estado, de, cor, lances);
+        if (roque) roques(estado, de, cor, lances);
         break;
     }
   }

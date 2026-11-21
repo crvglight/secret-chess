@@ -3,10 +3,10 @@ import { pecaCapturada } from "../tabuleiro.ts";
 
 export default definirCarta({
   id: "capturas-obrigatorias",
-  nome: "Capturas obrigatórias",
+  nome: "Damas",
   tipo: "desvantagem",
   peso: 4,
-  descricao: "Se puder capturar alguma peça, você é obrigado a capturar.",
+  descricao: "Como no jogo de damas: se puder capturar alguma peça, você é obrigado a capturar.",
   // Roda no fim (depois das outras cartas, do evento do Caos e das casas especiais),
   // para só contar as capturas permitidas de verdade.
   ordemFiltro: ORDEM_FILTRO_FINAL,

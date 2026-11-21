@@ -87,6 +87,11 @@ export interface Carta<D extends object = object> {
   dadosIniciais?(): D;
   /** Lances extras para `jogador`. Chamado para todas as cartas em jogo, dos dois lados. */
   adicionarLances?(ctx: ContextoLeitura<D>, jogador: Cor): Lance[];
+  /**
+   * Os lances extras podem capturar/atacar AGORA? false liga os atalhos rápidos do xeque
+   * (ex.: Yuumi sem nenhuma carona: subir na carona nunca captura). Sem isto, conta como sim.
+   */
+  lancesExtrasAtacam?(ctx: ContextoLeitura<D>): boolean;
   /** Remove (ou troca) lances de `jogador`. Roda depois de todos os adicionarLances. */
   filtrarLances?(ctx: ContextoLeitura<D>, lances: Lance[], jogador: Cor): Lance[];
   /** Ordem do filtro: maior roda depois (padrão 0). A partir de ORDEM_FILTRO_FINAL, roda no fim de tudo. */

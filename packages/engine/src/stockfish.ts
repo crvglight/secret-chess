@@ -71,7 +71,7 @@ export function lanceDoUci(estado: Estado, uci: string): Lance | null {
   const promocao = m[3] ? PROMOCAO_UCI[m[3]] : undefined;
   return (
     lancesLegais(estado).find(
-      (l) => !l.poder && l.de === de && l.para === para && (l.promocao ?? undefined) === promocao,
+      (l) => !l.poder && !l.montada && l.de === de && l.para === para && (l.promocao ?? undefined) === promocao,
     ) ?? null
   );
 }

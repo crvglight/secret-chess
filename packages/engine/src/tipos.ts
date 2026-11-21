@@ -21,6 +21,11 @@ export interface Lance {
   especial?: Especial;
   /** Id da carta, quando o lance é um poder (ex.: teleporte). */
   poder?: string;
+  /**
+   * Carona (poder Yuumi): "montar" = a peça entra na casa de outra peça sua e fica em cima dela;
+   * "descer" = a peça de cima sai sozinha da casa `de` (a de baixo fica).
+   */
+  montada?: "montar" | "descer";
 }
 
 export type SlotCarta = "poder" | "desvantagem";
@@ -91,6 +96,8 @@ export interface Estado {
   caos?: EstadoCaos;
   /** Só com a opção de casas especiais. */
   casas?: EstadoCasas;
+  /** Peças de carona (poder Yuumi): id da peça de baixo → a peça que está em cima dela. */
+  montadas?: Record<number, Peca>;
 }
 
 export type TipoCasaEspecial =
