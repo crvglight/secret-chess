@@ -4,6 +4,7 @@ import avancoEmMassa from "./avanco-em-massa.ts";
 import batalhaDePeoes from "./batalha-de-peoes.ts";
 import bispoCamaleao from "./bispo-camaleao.ts";
 import bisposTimidos from "./bispos-timidos.ts";
+import ansiedade from "./ansiedade.ts";
 import bomba from "./bomba.ts";
 import c4 from "./c4.ts";
 import daltonico from "./daltonico.ts";
@@ -16,6 +17,7 @@ import cavalariaPesada from "./cavalaria-pesada.ts";
 import cavaloSaltador from "./cavalo-saltador.ts";
 import cavalosCansados from "./cavalos-cansados.ts";
 import cavalosTimidos from "./cavalos-timidos.ts";
+import clt from "./clt.ts";
 import centroProibido from "./centro-proibido.ts";
 import clone from "./clone.ts";
 import congelar from "./congelar.ts";
@@ -27,6 +29,7 @@ import espiao from "./espiao.ts";
 import exercitoPequeno from "./exercito-pequeno.ts";
 import fantasma from "./fantasma.ts";
 import fronteira from "./fronteira.ts";
+import giganteDaColina from "./gigante-da-colina.ts";
 import guardaReal from "./guarda-real.ts";
 import ilusao from "./ilusao.ts";
 import ladoErrado from "./lado-errado.ts";
@@ -95,6 +98,7 @@ export const CARTAS_OFICIAIS: readonly CartaQualquer[] = [
   f5,
   daltonico,
   peaogonista,
+  giganteDaColina,
   // Desvantagens
   bisposTimidos,
   rainhaPreguicosa,
@@ -123,6 +127,8 @@ export const CARTAS_OFICIAIS: readonly CartaQualquer[] = [
   lentidao,
   kamikaze,
   regigigas,
+  ansiedade,
+  clt,
 ];
 
 const registro = new Map<string, CartaQualquer>(CARTAS_OFICIAIS.map((c) => [c.id, c]));

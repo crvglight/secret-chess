@@ -87,6 +87,7 @@ Rode na raiz do projeto:
 | F5 | poder | 2 | A casa f5 é secreta: a sua peça que parar nela vira outra peça sorteada (menos rei). Vale a partida toda. |
 | Daltônico | poder | 4 | Uma vez por partida, é como se todas as peças ficassem da mesma cor que as suas: mova uma peça do adversário (menos o rei) como se fosse sua; ela pode até capturar outra peça dele. |
 | Peãogonista | poder | 2 | Um dos seus peões é sorteado em segredo e ganha uma vida extra: na primeira vez que for capturado, ele fica intacto no lugar e o adversário perde o lance. |
+| Gigante da Colina | poder | 3 | Suas peças (menos o rei) nas 4 casas centrais (d4, d5, e4 e e5) só podem ser capturadas corpo a corpo: por uma peça encostada nelas. |
 | Bispos tímidos | desvantagem | 3 | Seus bispos não podem capturar. |
 | Rainha preguiçosa | desvantagem | 2 | Sua dama não pode se mover nos 5 primeiros lances. |
 | Batalha de peões | desvantagem | 3 | Você perde se tiver menos peões que o adversário. |
@@ -114,6 +115,8 @@ Rode na raiz do projeto:
 | Lentidão | desvantagem | 2 | Você começa com 1 minuto a menos no relógio (só em partidas com relógio). |
 | Kamikaze | desvantagem | 3 | Se você puder dar xeque no rei do adversário, você é obrigado a dar. |
 | Regigigas | desvantagem | 2 | Nos seus 5 primeiros lances, você só pode mover peões. |
+| Ansiedade | desvantagem | 2 | Os peões encostados no seu rei não podem se afastar dele (só podem ir para casas que continuem encostadas no rei). |
+| CLT | desvantagem | 2 | A cada 6 lances seus, no 7º você só pode mover peões (menos se estiver em xeque ou se nenhum peão puder andar). |
 
 O sorteio compara o saldo de cada lado (peso do poder menos peso da desvantagem) e mantém a diferença em no máximo 1. Cartas de peso maior saem menos: a chance relativa é 6 − peso (peso 1 sai 5 vezes mais que peso 5).
 

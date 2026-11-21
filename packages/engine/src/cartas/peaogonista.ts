@@ -59,7 +59,7 @@ export default definirCarta<Dados>({
     if (dados.usada) return [];
     const id = escolhido(estado, dono, dados);
     const casa = estado.tabuleiro.findIndex((p) => p?.id === id);
-    return casa >= 0 ? [{ casa, publico: false, rotulo: "Vida extra" }] : [];
+    return casa >= 0 ? [{ casa, publico: false, rotulo: "Vida extra", estilo: "contorno" }] : [];
   },
 
   resumo: ({ dados }) => (dados.usada ? "vida extra já usada" : "vida extra pronta"),

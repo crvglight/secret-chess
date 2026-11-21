@@ -75,6 +75,8 @@ export interface Destaque {
   /** false = só o dono da carta vê (ex.: armadilha). */
   publico: boolean;
   rotulo: string;
+  /** "contorno" = só um contorno cinza discreto na casa, sem rótulo (ex.: Peãogonista). */
+  estilo?: "contorno";
 }
 
 export interface Carta<D extends object = object> {

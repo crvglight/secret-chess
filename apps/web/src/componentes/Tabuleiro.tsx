@@ -14,7 +14,7 @@ interface Props {
   /** Casas que podem receber o poder (modo "Usar poder"). */
   alvosPoder: Casa[] | null;
   /** Casas marcadas pelas cartas (peça protegida, congelada, armadilha...). */
-  destaques: { casa: Casa; rotulo: string }[];
+  destaques: { casa: Casa; rotulo: string; estilo?: "contorno" }[];
   /** Setas das melhores jogadas (painel de análise, só no modo de desenvolvimento). */
   setasAnalise?: { de: Casa; para: Casa }[];
   /** Setas laranja fixas (ex.: o lance jogado, na análise da partida). */
@@ -204,6 +204,9 @@ export function Tabuleiro(props: Props) {
 
       {props.destaques.map((d) => {
         const { x, y } = posicao(d.casa);
+        if (d.estilo === "contorno") {
+          return <rect key={`dest-${d.casa}-${d.rotulo}`} className="contorno-cinza" x={x + 4} y={y + 4} width={LADO - 8} height={LADO - 8} rx={10} aria-label={d.rotulo} />;
+        }
         return (
           <g key={`dest-${d.casa}-${d.rotulo}`} className="destaque-carta" aria-label={`${d.rotulo}`}>
             <rect x={x + 3} y={y + 3} width={LADO - 6} height={LADO - 6} rx={8} />

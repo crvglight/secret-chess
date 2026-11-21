@@ -2290,3 +2290,10 @@ input:focus-visible {
   height: 30px;
   font-size: 0.8rem;
 }
+
+/* Destaque discreto (ex.: o peão do Peãogonista): só um contorno cinza. */
+.contorno-cinza {
+  fill: none;
+  stroke: #9a9a9a;
+  stroke-width: 4;
+}
