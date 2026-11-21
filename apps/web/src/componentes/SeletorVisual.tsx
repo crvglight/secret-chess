@@ -37,12 +37,13 @@ const NOMES_CORES: { chave: keyof CoresPersonalizadas; nome: string; grupo: "tab
   { chave: "pecaPretaContorno", nome: "Pretas: contorno", grupo: "pecas" },
 ];
 
-type Chave = "coordenadas" | "ultimoLance" | "lancesPossiveis" | "animacao";
+type Chave = "coordenadas" | "ultimoLance" | "lancesPossiveis" | "animacao" | "som";
 const LIGA_DESLIGA: { chave: Chave; nome: string }[] = [
   { chave: "coordenadas", nome: "Mostrar coordenadas (a–h, 1–8)" },
   { chave: "ultimoLance", nome: "Destacar o último lance" },
   { chave: "lancesPossiveis", nome: "Mostrar os lances possíveis" },
   { chave: "animacao", nome: "Animar as peças ao mover" },
+  { chave: "som", nome: "Sons (lance, captura, xeque, fim)" },
 ];
 
 /** Escolha do visual (tabuleiro, peças, cores e ajustes). Muda e salva na hora. */

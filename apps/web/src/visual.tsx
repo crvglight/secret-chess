@@ -39,6 +39,8 @@ export interface Visual {
   ultimoLance: boolean;
   lancesPossiveis: boolean;
   animacao: boolean;
+  /** Sons de lance, captura, xeque e fim de partida. */
+  som: boolean;
   tamanho: TamanhoTabuleiro;
   corSetas: string;
 }
@@ -92,6 +94,7 @@ export const VISUAL_PADRAO: Visual = {
   ultimoLance: true,
   lancesPossiveis: true,
   animacao: true,
+  som: true,
   tamanho: "medio",
   corSetas: "#f08c1a",
 };
@@ -122,6 +125,7 @@ export function lerVisual(): Visual {
     ultimoLance: bool(salvo.ultimoLance, p.ultimoLance),
     lancesPossiveis: bool(salvo.lancesPossiveis, p.lancesPossiveis),
     animacao: bool(salvo.animacao, p.animacao),
+    som: bool(salvo.som, p.som),
     tamanho: TAMANHOS.some((t) => t.id === salvo.tamanho) ? salvo.tamanho! : p.tamanho,
     corSetas: cor(salvo.corSetas, p.corSetas),
   };

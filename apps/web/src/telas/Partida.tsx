@@ -35,6 +35,8 @@ import {
 } from "@xadrez/engine";
 import { EscolhaPromocao } from "../componentes/EscolhaPromocao.tsx";
 import { SeletorVisual } from "../componentes/SeletorVisual.tsx";
+import { tocar } from "../sons.ts";
+import { useVisual } from "../visual.tsx";
 import { FimDePartida } from "../componentes/FimDePartida.tsx";
 import { PainelCaos } from "../componentes/PainelCaos.tsx";
 import { PainelOnline } from "../componentes/PainelOnline.tsx";
@@ -231,6 +233,31 @@ export function Partida({ modo, cartas, aoSair, aoRevanche, online }: Props) {
       transmissor.current = null;
     };
   }, []);
+
+  // Sons: lance, captura, peça perdida, xeque, poder e fim (como nos sites de xadrez).
+  const { visual } = useVisual();
+  const visto = useRef({ lances: estado.historico.length, eventos: estado.eventos.length, fim: !!estado.resultado });
+  useEffect(() => {
+    const antes = visto.current;
+    visto.current = { lances: estado.historico.length, eventos: estado.eventos.length, fim: !!estado.resultado };
+    if (!visual.som || estado.historico.length < antes.lances) return; // som desligado ou partida nova
+    if (estado.resultado && !antes.fim) {
+      tocar("fim");
+      return;
+    }
+    if (estado.historico.length > antes.lances) {
+      const ultimo = estado.historico.at(-1)!;
+      // Partida local (e quem assiste): os dois lados contam como "seus".
+      const meu = corHumano === null || ultimo.cor === corHumano;
+      if (casaDoReiEmXeque(estado) !== null) tocar("xeque");
+      else if (ultimo.captura) tocar(meu ? "captura" : "capturado");
+      else tocar(meu ? "meu-lance" : "sua-vez");
+      return;
+    }
+    // Carta jogada ou poder usado antes do lance.
+    if (estado.eventos.length > antes.eventos) tocar("poder");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [estado]);
 
   // Vez do outro lado (IA ou adversário online): este navegador não mexe.
   const vezDoOutro = espectador || (corHumano !== null && estado.vez !== corHumano && !estado.resultado);
