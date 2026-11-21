@@ -289,7 +289,7 @@ export class Sala {
 
   /**
    * O que cada um vê da sala. O jogador não vê os segredos do adversário; o
-   * espectador (espectador = true, cor ignorada) não vê os segredos de nenhum lado.
+   * espectador (espectador = true, cor ignorada) vê as cartas dos dois lados.
    */
   vista(cor: Cor, espectador = false): VistaSala {
     const adversario = corOposta(cor);
@@ -306,7 +306,8 @@ export class Sala {
       visivel = estado;
       destaques = destaquesDasCartas(estado);
     } else if (estado) {
-      const escondidos: Cor[] = espectador ? ["brancas", "pretas"] : [adversario];
+      // O espectador vê as cartas dos dois lados; o jogador não vê as do adversário.
+      const escondidos: Cor[] = espectador ? [] : [adversario];
       const vigias = ladosComVigia(estado);
       // Vê os segredos de um lado escondido se ele tem a desvantagem Espião ou se o
       // jogador está numa torre de vigia (o espectador não fica em torre nenhuma).

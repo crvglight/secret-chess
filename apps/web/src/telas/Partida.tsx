@@ -298,7 +298,7 @@ export function Partida({ modo, cartas, aoSair, aoRevanche, online }: Props) {
   // Destaques das cartas: os secretos (armadilha) só para quem pode ver as cartas daquele lado.
   // Quem está na tela vê as cartas deste lado? (Espião deixa as cartas abertas para todos.)
   const veCartasDe = (cor: Cor) =>
-    estado.resultado !== null || cartasAbertas(estado, cor) || (corHumano ? cor === corHumano : visiveis[cor]);
+    espectador || estado.resultado !== null || cartasAbertas(estado, cor) || (corHumano ? cor === corHumano : visiveis[cor]);
   // Torre de vigia: o lado adversário de quem está nela vê os segredos dele.
   const vigias = ladosComVigia(estado);
   const veSegredosDe = (cor: Cor) => veCartasDe(cor) || vigias.has(corOposta(cor));
@@ -308,7 +308,8 @@ export function Partida({ modo, cartas, aoSair, aoRevanche, online }: Props) {
   const misteriosasDe = (e: Estado) => {
     const casas = new Set<Casa>();
     if (!estado.resultado) {
-      for (const [c, dono] of casasNaNevoa(e)) if (espectador || dono !== olhando) casas.add(c);
+      // Quem assiste vê tudo (o servidor manda as peças de verdade).
+      if (!espectador) for (const [c, dono] of casasNaNevoa(e)) if (dono !== olhando) casas.add(c);
     }
     return casas;
   };
@@ -523,7 +524,7 @@ export function Partida({ modo, cartas, aoSair, aoRevanche, online }: Props) {
       controlavel={!espectador && (!corHumano || cor === corHumano)}
       tempo={tempoDe(cor)}
       relogioCorrendo={online?.relogio?.correndo === cor}
-      cartasVisiveis={visiveis[cor] || estado.resultado !== null || cartasAbertas(estado, cor)}
+      cartasVisiveis={espectador || visiveis[cor] || estado.resultado !== null || cartasAbertas(estado, cor)}
       modoPoder={modoPoder && estado.vez === cor}
       aoAlternarCartas={() => setVisiveis((v) => ({ ...v, [cor]: !v[cor] }))}
       aoUsarPoder={aoUsarPoder}
