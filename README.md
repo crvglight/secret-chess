@@ -172,6 +172,13 @@ Com `pnpm dev`, aperte **Alt+A** numa partida para abrir a **janela de análise 
 
 Atalhos de URL para testar: `#local` e `#ia-<facil|medio|dificil>-<brancas|pretas>` (a cor é a sua).
 
+## Nome da abertura
+
+Durante a partida, o painel de lances mostra o nome da abertura (com o código ECO), como no chess.com.
+A base vem de [lichess-org/chess-openings](https://github.com/lichess-org/chess-openings) (CC0, domínio público)
+e fica em `apps/web/src/aberturas/aberturas.json`. Para atualizar: `pnpm --filter @xadrez/server exec tsx ../../scripts/gerar-aberturas.ts`.
+O nome segue os lances de xadrez normal; depois de um lance de poder, fica a última abertura reconhecida.
+
 ## Etapas
 
 1. [x] Monorepo, TypeScript, lint, Vitest e README

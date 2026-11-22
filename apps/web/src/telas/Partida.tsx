@@ -46,6 +46,7 @@ import { PainelCasas } from "../componentes/PainelCasas.tsx";
 import { PainelJogador } from "../componentes/PainelJogador.tsx";
 import { Tabuleiro } from "../componentes/Tabuleiro.tsx";
 import { analiseLiberada } from "../dev/liberacao.ts";
+import { useAbertura } from "../aberturas/index.ts";
 import { useIA } from "../ia/useIA.ts";
 import { AnalisePartida } from "./AnalisePartida.tsx";
 import { NOME_NIVEL, NOME_REGRAS, nomeDaIA, type ModoPartida } from "../modo.ts";
@@ -237,6 +238,8 @@ export function Partida({ modo, cartas, aoSair, aoRevanche, online }: Props) {
 
   // Sons: lance, captura, peça perdida, xeque, poder e fim (como nos sites de xadrez).
   const { visual } = useVisual();
+  // Nome da abertura (como no chess.com): segue os lances de xadrez normal da partida.
+  const abertura = useAbertura(estado.historico);
   const visto = useRef({ lances: estado.historico.length, eventos: estado.eventos.length, fim: !!estado.resultado });
   useEffect(() => {
     const antes = visto.current;
@@ -676,6 +679,11 @@ export function Partida({ modo, cartas, aoSair, aoRevanche, online }: Props) {
           {online && <PainelOnline online={online} minhaCor={modo.tipo === "online" ? modo.corHumano : "brancas"} fim={!!estado.resultado} />}
           <PainelCaos estado={estado} />
           <PainelCasas estado={estado} />
+          {abertura && (
+            <p className="abertura" title={`Código ECO ${abertura.eco}`}>
+              <span className="abertura-eco">{abertura.eco}</span> {abertura.nome}
+            </p>
+          )}
           <div className="topo-lances">
             <h2>Lances</h2>
             <div className="navegar-lances navegar-no-topo" role="group" aria-label="Rever lances">
