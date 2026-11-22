@@ -90,7 +90,7 @@ Rode na raiz do projeto:
 | Gigante da Colina | poder | 3 | Suas peças (menos o rei) nas 4 casas centrais (d4, d5, e4 e e5) só podem ser capturadas corpo a corpo: por uma peça encostada nelas. |
 | Bispos tímidos | desvantagem | 3 | Seus bispos não podem capturar. |
 | Rainha preguiçosa | desvantagem | 2 | Sua dama não pode se mover nos 5 primeiros lances. |
-| Batalha de peões | desvantagem | 3 | Você perde se tiver menos peões que o adversário. |
+| Batalha de peões | desvantagem | 3 | Você perde se tiver 4 peões a menos que o adversário. |
 | Dama frágil | desvantagem | 4 | Você perde se ficar sem nenhuma dama no tabuleiro. |
 | Damas | desvantagem | 4 | Como no jogo de damas: se alguma peça sua (menos o rei) puder capturar, você é obrigado a capturar com ela. O rei fica de fora. |
 | Sem roque | desvantagem | 1 | Você não pode fazer roque. |

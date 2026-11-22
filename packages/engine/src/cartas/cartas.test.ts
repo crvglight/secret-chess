@@ -158,16 +158,18 @@ describe("Rainha preguiçosa", () => {
 });
 
 describe("Batalha de peões", () => {
-  const fen = "4k3/8/8/3p4/4P3/8/8/4K3 b - - 0 1";
+  // Brancas: 2 peões (e4, h2). Pretas: 5 (a7, b7, c7, d5, h7). Diferença 3; a captura em e4 faz 4.
+  const fen = "4k3/ppp4p/8/3p4/4P3/8/7P/4K3 b - - 0 1";
+  const cartas = { brancas: { desvantagem: "batalha-de-peoes" } };
 
-  it("perde ao ficar com menos peões que o adversário", () => {
-    const e = jogar(criarPartida({ fen, cartas: { brancas: { desvantagem: "batalha-de-peoes" } } }), "d5", "e4");
+  it("perde ao ficar com 4 peões a menos que o adversário", () => {
+    const e = jogar(criarPartida({ fen, cartas }), "d5", "e4");
     expect(e.resultado).toEqual({ vencedor: "pretas", motivo: "carta", cartaId: "batalha-de-peoes" });
     expect(e.eventos.at(-1)?.texto).toContain("Batalha de peões");
   });
 
-  it("com o mesmo número de peões, a partida segue", () => {
-    const e = jogar(criarPartida({ fen, cartas: { brancas: { desvantagem: "batalha-de-peoes" } } }), "e8", "e7");
+  it("com 3 peões a menos, a partida segue", () => {
+    const e = jogar(criarPartida({ fen, cartas }), "e8", "e7");
     expect(e.resultado).toBeNull();
   });
 });
