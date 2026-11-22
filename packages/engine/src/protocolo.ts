@@ -59,6 +59,8 @@ export interface VistaSala {
   draftEscolhido: Record<Cor, boolean>;
   /** Draft: este jogador ainda pode usar o re-roll (trocar as opções uma vez). */
   rerollDisponivel: boolean;
+  /** Draft, só para quem assiste: as opções dos dois e o que cada um já confirmou. */
+  draftEspectador?: { ofertas: Record<Cor, OfertaDraft>; escolhas: Record<Cor, CartasDoJogador | null> } | null;
   /** Tempo restante (ms) no momento do envio e de quem é o relógio que está correndo. */
   relogio: { restante: Record<Cor, number>; correndo: Cor | null } | null;
   revanchePedida: Record<Cor, boolean>;

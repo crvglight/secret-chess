@@ -373,6 +373,10 @@ export class Sala {
       oferta: this.fase === "draft" && this.ofertas && !espectador ? this.ofertas[cor] : null,
       draftEscolhido: { brancas: !!this.escolhas.brancas, pretas: !!this.escolhas.pretas },
       rerollDisponivel: this.fase === "draft" && !espectador && !this.rerollUsado[cor] && !this.escolhas[cor],
+      draftEspectador:
+        espectador && this.fase === "draft" && this.ofertas
+          ? { ofertas: this.ofertas, escolhas: { brancas: this.escolhas.brancas, pretas: this.escolhas.pretas } }
+          : null,
       relogio: this.relogio
         ? {
             restante: { brancas: Math.max(0, this.tempoDe("brancas")), pretas: Math.max(0, this.tempoDe("pretas")) },

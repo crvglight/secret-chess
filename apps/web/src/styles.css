@@ -2337,3 +2337,41 @@ input:focus-visible {
 .caixa-lendaria {
   filter: drop-shadow(0 0 6px rgba(242, 201, 76, 0.8));
 }
+
+/* Entrar numa sala: jogar ou assistir */
+.escolha-entrada {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  justify-content: center;
+}
+/* Draft visto por quem assiste */
+.draft-espectador {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 460px), 1fr));
+  gap: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+.draft-lado h2 {
+  font-size: 1.1rem;
+}
+.draft-lado h3 {
+  font-size: 0.95rem;
+  margin: 12px 0 6px;
+}
+.draft-carta.descartada {
+  opacity: 0.35;
+}
+.selo-draft {
+  font-size: 0.75rem;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--painel-borda);
+  color: var(--texto-suave);
+  vertical-align: middle;
+}
+.selo-draft.pronto {
+  background: var(--poder);
+  color: #10200f;
+}

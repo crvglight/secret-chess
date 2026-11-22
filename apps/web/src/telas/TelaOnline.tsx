@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, type ReactNode } from "react";
 import { corOposta, ERRO_SALA_CHEIA, type Cor, type VistaSala } from "@xadrez/engine";
 import { CartaVisual } from "../componentes/CartaVisual.tsx";
 import { NOME_REGRAS, type ModoPartida } from "../modo.ts";
-import { ENDERECO_SERVIDOR, ONLINE_DISPONIVEL } from "../online/conexao.ts";
+import { ENDERECO_SERVIDOR, lerToken, ONLINE_DISPONIVEL } from "../online/conexao.ts";
 import { useSala } from "../online/useSala.ts";
 import { registrarFimDePartida, type Novidades } from "../progresso.ts";
 import { NOME_COR } from "../textos.ts";
@@ -16,7 +16,30 @@ export function TelaOnline({ codigo, assistir = false, aoSair }: { codigo: strin
       </Cartaz>
     );
   }
-  return <SalaConectada codigo={codigo} assistir={assistir} aoSair={aoSair} />;
+  return <EscolherComoEntrar codigo={codigo} assistir={assistir} aoSair={aoSair} />;
+}
+
+/**
+ * Quem chega pelo link (ou pelo código) escolhe entre jogar e assistir. Quem criou a sala
+ * ou já é jogador dela (tem o token guardado) entra direto.
+ */
+function EscolherComoEntrar({ codigo, assistir, aoSair }: { codigo: string; assistir: boolean; aoSair(): void }) {
+  const [jogar, setJogar] = useState(() => !!lerToken(codigo));
+  if (assistir || jogar) return <SalaConectada codigo={codigo} assistir={assistir} aoSair={aoSair} />;
+  return (
+    <Cartaz titulo={`Sala ${codigo}`} aoSair={aoSair}>
+      <p className="subtitulo">Como você quer entrar?</p>
+      <div className="escolha-entrada">
+        <button type="button" className="botao" onClick={() => setJogar(true)}>
+          ♟ Jogar
+        </button>
+        <button type="button" className="botao botao-secundario" onClick={() => (location.hash = `#assistir-${codigo}`)}>
+          👁 Assistir
+        </button>
+      </div>
+      <p className="dica">Se a sala já tiver dois jogadores, você ainda pode assistir.</p>
+    </Cartaz>
+  );
 }
 
 /** Link para alguém só assistir à sala. */
@@ -60,6 +83,9 @@ function SalaConectada({ codigo, assistir, aoSair }: { codigo: string; assistir:
         <p className="subtitulo">{assistir ? "Abrindo a partida da" : "Entrando na"} sala {codigo}.</p>
       </Cartaz>
     );
+  }
+  if (v.espectador && v.fase === "draft" && v.draftEspectador) {
+    return <DraftEspectador vista={v} aoSair={aoSair} />;
   }
   if (v.espectador && (v.fase === "aguardando" || v.fase === "draft")) {
     return (
@@ -288,6 +314,50 @@ function DraftOnline({
             Confirmar
           </button>
         </div>
+      </section>
+    </div>
+  );
+}
+
+/** Draft para quem assiste: as opções dos dois jogadores e o que cada um confirmou. */
+function DraftEspectador({ vista, aoSair }: { vista: VistaSala; aoSair(): void }) {
+  const d = vista.draftEspectador!;
+  const nome = (c: Cor) => vista.jogadores[c]?.apelido ?? NOME_COR[c];
+  const linha = (titulo: string, ids: string[], escolhida: string | null | undefined) => (
+    <>
+      <h3>{titulo}</h3>
+      <div className="draft-opcoes">
+        {ids.map((id) => (
+          <div key={id} className={`draft-carta ${escolhida === id ? "escolhida" : escolhida ? "descartada" : ""}`}>
+            <CartaVisual cartaId={id} />
+          </div>
+        ))}
+      </div>
+    </>
+  );
+  return (
+    <div className="tela-draft">
+      <header className="barra">
+        <button type="button" className="botao-link" onClick={aoSair}>
+          ← Início
+        </button>
+        <span className="barra-titulo">Assistindo ao Draft · sala {vista.codigo}</span>
+        <span />
+      </header>
+      <section className="draft-espectador">
+        {(["brancas", "pretas"] as const).map((cor) => {
+          const escolha = d.escolhas[cor];
+          return (
+            <div key={cor} className="draft-lado">
+              <h2>
+                {nome(cor)} ({NOME_COR[cor].toLowerCase()}){" "}
+                <span className={`selo-draft ${escolha ? "pronto" : ""}`}>{escolha ? "✓ escolheu" : "escolhendo…"}</span>
+              </h2>
+              {linha("Poder", d.ofertas[cor].poderes, escolha?.poder)}
+              {linha("Desvantagem para o adversário", d.ofertas[cor].desvantagens, escolha?.desvantagem)}
+            </div>
+          );
+        })}
       </section>
     </div>
   );

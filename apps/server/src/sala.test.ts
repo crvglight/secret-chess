@@ -146,6 +146,20 @@ describe("Sala online", () => {
     expect(sala.vista("pretas").rerollDisponivel).toBe(true);
   });
 
+  it("draft: quem assiste vê as opções dos dois e o que cada um confirmou", () => {
+    const { sala } = novaSala({ regras: "draft" });
+    sala.entrar("Ana");
+    sala.entrar("Bia");
+    const antes = sala.vista("brancas", true).draftEspectador!;
+    expect(antes.ofertas.brancas).toEqual(sala.vista("brancas").oferta);
+    expect(antes.escolhas).toEqual({ brancas: null, pretas: null });
+    const o = sala.vista("brancas").oferta!;
+    sala.escolherDraft("brancas", { poder: o.poderes[1]!, desvantagem: o.desvantagens[2]! });
+    expect(sala.vista("brancas", true).draftEspectador!.escolhas.brancas).toEqual({ poder: o.poderes[1], desvantagem: o.desvantagens[2] });
+    // Os jogadores não recebem isso.
+    expect(sala.vista("pretas").draftEspectador).toBeNull();
+  });
+
   it("revanche: com os dois pedindo, começa outra partida com as cores trocadas", () => {
     const { sala } = novaSala();
     sala.entrar("Ana");
