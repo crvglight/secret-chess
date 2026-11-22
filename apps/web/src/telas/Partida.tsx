@@ -33,6 +33,9 @@ import {
   type Estado,
   type Lance,
   type TipoPeca,
+  DESCRICAO_PREMIO,
+  destaquesDosAirdrops,
+  NOME_RARIDADE,
 } from "@xadrez/engine";
 import { EscolhaPromocao } from "../componentes/EscolhaPromocao.tsx";
 import { SeletorVisual } from "../componentes/SeletorVisual.tsx";
@@ -42,6 +45,7 @@ import { FimDePartida } from "../componentes/FimDePartida.tsx";
 import { PainelCaos } from "../componentes/PainelCaos.tsx";
 import { PainelOnline } from "../componentes/PainelOnline.tsx";
 import type { ReacaoRecebida } from "../online/useSala.ts";
+import { PainelAirdrops } from "../componentes/PainelAirdrops.tsx";
 import { PainelCasas } from "../componentes/PainelCasas.tsx";
 import { PainelJogador } from "../componentes/PainelJogador.tsx";
 import { Tabuleiro } from "../componentes/Tabuleiro.tsx";
@@ -158,6 +162,7 @@ export function Partida({ modo, cartas, aoSair, aoRevanche, online }: Props) {
       ...(modo.regras === "mao" ? { maoDeCartas: {} } : {}),
       ...(modo.regras === "caos" ? { caos: {} } : {}),
       ...(modo.casasEspeciais ? { casasEspeciais: modo.casasEspeciais === "todas" ? { quantos: 16 } : {} } : {}),
+      ...(modo.airdrops ? { airdrops: {} } : {}),
     });
   const contraIA = modo.tipo === "ia";
   // Espectador online: vê a partida, mas não mexe em nada.
@@ -263,6 +268,19 @@ export function Partida({ modo, cartas, aoSair, aoRevanche, online }: Props) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [estado]);
 
+  // Airdrop aberto: avisa quem abriu e o que ganhou.
+  const caixasAbertas = estado.airdrops?.registro.length ?? 0;
+  const caixasVistas = useRef(caixasAbertas);
+  useEffect(() => {
+    const antes = caixasVistas.current;
+    caixasVistas.current = caixasAbertas;
+    if (caixasAbertas <= antes) return;
+    const r = estado.airdrops!.registro.at(-1)!;
+    setAviso(`${NOME_COR[r.cor]} abriram uma caixa ${NOME_RARIDADE[r.raridade]}: ${DESCRICAO_PREMIO[r.premio]} (${r.texto}).`);
+    if (visual.som) tocar("poder");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [caixasAbertas]);
+
   // Vez do outro lado (IA ou adversário online): este navegador não mexe.
   const vezDoOutro = espectador || (corHumano !== null && estado.vez !== corHumano && !estado.resultado);
 
@@ -331,6 +349,7 @@ export function Partida({ modo, cartas, aoSair, aoRevanche, online }: Props) {
     // Online, o servidor manda os destaques que este jogador pode ver.
     ...(online ? online.destaques : destaquesDasCartas(estado).filter((d) => d.publico || veSegredosDe(d.dono))),
     ...destaquesDasCasas(estado),
+    ...destaquesDosAirdrops(estado),
   ];
 
   // Rever lances (como no chess.com): guarda a posição depois de cada lance e deixa
@@ -583,6 +602,7 @@ export function Partida({ modo, cartas, aoSair, aoRevanche, online }: Props) {
           {tituloPartida}
           {modo.regras !== "padrao" && ` · ${NOME_REGRAS[modo.regras]}`}
           {modo.casasEspeciais && " · Casas especiais"}
+          {modo.airdrops && " · Airdrops"}
         </span>
         <span className="barra-acoes">
           <button type="button" className="botao-link" onClick={() => setOrientacao(corOposta)}>
@@ -620,6 +640,7 @@ export function Partida({ modo, cartas, aoSair, aoRevanche, online }: Props) {
                 destaques={destaquesDasCasas(passado)}
                 reiEmXeque={casaDoReiEmXeque(passado)}
                 casasEspeciais={casasVisiveis(passado)}
+                caixas={passado.airdrops?.caixas}
                 disfarces={disfarcesDe(passado)}
                 misteriosas={misteriosasDe(passado)}
                 montadas={pecasMontadas(passado)}
@@ -637,6 +658,7 @@ export function Partida({ modo, cartas, aoSair, aoRevanche, online }: Props) {
                 destaques={destaques}
                 reiEmXeque={reiEmXeque}
                 casasEspeciais={casasVisiveis(estado)}
+                caixas={estado.airdrops?.caixas}
                 disfarces={disfarcesDe(estado)}
                 misteriosas={misteriosasDe(estado)}
                 montadas={pecasMontadas(estado)}
@@ -679,6 +701,7 @@ export function Partida({ modo, cartas, aoSair, aoRevanche, online }: Props) {
           {online && <PainelOnline online={online} minhaCor={modo.tipo === "online" ? modo.corHumano : "brancas"} fim={!!estado.resultado} />}
           <PainelCaos estado={estado} />
           <PainelCasas estado={estado} />
+          <PainelAirdrops estado={estado} />
           {abertura && (
             <p className="abertura" title={`Código ECO ${abertura.eco}`}>
               <span className="abertura-eco">{abertura.eco}</span> {abertura.nome}

@@ -172,6 +172,22 @@ Com `pnpm dev`, aperte **Alt+A** numa partida para abrir a **janela de análise 
 
 Atalhos de URL para testar: `#local` e `#ia-<facil|medio|dificil>-<brancas|pretas>` (a cor é a sua).
 
+## Airdrops
+
+Opção do menu (substitui as casas especiais): caixas caem em casas vazias do meio do tabuleiro (a 1ª depois de 2 lances
+de cada lado, depois a cada 4), no máximo 2 ao mesmo tempo, e somem depois de 6 lances de cada lado. A primeira peça
+(menos o rei) que parar na caixa a abre. Os dois veem a raridade pela cor; o prêmio só aparece ao abrir.
+
+| Raridade | Prêmios |
+| -------- | ------- |
+| Comum (cinza) | peão extra · +1 uso do poder · escudo por 2 rodadas · espiar as cartas do adversário |
+| Rara (azul) | cavalo ou bispo extra · +2 usos do poder (no modo Mão: compra 1 carta) · promoção da peça · lance extra |
+| Lendária (dourada) | dama ou torre extra · sem desvantagem por 5 rodadas |
+| Armadilha (1 em 6, qualquer cor) | bomba (a peça explode) · peão extra para o adversário · peça congelada por 2 rodadas |
+
+Tudo é sorteado de forma fixa a partir de uma semente guardada na partida (replay, análise e online dão o mesmo resultado).
+Código: `packages/engine/src/airdrops.ts`. Para testar: `?airdrops=1#local`.
+
 ## Nome da abertura
 
 Durante a partida, o painel de lances mostra o nome da abertura (com o código ECO), como no chess.com.

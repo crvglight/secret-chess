@@ -1,5 +1,17 @@
 import { useId, useRef, useState } from "react";
-import { casa, coluna, fileira, type Casa, type CasaEspecial, type Cor, type Estado, type Lance, type Peca, type TipoPeca } from "@xadrez/engine";
+import {
+  casa,
+  coluna,
+  fileira,
+  type Casa,
+  type CasaEspecial,
+  type Cor,
+  type Estado,
+  type Lance,
+  type Peca,
+  type Raridade,
+  type TipoPeca,
+} from "@xadrez/engine";
 import { DesenhoCasa } from "./IconeCasa.tsx";
 import { useVisual } from "../visual.tsx";
 import { PecaSvg } from "./PecaSvg.tsx";
@@ -31,6 +43,8 @@ interface Props {
   montadas?: ReadonlyMap<Casa, Peca>;
   /** Desenha todas as peças desta cor (poder Daltônico em uso). */
   corUnica?: Cor;
+  /** Caixas de airdrop no tabuleiro (só a raridade aparece). */
+  caixas?: { casa: Casa; raridade: Raridade }[];
   podeArrastar(casa: Casa): boolean;
   aoTocarCasa(casa: Casa): void;
   aoSoltar(de: Casa, para: Casa): void;
@@ -191,6 +205,15 @@ export function Tabuleiro(props: Props) {
         return (
           <g key={`casa-${e.casa}`} transform={`translate(${x + 12} ${y + 12}) scale(0.76)`} aria-hidden="true">
             <DesenhoCasa tipo={e.tipo} direcao={e.direcao} />
+          </g>
+        );
+      })}
+
+      {props.caixas?.map((cx) => {
+        const { x, y } = posicao(cx.casa);
+        return (
+          <g key={`caixa-${cx.casa}`} transform={`translate(${x} ${y})`} aria-label={`Caixa ${cx.raridade}`}>
+            <DesenhoCaixa raridade={cx.raridade} />
           </g>
         );
       })}
@@ -419,6 +442,30 @@ function PecaMisteriosa({ cor }: { cor: Cor }) {
     <g className={`peca peca-${cor} peca-misteriosa`} aria-label="Peça escondida na névoa">
       <circle cx={50} cy={52} r={32} strokeWidth={3} />
       <text x={50} y={66} textAnchor="middle">
+        ?
+      </text>
+    </g>
+  );
+}
+
+const COR_CAIXA: Record<Raridade, { corpo: string; borda: string }> = {
+  comum: { corpo: "#a3a8ae", borda: "#4b4f55" },
+  rara: { corpo: "#4f9be0", borda: "#1d4f80" },
+  lendaria: { corpo: "#f2c94c", borda: "#8a6a12" },
+};
+
+/** Caixa de airdrop (paraquedas + caixote) num quadro de 100 x 100. */
+export function DesenhoCaixa({ raridade }: { raridade: Raridade }) {
+  const { corpo, borda } = COR_CAIXA[raridade];
+  return (
+    <g className={`caixa-airdrop caixa-${raridade}`}>
+      {/* Paraquedas */}
+      <path d="M26 30 C 30 10, 70 10, 74 30 Z" fill="#f1f1f1" stroke={borda} strokeWidth="2" opacity="0.9" />
+      <path d="M28 30 L42 52 M50 30 L50 52 M72 30 L58 52" stroke={borda} strokeWidth="1.5" />
+      {/* Caixote */}
+      <rect x="30" y="50" width="40" height="34" rx="4" fill={corpo} stroke={borda} strokeWidth="3" />
+      <path d="M30 62 H70 M50 50 V84" stroke={borda} strokeWidth="2.5" />
+      <text x="50" y="80" textAnchor="middle" fontSize="16" fontWeight="800" fill={borda}>
         ?
       </text>
     </g>

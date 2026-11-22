@@ -78,7 +78,13 @@ function configValida(v: unknown): ConfigSala | null {
   if (!["padrao", "draft", "mao", "caos"].includes(c.regras as string)) return null;
   if (![3, 5, 10, null].includes(c.minutos as number | null)) return null;
   if (!["brancas", "pretas", "aleatoria"].includes(c.cor as string)) return null;
-  return { regras: c.regras!, minutos: c.minutos!, cor: c.cor!, casasEspeciais: c.casasEspeciais === true };
+  return {
+    regras: c.regras!,
+    minutos: c.minutos!,
+    cor: c.cor!,
+    casasEspeciais: c.casasEspeciais === true,
+    airdrops: c.airdrops === true,
+  };
 }
 
 function acaoValida(v: unknown): AcaoPartida | null {

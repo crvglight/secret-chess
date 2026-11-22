@@ -51,7 +51,7 @@ export function Inicio({ aoJogar, aoPersonalizar, aoVerProgresso }: Props) {
   const [nivel, setNivel] = useState<NivelAdversario>("medio");
   const [forca, setForca] = useState(FORCA_PADRAO);
   const [cor, setCor] = useState<EscolhaCor>("brancas");
-  const [casasEspeciais, setCasasEspeciais] = useState(false);
+  const [airdrops, setAirdrops] = useState(false);
   const [minutos, setMinutos] = useState<3 | 5 | 10 | null>(5);
   const [codigo, setCodigo] = useState("");
   const [criando, setCriando] = useState(false);
@@ -70,7 +70,7 @@ export function Inicio({ aoJogar, aoPersonalizar, aoVerProgresso }: Props) {
     setCriando(true);
     setErroSala(null);
     try {
-      const novo = await criarSala({ regras, casasEspeciais, minutos, cor });
+      const novo = await criarSala({ regras, casasEspeciais: false, airdrops, minutos, cor });
       location.hash = `sala-${novo}`;
     } catch (erro) {
       setErroSala(erro instanceof Error ? erro.message : "Não deu para criar a sala.");
@@ -85,11 +85,11 @@ export function Inicio({ aoJogar, aoPersonalizar, aoVerProgresso }: Props) {
       return;
     }
     if (configurando === "local") {
-      aoJogar({ tipo: "local", regras, casasEspeciais });
+      aoJogar({ tipo: "local", regras, airdrops });
       return;
     }
     const corHumano: Cor = cor === "aleatoria" ? (Math.random() < 0.5 ? "brancas" : "pretas") : cor;
-    aoJogar({ tipo: "ia", nivel, corHumano, regras, casasEspeciais, ...(nivel === "stockfish" ? { forca } : {}) });
+    aoJogar({ tipo: "ia", nivel, corHumano, regras, airdrops, ...(nivel === "stockfish" ? { forca } : {}) });
   }
 
   const progresso = lerProgresso();
@@ -146,13 +146,14 @@ export function Inicio({ aoJogar, aoPersonalizar, aoVerProgresso }: Props) {
             ))}
           </fieldset>
 
-          <label className={`opcao opcao-casas ${casasEspeciais ? "opcao-ativa" : ""}`}>
+          <label className={`opcao opcao-casas ${airdrops ? "opcao-ativa" : ""}`}>
             <span className="campo-liga">
-              <input type="checkbox" checked={casasEspeciais} onChange={(ev) => setCasasEspeciais(ev.target.checked)} />
-              <strong>Casas especiais</strong>
+              <input type="checkbox" checked={airdrops} onChange={(ev) => setAirdrops(ev.target.checked)} />
+              <strong>Airdrops</strong>
             </span>
             <span className="dica">
-              Sorteia 4 tipos (portal, lama, vulcão, névoa...) para o meio do tabuleiro, espelhados para os dois lados.
+              Caixas caem no meio do tabuleiro durante a partida. Leve uma peça até elas para ganhar uma recompensa
+              (peça extra, poder, escudo...) — mas cuidado, algumas são armadilhas!
             </span>
           </label>
 

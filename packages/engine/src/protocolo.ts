@@ -8,7 +8,10 @@ export type RegrasOnline = "padrao" | "draft" | "mao" | "caos";
 
 export interface ConfigSala {
   regras: RegrasOnline;
+  /** Casas especiais (opção antiga; o menu agora oferece os airdrops). */
   casasEspeciais: boolean;
+  /** Caixas com recompensa que caem durante a partida. */
+  airdrops?: boolean;
   /** Minutos para cada lado (null = sem relógio). */
   minutos: 3 | 5 | 10 | null;
   /** A cor de quem cria a sala. */

@@ -178,12 +178,13 @@ export class Sala {
   }
 
   private iniciarPartida(cartas: Record<Cor, CartasDoJogador>): void {
-    const { regras, casasEspeciais, minutos } = this.config;
+    const { regras, casasEspeciais, airdrops, minutos } = this.config;
     const estado = criarPartida({
       cartas,
       ...(regras === "mao" ? { maoDeCartas: { rng: this.rng } } : {}),
       ...(regras === "caos" ? { caos: { rng: this.rng } } : {}),
       ...(casasEspeciais ? { casasEspeciais: { rng: this.rng } } : {}),
+      ...(airdrops ? { airdrops: { rng: this.rng } } : {}),
     });
     this.estado = estado;
     this.inicial = estado;

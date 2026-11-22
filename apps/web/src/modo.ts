@@ -9,6 +9,8 @@ interface Opcoes {
   regras: RegrasPartida;
   /** Casas especiais no tabuleiro ("todas" = os 16 tipos de uma vez, para testar). */
   casasEspeciais?: boolean | "todas";
+  /** Airdrops: caixas com recompensa que caem durante a partida. */
+  airdrops?: boolean;
 }
 
 export type ModoPartida =

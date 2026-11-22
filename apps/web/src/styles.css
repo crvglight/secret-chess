@@ -2314,3 +2314,26 @@ input:focus-visible {
   font-size: 0.75rem;
   font-weight: 700;
 }
+
+/* Airdrops */
+.painel-airdrops h2 {
+  font-size: 1rem;
+  margin: 0 0 4px;
+}
+.lista-caixas,
+.registro-caixas {
+  list-style: none;
+  margin: 6px 0 0;
+  padding: 0;
+  display: grid;
+  gap: 6px;
+  font-size: 0.85rem;
+}
+.lista-caixas li {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.caixa-lendaria {
+  filter: drop-shadow(0 0 6px rgba(242, 201, 76, 0.8));
+}

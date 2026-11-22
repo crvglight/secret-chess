@@ -114,7 +114,7 @@ function descricaoModo(p: PartidaSalva): string {
   const quem =
     p.modo.tipo === "ia" ? `contra a IA (${NOME_NIVEL[p.modo.nivel].toLowerCase()})` : p.modo.tipo === "online" ? "online" : "local";
   const regras = p.modo.regras !== "padrao" ? ` · ${NOME_REGRAS[p.modo.regras]}` : "";
-  const casas = p.modo.casasEspeciais ? " · Casas especiais" : "";
+  const casas = (p.modo.casasEspeciais ? " · Casas especiais" : "") + (p.modo.airdrops ? " · Airdrops" : "");
   return `Partida ${quem}${regras}${casas}`;
 }
 

@@ -143,6 +143,20 @@ export function clonarEstado(e: Estado): Estado {
     ...(e.caos ? { caos: { ...e.caos, registro: e.caos.registro.slice() } } : {}),
     ...(e.casas ? { casas: { ...e.casas, registro: e.casas.registro.slice() } } : {}),
     ...(e.montadas ? { montadas: { ...e.montadas } } : {}),
+    ...(e.airdrops
+      ? {
+          // (Sem importar airdrops.ts aqui: evita um ciclo entre os módulos.)
+          airdrops: {
+            ...e.airdrops,
+            caixas: e.airdrops.caixas.slice(),
+            escudos: e.airdrops.escudos.slice(),
+            congeladas: e.airdrops.congeladas.slice(),
+            semDesvantagem: { ...e.airdrops.semDesvantagem },
+            espiando: { ...e.airdrops.espiando },
+            registro: e.airdrops.registro.slice(),
+          },
+        }
+      : {}),
   };
 }
 

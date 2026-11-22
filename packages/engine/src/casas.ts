@@ -159,7 +159,7 @@ export function filtrarPorCasas(estado: Estado, lances: Lance[]): Lance[] {
 }
 
 /** Dá +1 uso do poder (ou uma carta, na Mão de cartas). Devolve o texto do que aconteceu. */
-function recarregar(estado: Estado, cor: Cor): string {
+export function recarregar(estado: Estado, cor: Cor): string {
   const mao = estado.mao;
   if (mao) {
     if (mao.mao[cor].length < MAO_MAXIMA && mao.baralho[cor].length > 0) {

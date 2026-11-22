@@ -135,12 +135,13 @@ function modoDa(v: VistaSala): ModoPartida {
     codigo: v.codigo,
     regras: v.config.regras,
     casasEspeciais: v.config.casasEspeciais,
+    airdrops: v.config.airdrops === true,
   };
 }
 
 function resumoConfig(v: VistaSala): string {
   const tempo = v.config.minutos ? `${v.config.minutos} min para cada lado` : "sem relógio";
-  return `${NOME_REGRAS[v.config.regras]} · ${tempo}${v.config.casasEspeciais ? " · casas especiais" : ""}`;
+  return `${NOME_REGRAS[v.config.regras]} · ${tempo}${v.config.airdrops ? " · airdrops" : ""}${v.config.casasEspeciais ? " · casas especiais" : ""}`;
 }
 
 function Cartaz({ titulo, aoSair, children }: { titulo: string; aoSair(): void; children: ReactNode }) {

@@ -136,7 +136,12 @@ export const CONQUISTAS: Conquista[] = [
   { id: "draft", nome: "Bom de escolha", descricao: "Vença no modo Draft.", checar: (c) => c.venceu && c.partida.modo.regras === "draft" },
   { id: "mao", nome: "Mão boa", descricao: "Vença no modo Mão de cartas.", checar: (c) => c.venceu && c.partida.modo.regras === "mao" },
   { id: "caos", nome: "Domador do caos", descricao: "Vença no modo Caos.", checar: (c) => c.venceu && c.partida.modo.regras === "caos" },
-  { id: "casas", nome: "Explorador", descricao: "Vença com casas especiais.", checar: (c) => c.venceu && !!c.partida.modo.casasEspeciais },
+  {
+    id: "casas",
+    nome: "Explorador",
+    descricao: "Vença uma partida com airdrops.",
+    checar: (c) => c.venceu && (!!c.partida.modo.airdrops || !!c.partida.modo.casasEspeciais),
+  },
   {
     id: "superacao",
     nome: "Superação",

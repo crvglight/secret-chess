@@ -12,6 +12,7 @@ export * from "./draft.ts";
 export * from "./mao.ts";
 export * from "./eventos.ts";
 export * from "./casas.ts";
+export * from "./airdrops.ts";
 export * from "./personalizadas.ts";
 export * from "./protocolo.ts";
 export * from "./stockfish.ts";

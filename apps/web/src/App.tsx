@@ -17,13 +17,19 @@ void analiseLiberada();
 /**
  * Atalhos de URL: #local ou #ia-<facil|medio|dificil>-<brancas|pretas> abrem a partida direto.
  * Dá para acrescentar as regras no fim: #local-draft, #ia-medio-brancas-draft.
- * Com ?casas=1 na URL, a partida tem casas especiais (?casas=todas põe os 16 tipos).
+ * Com ?casas=1 na URL, a partida tem casas especiais (?casas=todas põe os 16 tipos);
+ * com ?airdrops=1, tem airdrops.
  */
 function modoDaUrl(): ModoPartida | null {
   const modo = modoDoHash();
-  const casas = new URLSearchParams(location.search).get("casas");
-  if (!modo || !casas) return modo;
-  return { ...modo, casasEspeciais: casas === "todas" ? "todas" : true };
+  if (!modo) return modo;
+  const busca = new URLSearchParams(location.search);
+  const casas = busca.get("casas");
+  return {
+    ...modo,
+    ...(casas ? { casasEspeciais: casas === "todas" ? ("todas" as const) : true } : {}),
+    ...(busca.get("airdrops") ? { airdrops: true } : {}),
+  };
 }
 
 function modoDoHash(): ModoPartida | null {

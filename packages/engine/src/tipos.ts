@@ -1,3 +1,4 @@
+import type { EstadoAirdrops } from "./airdrops.ts";
 export type Cor = "brancas" | "pretas";
 export const CORES: readonly Cor[] = ["brancas", "pretas"];
 
@@ -98,6 +99,8 @@ export interface Estado {
   casas?: EstadoCasas;
   /** Peças de carona (poder Yuumi): id da peça de baixo → a peça que está em cima dela. */
   montadas?: Record<number, Peca>;
+  /** Só com a opção de airdrops (caixas com recompensa). */
+  airdrops?: EstadoAirdrops;
 }
 
 export type TipoCasaEspecial =

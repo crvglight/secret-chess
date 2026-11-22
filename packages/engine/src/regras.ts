@@ -12,6 +12,15 @@ import {
   sortearCasas,
 } from "./casas.ts";
 import { avancarCaos, eventoAtivo, iniciarCaos } from "./eventos.ts";
+import {
+  abrirCaixas,
+  airdropsFiltram,
+  desvantagemDesligada,
+  espiandoPorAirdrop,
+  filtrarPorAirdrops,
+  iniciarAirdrops,
+  passoDosAirdrops,
+} from "./airdrops.ts";
 import { comprarSeForAHora, encerrarCartaJogada, montarMaos } from "./mao.ts";
 import { casaAtacada, gerarLancesBase } from "./movimentos.ts";
 import type { Aleatorio } from "./sorteio.ts";
@@ -58,6 +67,8 @@ function cartasEmJogo(estado: Estado): CartaEmJogo[] {
   const lista: CartaEmJogo[] = [];
   for (const dono of CORES) {
     for (const slot of SLOTS) {
+      // Airdrop "sem desvantagem": a desvantagem desse lado fica desligada por um tempo.
+      if (slot === "desvantagem" && desvantagemDesligada(estado, dono)) continue;
       const id = estado.cartas[dono][slot];
       if (id) lista.push({ carta: obterCarta(id), dono, slot });
     }
@@ -110,6 +121,8 @@ export interface OpcoesPartida {
   caos?: { rng?: Aleatorio };
   /** Casas especiais; vale em qualquer modo. `quantos` = quantos tipos sortear (padrão 4). */
   casasEspeciais?: { rng?: Aleatorio; quantos?: number };
+  /** Caixas com recompensa que caem durante a partida. */
+  airdrops?: { rng?: Aleatorio };
 }
 
 export function criarPartida(opcoes: OpcoesPartida = {}): Estado {
@@ -161,6 +174,7 @@ export function criarPartida(opcoes: OpcoesPartida = {}): Estado {
           },
         }
       : {}),
+    ...(opcoes.airdrops ? { airdrops: iniciarAirdrops(opcoes.airdrops.rng) } : {}),
   };
   if (lancesLegais(estado).length === 0) estado.resultado = semLances(estado);
   return estado;
@@ -205,6 +219,7 @@ function lancesSemXeque(estado: Estado, cor: Cor): Lance[] {
   const evento = eventoAtivo(estado);
   if (evento?.filtrarLances) lances = evento.filtrarLances(estado, lances, cor);
   lances = filtrarPorCasas(estado, lances);
+  lances = filtrarPorAirdrops(estado, lances);
   for (const c of cartasComFiltro(cartas, true)) lances = c.carta.filtrarLances!(ctxLeitura(estado, c), lances, cor);
   return lances;
 }
@@ -245,7 +260,8 @@ function reiAtacado(estado: Estado, cor: Cor): boolean {
   const criaLances = algoCriaLances(estado, cartas);
   const geometrico = casaAtacada(t, casaRei, adversario);
   if (!criaLances && !geometrico) return false;
-  const filtra = cartas.some((c) => c.carta.filtrarLances) || !!eventoAtivo(estado)?.filtrarLances || !!estado.casas;
+  const filtra =
+    cartas.some((c) => c.carta.filtrarLances) || !!eventoAtivo(estado)?.filtrarLances || !!estado.casas || airdropsFiltram(estado);
   if (!criaLances && !filtra) return geometrico;
 
   const vista = estado.vez === adversario ? estado : { ...estado, vez: adversario };
@@ -563,6 +579,8 @@ export function aplicarLanceGerado(estado: Estado, legal: Lance): Estado {
   }
 
   limparCaronas(novo);
+  // Airdrops: abre a caixa onde uma peça parou.
+  abrirCaixas(novo, estado.meioLance);
 
   // Uma carta pode ter tirado um rei do tabuleiro.
   const semRei = CORES.filter((c) => contarPecas(novo, c, "rei") === 0);
@@ -596,6 +614,8 @@ export function aplicarLanceGerado(estado: Estado, legal: Lance): Estado {
   avancarCaos(novo);
   // Casas especiais: vulcão, esteira e areia movediça.
   passoDasCasas(novo);
+  // Airdrops: efeitos que vencem e caixa nova na hora certa.
+  passoDosAirdrops(novo);
 
   if (novo.semProgresso >= 100) {
     novo.resultado = { vencedor: null, motivo: "50-lances" };
@@ -738,7 +758,8 @@ export interface DestaqueNoTabuleiro extends Destaque {
 
 /** As cartas de `cor` ficam abertas para o adversário (desvantagem Espião)? */
 export function cartasAbertas(estado: Estado, cor: Cor): boolean {
-  return estado.cartas[cor].desvantagem === "espiao";
+  // Desvantagem Espião, ou o adversário abriu um airdrop "espiar".
+  return estado.cartas[cor].desvantagem === "espiao" || espiandoPorAirdrop(estado, corOposta(cor));
 }
 
 export interface Disfarce {
