@@ -10,7 +10,7 @@ export default definirCarta<Dados>({
   id: "segunda-chance",
   nome: "Segunda chance",
   tipo: "poder",
-  peso: 4,
+  peso: 3,
   descricao:
     "Uma vez por partida, depois do lance do adversário, volte o tabuleiro para antes do seu último lance e jogue outro.",
   dadosIniciais: () => ({ foto: null }),

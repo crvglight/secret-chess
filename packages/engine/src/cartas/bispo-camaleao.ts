@@ -7,7 +7,7 @@ export default definirCarta({
   id: "bispo-camaleao",
   nome: "Bispo camaleão",
   tipo: "poder",
-  peso: 2,
+  peso: 3,
   descricao: "Seus bispos também andam 1 casa na reta (e assim trocam a cor da casa).",
 
   adicionarLances({ estado, dono }, jogador) {

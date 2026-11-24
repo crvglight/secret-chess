@@ -72,8 +72,8 @@ Rode na raiz do projeto:
 | Rei guerreiro | poder | 1 | Seu rei pode andar até 2 casas em linha reta, se a casa do meio estiver livre. |
 | Fantasma | poder | 3 | Suas torres e seus bispos podem atravessar uma peça sua no caminho. |
 | Avanço em massa | poder | 2 | Duas vezes por partida, mova dois peões diferentes no mesmo turno. |
-| Segunda chance | poder | 4 | Uma vez por partida, depois do lance do adversário, volte o tabuleiro para antes do seu último lance e jogue outro. |
-| Bispo camaleão | poder | 2 | Seus bispos também andam 1 casa na reta (e assim trocam a cor da casa). |
+| Segunda chance | poder | 3 | Uma vez por partida, depois do lance do adversário, volte o tabuleiro para antes do seu último lance e jogue outro. |
+| Bispo camaleão | poder | 3 | Seus bispos também andam 1 casa na reta (e assim trocam a cor da casa). |
 | Guarda real | poder | 2 | Peças suas encostadas no seu rei não podem ser capturadas por peões. |
 | Necromante | poder | 3 | Uma vez por partida, traga de volta a sua peça capturada mais valiosa (torre, bispo ou cavalo) para uma casa vazia da sua primeira fileira. |
 | Sniper | poder | 4 | Uma vez por partida, um bispo ou uma torre sua captura a distância, sem sair do lugar. |
@@ -86,7 +86,7 @@ Rode na raiz do projeto:
 | C4 | poder | 3 | A casa c4 é uma mina secreta: a peça do adversário que parar nela explode. Se for o rei, você vence! Vale a partida toda. |
 | F5 | poder | 2 | A casa f5 é secreta: a sua peça que parar nela vira outra peça sorteada (menos rei). Vale a partida toda. |
 | Daltônico | poder | 4 | Uma vez por partida, é como se todas as peças ficassem da mesma cor que as suas: mova uma peça do adversário (menos o rei) como se fosse sua; ela pode até capturar outra peça dele. |
-| Peãogonista | poder | 2 | Um dos seus peões é sorteado em segredo e ganha uma vida extra: na primeira vez que for capturado, ele fica intacto no lugar e o adversário perde o lance. |
+| Peãogonista | poder | 3 | Um dos seus peões é sorteado em segredo e ganha uma vida extra: na primeira vez que for capturado, ele fica intacto no lugar e o adversário perde o lance. |
 | Gigante da Colina | poder | 3 | Suas peças (menos o rei) nas 4 casas centrais (d4, d5, e4 e e5) só podem ser capturadas corpo a corpo: por uma peça encostada nelas. |
 | Bispos tímidos | desvantagem | 3 | Seus bispos não podem capturar. |
 | Rainha preguiçosa | desvantagem | 2 | Sua dama não pode se mover nos 5 primeiros lances. |

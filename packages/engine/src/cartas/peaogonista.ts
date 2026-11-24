@@ -29,7 +29,7 @@ export default definirCarta<Dados>({
   id: "peaogonista",
   nome: "Peãogonista",
   tipo: "poder",
-  peso: 2,
+  peso: 3,
   descricao:
     "Um dos seus peões é sorteado em segredo e ganha uma vida extra: na primeira vez que for capturado, ele fica intacto no lugar e o adversário perde o lance.",
   // O sorteio acontece quando a carta entra em jogo e fica guardado no estado
