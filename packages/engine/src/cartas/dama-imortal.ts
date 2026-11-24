@@ -9,7 +9,7 @@ export default definirCarta<Dados>({
   id: "dama-imortal",
   nome: "Dama imortal",
   tipo: "poder",
-  peso: 4,
+  peso: 5,
   descricao: "Uma vez por partida, se sua dama for capturada, ela volta para a casa inicial dela (se estiver vazia).",
   dadosIniciais: () => ({ usada: false }),
 

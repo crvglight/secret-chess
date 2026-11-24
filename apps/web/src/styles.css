@@ -2375,3 +2375,38 @@ input:focus-visible {
   background: var(--poder);
   color: #10200f;
 }
+
+/* Jogadores enfrentados e amigos */
+.lista-jogadores {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+}
+.lista-jogadores li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 1px solid var(--painel-borda);
+  border-radius: 8px;
+  background: var(--painel);
+}
+.lista-jogadores li.amigo {
+  border-color: var(--destaque);
+}
+.jogador-info {
+  flex: 1;
+  display: grid;
+}
+.botao-estrela {
+  border: 0;
+  background: none;
+  font-size: 1.3rem;
+  cursor: pointer;
+  color: var(--destaque);
+}
+.filtro-historico {
+  margin: 0 0 10px;
+}

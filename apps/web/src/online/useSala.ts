@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import type { AcaoPartida, CartasDoJogador, Cor, Reacao, RespostaAssistir, RespostaSala, VistaSala } from "@xadrez/engine";
-import { conexao, guardarToken, lerApelido, lerToken } from "./conexao.ts";
+import { conexao, esquecerToken, guardarToken, lerApelido, lerToken } from "./conexao.ts";
 
 export interface EstadoSala {
   vista: VistaSala | null;
@@ -98,6 +98,14 @@ export function useSala(codigo: string, assistir = false) {
   const reagir = useCallback((r: Reacao) => conexao().emit("reagir", r), []);
   const desistir = useCallback(() => conexao().emit("desistir"), []);
   const revanche = useCallback(() => conexao().emit("revanche"), []);
+  /** Larga a vaga e passa a assistir à sala. */
+  const virarEspectador = useCallback(() => {
+    conexao().emit("virarEspectador", (ok: boolean) => {
+      if (!ok) return;
+      esquecerToken(codigo);
+      location.hash = `#assistir-${codigo}`;
+    });
+  }, [codigo]);
 
-  return { ...estado, enviar, escolherDraft, rerolarDraft, reagir, desistir, revanche };
+  return { ...estado, enviar, escolherDraft, rerolarDraft, reagir, desistir, revanche, virarEspectador };
 }

@@ -34,6 +34,15 @@ export function lerToken(codigo: string): string | undefined {
   }
 }
 
+/** Esquece a vaga de jogador desta sala (ex.: virou espectador). */
+export function esquecerToken(codigo: string): void {
+  try {
+    localStorage.removeItem(chaveToken(codigo));
+  } catch {
+    // Sem localStorage: nada guardado.
+  }
+}
+
 export function guardarToken(codigo: string, token: string): void {
   try {
     localStorage.setItem(chaveToken(codigo), token);

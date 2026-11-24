@@ -63,7 +63,7 @@ Rode na raiz do projeto:
 | Congelar | poder | 3 | Uma vez por partida, escolha uma peça do adversário (menos o rei): ela não pode se mover na próxima rodada dele. |
 | Armadilha | poder | 3 | Uma vez por partida, marque em segredo uma casa vazia: a peça do adversário que parar ali é capturada (o rei escapa). |
 | Troca de lugar | poder | 2 | Uma vez por partida, duas peças suas trocam de lugar (isso gasta o seu lance). |
-| Dama imortal | poder | 4 | Uma vez por partida, se sua dama for capturada, ela volta para a casa inicial dela (se estiver vazia). |
+| Dama imortal | poder | 5 | Uma vez por partida, se sua dama for capturada, ela volta para a casa inicial dela (se estiver vazia). |
 | Peões guerreiros | poder | 2 | Seus peões também capturam a peça que está bem na frente deles. |
 | Recuo tático | poder | 1 | Seus peões podem andar 1 casa para trás, sem capturar (nunca até a sua primeira fileira). |
 | Promoção antecipada | poder | 3 | Seus peões já promovem ao chegar na 6ª fileira (3ª para as pretas). |

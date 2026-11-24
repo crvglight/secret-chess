@@ -170,6 +170,18 @@ io.on("connection", (socket: Socket<EventosDoCliente, EventosDoServidor>) => {
     else enviarVistas(atual.sala);
   });
 
+  socket.on("virarEspectador", async (responder) => {
+    const cor = minhaCor();
+    if (!atual || !cor || typeof responder !== "function") return;
+    const { sala, token } = atual;
+    if (!sala.sairParaAssistir(cor)) return responder(false);
+    // Deixa de ser jogador: o navegador entra de novo como espectador (assistirSala).
+    socket.leave(canal(sala.codigo, token));
+    atual = null;
+    enviarVistas(sala);
+    responder(true);
+  });
+
   socket.on("rerolarDraft", () => {
     const cor = minhaCor();
     if (!atual || !cor) return;

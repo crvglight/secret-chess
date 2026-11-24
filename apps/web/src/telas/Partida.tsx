@@ -135,6 +135,8 @@ export interface ControleOnline {
   linkAssistir: string;
   /** No fim: o estado inicial e as ações completos (para a análise). */
   final: { inicial: Estado; acoes: AcaoPartida[] } | null;
+  /** No fim: larga a vaga e passa a assistir à sala. */
+  aoVirarEspectador(): void;
   revanchePedida: Record<Cor, boolean>;
   aoRevanche(): void;
   aoDesistir(): void;
@@ -197,7 +199,9 @@ export function Partida({ modo, cartas, aoSair, aoRevanche, online }: Props) {
   useEffect(() => {
     if (online || !estado.resultado || salvo.current) return;
     salvo.current = true;
-    setNovidades(registrarFimDePartida(modo, inicial, acoes.current, estado));
+    setNovidades(
+      registrarFimDePartida(modo, inicial, acoes.current, estado, modo.tipo === "ia" ? nomeDaIA(modo.nivel, modo.forca) : undefined),
+    );
   }, [estado, inicial, modo, online]);
   const [selecionada, setSelecionada] = useState<Casa | null>(null);
   const [modoPoder, setModoPoder] = useState(false);
@@ -547,6 +551,8 @@ export function Partida({ modo, cartas, aoSair, aoRevanche, online }: Props) {
       tempo={tempoDe(cor)}
       relogioCorrendo={online?.relogio?.correndo === cor}
       cartasVisiveis={espectador || visiveis[cor] || estado.resultado !== null || cartasAbertas(estado, cor)}
+      // Draft: as desvantagens são conhecidas (cada um escolheu a do outro).
+      desvantagemAberta={modo.regras === "draft"}
       modoPoder={modoPoder && estado.vez === cor}
       aoAlternarCartas={() => setVisiveis((v) => ({ ...v, [cor]: !v[cor] }))}
       aoUsarPoder={aoUsarPoder}
@@ -771,6 +777,7 @@ export function Partida({ modo, cartas, aoSair, aoRevanche, online }: Props) {
           aoNovaPartida={aoSair}
           aoFechar={() => setFimFechado(true)}
           aoAnalisar={paraAnalisar ? () => setAnalisando(true) : undefined}
+          aoVirarEspectador={online && !espectador ? online.aoVirarEspectador : undefined}
           novidades={online ? online.novidades : novidades}
           revanche={online && !espectador ? { pedida: online.revanchePedida, minhaCor: corHumano! } : undefined}
         />

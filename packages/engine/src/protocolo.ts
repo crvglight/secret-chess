@@ -76,6 +76,8 @@ export interface EventosDoCliente {
   escolherDraft(escolha: CartasDoJogador): void;
   /** Draft: troca as opções deste jogador (uma vez por partida). */
   rerolarDraft(): void;
+  /** No fim da partida: larga a vaga de jogador (para depois assistir à sala). */
+  virarEspectador(responder: (ok: boolean) => void): void;
   acao(acao: AcaoPartida): void;
   reagir(reacao: Reacao): void;
   desistir(): void;

@@ -289,6 +289,24 @@ export class Sala {
     this.fase = "fim";
   }
 
+  /**
+   * No fim da partida, o jogador larga a vaga (vai assistir). A sala volta a esperar
+   * um segundo jogador; quem ficou continua na mesma cor.
+   */
+  sairParaAssistir(cor: Cor): boolean {
+    if (this.fase !== "fim") return false;
+    this.jogadores[cor] = null;
+    this.estado = null;
+    this.inicial = null;
+    this.acoes = [];
+    this.relogio = null;
+    this.ofertas = null;
+    this.revanche = { brancas: false, pretas: false };
+    this.fase = "aguardando";
+    this.ultimaAtividade = this.agora();
+    return true;
+  }
+
   /** Revanche: quando os dois pedem, começa outra partida com as cores trocadas. */
   pedirRevanche(cor: Cor): void {
     if (this.fase !== "fim") return;
@@ -333,6 +351,18 @@ export class Sala {
 
       let oculto = estado;
       for (const lado of escondidos) oculto = ocultarCartasDe(oculto, lado);
+      // Draft: a desvantagem do adversário foi você quem escolheu, então ela fica à mostra
+      // (o poder dele continua secreto).
+      if (this.config.regras === "draft" && !espectador) {
+        oculto = {
+          ...oculto,
+          cartas: { ...oculto.cartas, [adversario]: { ...oculto.cartas[adversario], desvantagem: estado.cartas[adversario].desvantagem } },
+          dadosCartas: {
+            ...oculto.dadosCartas,
+            [adversario]: { ...oculto.dadosCartas[adversario], desvantagem: estado.dadosCartas[adversario].desvantagem },
+          },
+        };
+      }
       const tabuleiro = oculto.tabuleiro.slice();
       for (const d of disfarcesDasCartas(estado)) {
         const p = tabuleiro[d.casa];

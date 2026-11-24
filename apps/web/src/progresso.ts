@@ -21,6 +21,8 @@ export interface PartidaSalva {
   modo: ModoPartida;
   inicial: Estado;
   acoes: AcaoPartida[];
+  /** Com quem foi a partida (apelido do adversário online ou nome da IA). */
+  adversario?: string;
   /** Estado final resumido, para a lista do histórico. */
   vencedor: Cor | null;
   motivo: string;
@@ -34,6 +36,8 @@ export interface Progresso {
   /** Carta → partidas em que esteve em jogo e vitórias de quem a tinha. */
   estatisticas: Record<string, { jogos: number; vitorias: number }>;
   partidas: PartidaSalva[];
+  /** Adversários marcados como amigos (pelo apelido). */
+  amigos?: string[];
 }
 
 const CHAVE = "xadrez-progresso";
@@ -51,6 +55,7 @@ export function lerProgresso(): Progresso {
       conquistas: salvo.conquistas ?? {},
       estatisticas: salvo.estatisticas ?? {},
       partidas: salvo.partidas ?? [],
+      amigos: salvo.amigos ?? [],
     };
   } catch {
     return NOVO;
@@ -184,6 +189,8 @@ export function registrarFimDePartida(
   inicial: Estado,
   acoes: AcaoPartida[],
   final: Estado,
+  /** Com quem foi a partida (apelido do adversário online ou nome da IA). */
+  adversario?: string,
 ): Novidades {
   const p = lerProgresso();
   const r = final.resultado!;
@@ -203,6 +210,7 @@ export function registrarFimDePartida(
     modo,
     inicial,
     acoes,
+    ...(adversario ? { adversario } : {}),
     vencedor: r.vencedor,
     motivo: r.motivo,
     meioLances: final.meioLance,
@@ -258,3 +266,50 @@ export function textoVencedor(p: PartidaSalva): string {
   return p.vencedor === "brancas" ? "Brancas venceram" : "Pretas venceram";
 }
 
+
+// ---------------------------------------------------------------------------
+// Jogadores e amigos
+// ---------------------------------------------------------------------------
+
+export interface ResumoJogador {
+  nome: string;
+  partidas: number;
+  vitorias: number;
+  derrotas: number;
+  empates: number;
+  ultima: number;
+  amigo: boolean;
+}
+
+/** Os adversários online que você já enfrentou, com o placar contra cada um (amigos primeiro). */
+export function jogadoresEnfrentados(p: Progresso): ResumoJogador[] {
+  const mapa = new Map<string, ResumoJogador>();
+  const amigos = new Set(p.amigos ?? []);
+  for (const partida of p.partidas) {
+    if (partida.modo.tipo !== "online" || !partida.adversario) continue;
+    const nome = partida.adversario;
+    const r = mapa.get(nome) ?? { nome, partidas: 0, vitorias: 0, derrotas: 0, empates: 0, ultima: 0, amigo: amigos.has(nome) };
+    r.partidas++;
+    if (!partida.vencedor) r.empates++;
+    else if (partida.vencedor === partida.modo.corHumano) r.vitorias++;
+    else r.derrotas++;
+    r.ultima = Math.max(r.ultima, partida.data);
+    mapa.set(nome, r);
+  }
+  // Amigos que ainda não têm partida salva (ex.: o histórico antigo foi limpo) continuam na lista.
+  for (const nome of amigos) {
+    if (!mapa.has(nome)) mapa.set(nome, { nome, partidas: 0, vitorias: 0, derrotas: 0, empates: 0, ultima: 0, amigo: true });
+  }
+  return [...mapa.values()].sort((a, b) => Number(b.amigo) - Number(a.amigo) || b.ultima - a.ultima);
+}
+
+/** Marca ou desmarca um adversário como amigo. Devolve o progresso novo. */
+export function alternarAmigo(nome: string): Progresso {
+  const p = lerProgresso();
+  const amigos = new Set(p.amigos ?? []);
+  if (amigos.has(nome)) amigos.delete(nome);
+  else amigos.add(nome);
+  const novo = { ...p, amigos: [...amigos] };
+  salvarProgresso(novo);
+  return novo;
+}

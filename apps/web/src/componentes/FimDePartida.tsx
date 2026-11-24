@@ -11,6 +11,8 @@ interface Props {
   aoFechar(): void;
   /** Abre a análise da partida (erros, acertos e o uso das cartas). */
   aoAnalisar?(): void;
+  /** Online: larga a vaga e passa a assistir à sala. */
+  aoVirarEspectador?(): void;
   /** Conquistas desta partida. */
   novidades?: Novidades | null;
   /** Online: quem já pediu revanche. */
@@ -28,7 +30,7 @@ function cartasDoLado(estado: Estado, cor: Cor): (string | null)[] {
   return [estado.cartas[cor].desvantagem, ...new Set(jogadas)];
 }
 
-export function FimDePartida({ estado, aoRevanche, aoNovaPartida, aoFechar, aoAnalisar, novidades, revanche }: Props) {
+export function FimDePartida({ estado, aoRevanche, aoNovaPartida, aoFechar, aoAnalisar, aoVirarEspectador, novidades, revanche }: Props) {
   const pediu = revanche?.pedida[revanche.minhaCor];
   const adversarioPediu = revanche && revanche.pedida[revanche.minhaCor === "brancas" ? "pretas" : "brancas"];
   return (
@@ -101,6 +103,16 @@ export function FimDePartida({ estado, aoRevanche, aoNovaPartida, aoFechar, aoAn
           {aoAnalisar && (
             <button type="button" className="botao botao-secundario" onClick={aoAnalisar}>
               🔍 Analisar partida
+            </button>
+          )}
+          {aoVirarEspectador && (
+            <button
+              type="button"
+              className="botao botao-secundario"
+              onClick={aoVirarEspectador}
+              title="Libera a sua vaga para outra pessoa jogar e você passa a assistir à sala"
+            >
+              👁 Virar espectador
             </button>
           )}
           <button type="button" className="botao botao-secundario" onClick={aoNovaPartida}>

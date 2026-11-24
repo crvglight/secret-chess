@@ -5,7 +5,9 @@ import { AnalisePartida } from "./AnalisePartida.tsx";
 import { Tabuleiro } from "../componentes/Tabuleiro.tsx";
 import { NOME_NIVEL, NOME_REGRAS } from "../modo.ts";
 import {
+  alternarAmigo,
   CONQUISTAS,
+  jogadoresEnfrentados,
   lerProgresso,
   reconstruirPartida,
   textoVencedor,
@@ -14,19 +16,22 @@ import {
 } from "../progresso.ts";
 import { explicacaoResultado, NOME_COR } from "../textos.ts";
 
-type Aba = "conquistas" | "historico" | "estatisticas";
+type Aba = "conquistas" | "historico" | "jogadores" | "estatisticas";
 
 const ABAS: { id: Aba; nome: string }[] = [
   { id: "conquistas", nome: "Conquistas" },
   { id: "historico", nome: "Histórico" },
+  { id: "jogadores", nome: "Jogadores" },
   { id: "estatisticas", nome: "Estatísticas" },
 ];
 
 const SEM_ACAO = () => {};
 
 export function Progresso({ aoVoltar }: { aoVoltar(): void }) {
-  const [progresso] = useState(lerProgresso);
+  const [progresso, setProgresso] = useState(lerProgresso);
   const [aba, setAba] = useState<Aba>("conquistas");
+  /** Histórico só das partidas contra este jogador (null = todas). */
+  const [filtro, setFiltro] = useState<string | null>(null);
   const [revendo, setRevendo] = useState<PartidaSalva | null>(null);
   const [analisando, setAnalisando] = useState<PartidaSalva | null>(null);
   const paraAnalise = useMemo(
@@ -71,7 +76,25 @@ export function Progresso({ aoVoltar }: { aoVoltar(): void }) {
 
       <section className="conteudo-aba" role="tabpanel">
         {aba === "conquistas" && <Conquistas progresso={progresso} />}
-        {aba === "historico" && <Historico progresso={progresso} aoRever={setRevendo} aoAnalisar={setAnalisando} />}
+        {aba === "historico" && (
+          <Historico
+            progresso={progresso}
+            filtro={filtro}
+            aoLimparFiltro={() => setFiltro(null)}
+            aoRever={setRevendo}
+            aoAnalisar={setAnalisando}
+          />
+        )}
+        {aba === "jogadores" && (
+          <Jogadores
+            progresso={progresso}
+            aoAlternarAmigo={(nome) => setProgresso(alternarAmigo(nome))}
+            aoVerPartidas={(nome) => {
+              setFiltro(nome);
+              setAba("historico");
+            }}
+          />
+        )}
         {aba === "estatisticas" && <Estatisticas progresso={progresso} />}
       </section>
     </div>
@@ -120,22 +143,37 @@ function descricaoModo(p: PartidaSalva): string {
 
 function Historico({
   progresso,
+  filtro,
+  aoLimparFiltro,
   aoRever,
   aoAnalisar,
 }: {
   progresso: DadosProgresso;
+  filtro: string | null;
+  aoLimparFiltro(): void;
   aoRever(p: PartidaSalva): void;
   aoAnalisar(p: PartidaSalva): void;
 }) {
   if (progresso.partidas.length === 0) {
     return <p className="subtitulo">Nenhuma partida terminada ainda. Jogue uma e ela aparece aqui.</p>;
   }
+  const partidas = filtro ? progresso.partidas.filter((p) => p.modo.tipo === "online" && p.adversario === filtro) : progresso.partidas;
   return (
+    <>
+    {filtro && (
+      <p className="filtro-historico">
+        Partidas contra <strong>{filtro}</strong>{" "}
+        <button type="button" className="botao-link" onClick={aoLimparFiltro}>
+          ver todas
+        </button>
+      </p>
+    )}
     <ul className="lista-partidas">
-      {progresso.partidas.map((p) => (
+      {partidas.map((p) => (
         <li key={p.id}>
           <span>
             <strong>{textoVencedor(p)}</strong> · {descricaoModo(p)}
+            {p.adversario && p.modo.tipo === "online" && <> · contra <strong>{p.adversario}</strong></>}
             <span className="dica">
               {new Date(p.data).toLocaleString("pt-BR")} · {Math.ceil(p.meioLances / 2)} lances
             </span>
@@ -151,6 +189,7 @@ function Historico({
         </li>
       ))}
     </ul>
+    </>
   );
 }
 
@@ -314,5 +353,53 @@ function Replay({ partida, aoVoltar, aoAnalisar }: { partida: PartidaSalva; aoVo
         </aside>
       </div>
     </div>
+  );
+}
+
+/** Adversários online que você já enfrentou, com o placar; dá para marcar amigos. */
+function Jogadores({
+  progresso,
+  aoAlternarAmigo,
+  aoVerPartidas,
+}: {
+  progresso: DadosProgresso;
+  aoAlternarAmigo(nome: string): void;
+  aoVerPartidas(nome: string): void;
+}) {
+  const jogadores = jogadoresEnfrentados(progresso);
+  if (jogadores.length === 0) {
+    return <p className="subtitulo">Você ainda não terminou nenhuma partida online. Os adversários aparecem aqui.</p>;
+  }
+  return (
+    <>
+      <p className="subtitulo">Quem você já enfrentou online. Marque ⭐ para deixar seus amigos no topo da lista.</p>
+      <ul className="lista-jogadores">
+        {jogadores.map((j) => (
+          <li key={j.nome} className={j.amigo ? "amigo" : ""}>
+            <button
+              type="button"
+              className="botao-estrela"
+              aria-pressed={j.amigo}
+              aria-label={j.amigo ? `Tirar ${j.nome} dos amigos` : `Marcar ${j.nome} como amigo`}
+              onClick={() => aoAlternarAmigo(j.nome)}
+            >
+              {j.amigo ? "⭐" : "☆"}
+            </button>
+            <span className="jogador-info">
+              <strong>{j.nome}</strong>
+              <span className="dica">
+                {j.partidas} partida(s) · {j.vitorias}V {j.derrotas}D {j.empates}E
+                {j.ultima > 0 && ` · última em ${new Date(j.ultima).toLocaleDateString("pt-BR")}`}
+              </span>
+            </span>
+            {j.partidas > 0 && (
+              <button type="button" className="botao botao-secundario botao-pequeno" onClick={() => aoVerPartidas(j.nome)}>
+                Ver partidas
+              </button>
+            )}
+          </li>
+        ))}
+      </ul>
+    </>
   );
 }

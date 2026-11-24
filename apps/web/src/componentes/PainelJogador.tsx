@@ -9,6 +9,8 @@ interface Props {
   /** false = lado da IA: sem botões de ver cartas e de poder. */
   controlavel: boolean;
   cartasVisiveis: boolean;
+  /** A desvantagem fica à mostra mesmo com as cartas viradas (Draft: foi o adversário que escolheu). */
+  desvantagemAberta?: boolean;
   modoPoder: boolean;
   aoAlternarCartas(): void;
   aoUsarPoder(): void;
@@ -33,6 +35,7 @@ export function PainelJogador({
   nome,
   controlavel,
   cartasVisiveis,
+  desvantagemAberta = false,
   modoPoder,
   tempo,
   relogioCorrendo,
@@ -78,7 +81,7 @@ export function PainelJogador({
         />
         <CartaVisual
           cartaId={cartas.desvantagem}
-          virada={!cartasVisiveis}
+          virada={!cartasVisiveis && !(desvantagemAberta && cartas.desvantagem)}
           rodape={resumoDaCarta(estado, cor, "desvantagem") ?? undefined}
         />
       </div>

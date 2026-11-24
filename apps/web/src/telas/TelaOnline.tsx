@@ -61,7 +61,8 @@ function SalaConectada({ codigo, assistir, aoSair }: { codigo: string; assistir:
     }
     if (salvo.current || !v.final || !v.estado) return;
     salvo.current = true;
-    setNovidades(registrarFimDePartida(modoDa(v), v.final.inicial, v.final.acoes, v.estado));
+    const adversario = v.jogadores[corOposta(v.minhaCor)]?.apelido;
+    setNovidades(registrarFimDePartida(modoDa(v), v.final.inicial, v.final.acoes, v.estado, adversario));
   }, [v]);
 
   if (sala.erro && !v) {
@@ -142,6 +143,7 @@ function SalaConectada({ codigo, assistir, aoSair }: { codigo: string; assistir:
         conectados: { brancas: !!v.jogadores.brancas?.conectado, pretas: !!v.jogadores.pretas?.conectado },
         linkAssistir: linkParaAssistir(v.codigo),
         final: v.final,
+        aoVirarEspectador: sala.virarEspectador,
         revanchePedida: v.revanchePedida,
         aoRevanche: sala.revanche,
         aoDesistir: sala.desistir,

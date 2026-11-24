@@ -160,6 +160,33 @@ describe("Sala online", () => {
     expect(sala.vista("pretas").draftEspectador).toBeNull();
   });
 
+  it("draft: cada jogador vê a desvantagem que deu ao adversário (o poder dele continua secreto)", () => {
+    const { sala } = novaSala({ regras: "draft" });
+    sala.entrar("Ana");
+    sala.entrar("Bia");
+    const ob = sala.vista("brancas").oferta!;
+    const op = sala.vista("pretas").oferta!;
+    sala.escolherDraft("brancas", { poder: ob.poderes[0]!, desvantagem: ob.desvantagens[0]! });
+    sala.escolherDraft("pretas", { poder: op.poderes[0]!, desvantagem: op.desvantagens[0]! });
+    const dasBrancas = sala.vista("brancas").estado!;
+    expect(dasBrancas.cartas.pretas.desvantagem).toBe(ob.desvantagens[0]);
+    expect(dasBrancas.cartas.pretas.poder).toBeNull();
+  });
+
+  it("no fim, um jogador vira espectador e a vaga fica livre para outra pessoa", () => {
+    const { sala } = novaSala();
+    sala.entrar("Ana");
+    sala.entrar("Bia");
+    expect(sala.sairParaAssistir("pretas")).toBe(false); // ainda jogando
+    sala.desistir("brancas");
+    expect(sala.sairParaAssistir("pretas")).toBe(true);
+    expect(sala.fase).toBe("aguardando");
+    expect(sala.jogadores.pretas).toBeNull();
+    expect(sala.entrar("Caio")).toMatchObject({ ok: true, cor: "pretas" });
+    expect(sala.fase).toBe("jogando");
+    expect(sala.jogadores.brancas?.apelido).toBe("Ana");
+  });
+
   it("revanche: com os dois pedindo, começa outra partida com as cores trocadas", () => {
     const { sala } = novaSala();
     sala.entrar("Ana");
