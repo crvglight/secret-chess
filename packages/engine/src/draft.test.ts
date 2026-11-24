@@ -51,14 +51,16 @@ describe("Draft", () => {
     expect(oferta.desvantagens).toContain(escolha.desvantagem);
   });
 
-  it("o re-roll troca as cartas por outras do mesmo peso, sem repetir as das ofertas", () => {
+  it("o re-roll troca todas as cartas, nunca repete as de antes (nem as do adversário)", () => {
     const rng = aleatorioComSemente(5);
     for (let i = 0; i < 200; i++) {
       const { brancas, pretas } = sortearDraft(rng);
       const ocupadas = new Set([...brancas.poderes, ...brancas.desvantagens, ...pretas.poderes, ...pretas.desvantagens]);
       const nova = rerolarOferta(brancas, rng, undefined, false, ocupadas);
-      expect(pesos(nova.poderes)).toEqual(pesos(brancas.poderes));
-      expect(pesos(nova.desvantagens)).toEqual(pesos(brancas.desvantagens));
+      // Nenhuma carta da oferta anterior volta.
+      for (const id of [...nova.poderes, ...nova.desvantagens]) {
+        expect([...brancas.poderes, ...brancas.desvantagens]).not.toContain(id);
+      }
       const todas = [...nova.poderes, ...nova.desvantagens];
       expect(new Set(todas).size).toBe(todas.length);
       // Nada da oferta das pretas aparece; quase sempre tudo muda.

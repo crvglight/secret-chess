@@ -49,10 +49,10 @@ export function sortearDraft(
 }
 
 /**
- * Re-roll do Draft: troca todas as cartas da oferta por outras do MESMO peso (assim a
- * oferta continua tão boa quanto a do adversário). `ocupadas` são as cartas que não
- * podem aparecer (as das duas ofertas atuais). Se não houver outra carta daquele peso,
- * a carta fica.
+ * Re-roll do Draft: troca todas as cartas da oferta por outras, nunca repetindo as de
+ * antes. Usa cartas do MESMO peso (a oferta continua tão boa quanto a do adversário);
+ * se não sobrar nenhuma daquele peso, usa a do peso mais próximo. `ocupadas` são as
+ * cartas que não podem aparecer (as das duas ofertas atuais).
  */
 export function rerolarOferta(
   oferta: OfertaDraft,
@@ -64,10 +64,11 @@ export function rerolarOferta(
   const usadas = new Set([...ocupadas, ...oferta.poderes, ...oferta.desvantagens]);
   const trocar = (id: string) => {
     const atual = obterCarta(id);
-    const opcoes = cartas.filter(
-      (c) => c.tipo === atual.tipo && c.peso === atual.peso && !usadas.has(c.id) && (comRelogio || !c.exigeRelogio),
-    );
-    if (opcoes.length === 0) return id;
+    const livres = cartas.filter((c) => c.tipo === atual.tipo && !usadas.has(c.id) && (comRelogio || !c.exigeRelogio));
+    if (livres.length === 0) return id; // (só se o baralho inteiro acabasse)
+    // Mesmo peso; se não houver, o mais próximo.
+    const menorDiferenca = Math.min(...livres.map((c) => Math.abs(c.peso - atual.peso)));
+    const opcoes = livres.filter((c) => Math.abs(c.peso - atual.peso) === menorDiferenca);
     const nova = opcoes[Math.floor(rng() * opcoes.length)]!;
     usadas.add(nova.id);
     return nova.id;
