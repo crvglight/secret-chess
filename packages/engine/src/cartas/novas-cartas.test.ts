@@ -116,7 +116,7 @@ describe("poderes novos", () => {
     expect(destinos(e, "d4")).toHaveLength(16);
   });
 
-  it("Torres ágeis: torre anda 1 casa na diagonal", () => {
+  it("Torres Tortas: torre anda 1 casa na diagonal", () => {
     const e = criarPartida({ fen: "4k3/8/8/8/3R4/8/8/4K3 w - - 0 1", cartas: branca("torres-ageis") });
     expect(destinos(e, "d4")).toHaveLength(18);
   });
@@ -146,7 +146,7 @@ describe("poderes novos", () => {
     expect(e.usosPoder.brancas).toBe(1);
   });
 
-  it("Segunda chance volta para antes do seu último lance", () => {
+  it("Save State volta para antes do seu último lance", () => {
     const e0 = criarPartida({ cartas: branca("segunda-chance") });
     expect(infoPoder(e0).disponivel).toBe(false);
     let e = sequencia(e0, "e2-e4 e7-e5");

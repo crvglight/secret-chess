@@ -109,7 +109,7 @@ describe("Cavalo saltador", () => {
   });
 });
 
-describe("Peão veloz", () => {
+describe("Energético (antigo Peão veloz)", () => {
   const partida = () => criarPartida({ cartas: { brancas: { poder: "peao-veloz" } } });
 
   it("o peão anda 2 casas fora da fileira inicial", () => {

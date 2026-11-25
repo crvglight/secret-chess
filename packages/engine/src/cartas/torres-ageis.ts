@@ -5,7 +5,7 @@ import type { Lance } from "../tipos.ts";
 
 export default definirCarta({
   id: "torres-ageis",
-  nome: "Torres ágeis",
+  nome: "Torres Tortas",
   tipo: "poder",
   peso: 2,
   descricao: "Suas torres também andam 1 casa na diagonal.",

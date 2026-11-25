@@ -10,7 +10,7 @@ export default definirCarta<Dados>({
   id: "congelar",
   nome: "Congelar",
   tipo: "poder",
-  peso: 3,
+  peso: 2,
   descricao: "Uma vez por partida, escolha uma peça do adversário (menos o rei): ela não pode se mover na próxima rodada dele.",
   dadosIniciais: () => ({ pecaId: null }),
 

@@ -7,7 +7,7 @@ export default definirCarta({
   id: "promocao-antecipada",
   nome: "Promoção antecipada",
   tipo: "poder",
-  peso: 3,
+  peso: 4,
   descricao: "Seus peões já promovem ao chegar na 6ª fileira (3ª para as pretas).",
   // Transforma os lances antes dos outros filtros.
   ordemFiltro: -1,

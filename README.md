@@ -58,21 +58,21 @@ Rode na raiz do projeto:
 | ----- | ---- | ---- | ------ |
 | Escudo | poder | 3 | Uma vez por partida, escolha uma peça sua: ela não pode ser capturada na próxima rodada do adversário. |
 | Cavalo saltador | poder | 3 | Uma vez por partida, um cavalo seu pode fazer dois lances seguidos. |
-| Peão veloz | poder | 2 | Seus peões podem andar 2 casas de qualquer fileira, se o caminho estiver livre. |
+| Energético | poder | 2 | Seus peões podem andar 2 casas de qualquer fileira, se o caminho estiver livre. |
 | Teleporte | poder | 3 | Uma vez por partida, leve uma peça sua (menos o rei) para qualquer casa vazia da sua metade do tabuleiro. |
-| Congelar | poder | 3 | Uma vez por partida, escolha uma peça do adversário (menos o rei): ela não pode se mover na próxima rodada dele. |
+| Congelar | poder | 2 | Uma vez por partida, escolha uma peça do adversário (menos o rei): ela não pode se mover na próxima rodada dele. |
 | Armadilha | poder | 3 | Uma vez por partida, marque em segredo uma casa vazia: a peça do adversário que parar ali é capturada (o rei escapa). |
 | Troca de lugar | poder | 2 | Uma vez por partida, duas peças suas trocam de lugar (isso gasta o seu lance). |
 | Dama imortal | poder | 5 | Uma vez por partida, se sua dama for capturada, ela volta para a casa inicial dela (se estiver vazia). |
 | Peões guerreiros | poder | 2 | Seus peões também capturam a peça que está bem na frente deles. |
 | Recuo tático | poder | 1 | Seus peões podem andar 1 casa para trás, sem capturar (nunca até a sua primeira fileira). |
-| Promoção antecipada | poder | 3 | Seus peões já promovem ao chegar na 6ª fileira (3ª para as pretas). |
+| Promoção antecipada | poder | 4 | Seus peões já promovem ao chegar na 6ª fileira (3ª para as pretas). |
 | Cavalaria pesada | poder | 3 | Seus cavalos também andam 1 casa em qualquer direção, como o rei. |
-| Torres ágeis | poder | 2 | Suas torres também andam 1 casa na diagonal. |
+| Torres Tortas | poder | 2 | Suas torres também andam 1 casa na diagonal. |
 | Rei guerreiro | poder | 1 | Seu rei pode andar até 2 casas em linha reta, se a casa do meio estiver livre. |
-| Fantasma | poder | 3 | Suas torres e seus bispos podem atravessar uma peça sua no caminho. |
+| Fantasma | poder | 4 | Suas torres e seus bispos podem atravessar uma peça sua no caminho. |
 | Avanço em massa | poder | 2 | Duas vezes por partida, mova dois peões diferentes no mesmo turno. |
-| Segunda chance | poder | 3 | Uma vez por partida, depois do lance do adversário, volte o tabuleiro para antes do seu último lance e jogue outro. |
+| Save State | poder | 3 | Uma vez por partida, depois do lance do adversário, volte o tabuleiro para antes do seu último lance e jogue outro. |
 | Bispo camaleão | poder | 3 | Seus bispos também andam 1 casa na reta (e assim trocam a cor da casa). |
 | Guarda real | poder | 2 | Peças suas encostadas no seu rei não podem ser capturadas por peões. |
 | Necromante | poder | 3 | Uma vez por partida, traga de volta a sua peça capturada mais valiosa (torre, bispo ou cavalo) para uma casa vazia da sua primeira fileira. |

@@ -30,7 +30,7 @@ export default definirCarta({
   id: "fantasma",
   nome: "Fantasma",
   tipo: "poder",
-  peso: 3,
+  peso: 4,
   descricao: "Suas torres e seus bispos podem atravessar uma peça sua no caminho.",
 
   adicionarLances({ estado, dono }, jogador) {

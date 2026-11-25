@@ -5,7 +5,7 @@ import type { Lance } from "../tipos.ts";
 
 export default definirCarta({
   id: "peao-veloz",
-  nome: "Peão veloz",
+  nome: "Energético",
   tipo: "poder",
   peso: 2,
   descricao: "Seus peões podem andar 2 casas de qualquer fileira, se o caminho estiver livre.",

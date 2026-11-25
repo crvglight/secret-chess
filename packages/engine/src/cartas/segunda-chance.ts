@@ -8,7 +8,7 @@ interface Dados {
 
 export default definirCarta<Dados>({
   id: "segunda-chance",
-  nome: "Segunda chance",
+  nome: "Save State",
   tipo: "poder",
   peso: 3,
   descricao:
