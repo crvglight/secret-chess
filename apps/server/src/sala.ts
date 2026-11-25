@@ -15,6 +15,7 @@ import {
   jogarCartaDaMao,
   ladosComVigia,
   motivoBloqueio,
+  passarVez,
   ocultarCartasDe,
   sortearCartas,
   sortearDraft,
@@ -222,6 +223,7 @@ export class Sala {
     let novo: Estado;
     try {
       if (acao.tipo === "carta") novo = jogarCartaDaMao(estado, acao.indice);
+      else if (acao.tipo === "passar") novo = passarVez(estado);
       else if (acao.tipo === "poder") novo = usarPoder(estado, acao.alvo);
       else novo = aplicarLance(estado, acao.lance);
     } catch (erro) {

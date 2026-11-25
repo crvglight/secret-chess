@@ -187,6 +187,18 @@ describe("Sala online", () => {
     expect(sala.jogadores.brancas?.apelido).toBe("Ana");
   });
 
+  it("Multitasking: o servidor aceita perder a vez só de quem tem a carta", () => {
+    const { sala } = novaSala();
+    sala.entrar("Ana");
+    sala.entrar("Bia");
+    semCartas(sala);
+    expect(sala.agir("brancas", { tipo: "passar" })).toBeTruthy(); // sem a carta: recusado
+    sala.estado = { ...sala.estado!, cartas: { ...sala.estado!.cartas, brancas: { poder: null, desvantagem: "multitasking" } } };
+    expect(sala.agir("brancas", { tipo: "passar" })).toBeNull();
+    expect(sala.estado!.vez).toBe("pretas");
+    expect(sala.acoes.at(-1)).toEqual({ tipo: "passar" });
+  });
+
   it("revanche: com os dois pedindo, começa outra partida com as cores trocadas", () => {
     const { sala } = novaSala();
     sala.entrar("Ana");

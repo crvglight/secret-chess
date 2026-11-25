@@ -91,6 +91,7 @@ function acaoValida(v: unknown): AcaoPartida | null {
   const a = v as Record<string, unknown> | null;
   if (!a || typeof a !== "object") return null;
   if (a.tipo === "carta" && Number.isInteger(a.indice)) return { tipo: "carta", indice: a.indice as number };
+  if (a.tipo === "passar") return { tipo: "passar" };
   if (a.tipo === "poder" && (a.alvo === null || casaValida(a.alvo))) return { tipo: "poder", alvo: a.alvo as number | null };
   const l = a.lance as Record<string, unknown> | undefined;
   if (a.tipo === "lance" && l && casaValida(l.de) && casaValida(l.para)) {

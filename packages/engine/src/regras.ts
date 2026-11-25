@@ -618,12 +618,22 @@ export function aplicarLanceGerado(estado: Estado, legal: Lance): Estado {
   if (novo.repetirVez) {
     novo.repetirVez = false;
   } else {
-    novo.vez = corOposta(cor);
-    novo.poderUsadoNoTurno = false;
-    for (const c of cartas) c.carta.inicioDoTurno?.(ctxEscrita(novo, c), novo.vez);
-    // Mão de cartas: a carta que este lado jogou na rodada passada sai de jogo.
-    encerrarCartaJogada(novo, novo.vez);
+    passarAVez(novo, cartas);
   }
+  return fimDoTurno(novo);
+}
+
+/** A vez vai para o outro lado (o estado já é uma cópia). */
+function passarAVez(novo: Estado, cartas: CartaEmJogo[]): void {
+  novo.vez = corOposta(novo.vez);
+  novo.poderUsadoNoTurno = false;
+  for (const c of cartas) c.carta.inicioDoTurno?.(ctxEscrita(novo, c), novo.vez);
+  // Mão de cartas: a carta que este lado jogou na rodada passada sai de jogo.
+  encerrarCartaJogada(novo, novo.vez);
+}
+
+/** Depois de cada lance (ou vez perdida): eventos, casas, airdrops e fim de partida. */
+function fimDoTurno(novo: Estado): Estado {
   // Modo Caos: talvez seja hora de um evento global.
   avancarCaos(novo);
   // Casas especiais: vulcão, esteira e areia movediça.
@@ -639,6 +649,37 @@ export function aplicarLanceGerado(estado: Estado, legal: Lance): Estado {
     novo.resultado = semLances(novo);
   }
   return novo;
+}
+
+/** `cor` tem a desvantagem Multitasking valendo agora (inclusive como desvantagem extra)? */
+export function temMultitasking(estado: Estado, cor: Cor = estado.vez): boolean {
+  return cartasEmJogo(estado).some((c) => c.dono === cor && c.carta.id === "multitasking");
+}
+
+/** Motivo para não poder perder a vez agora (null = pode). */
+export function travaDePassar(estado: Estado): string | null {
+  if (estado.resultado) return "A partida já terminou";
+  if (!temMultitasking(estado)) return "Só quem tem Multitasking perde a vez";
+  if (reiAtacado(estado, estado.vez)) return "Em xeque o lance só é cancelado (não dá para perder a vez)";
+  return null;
+}
+
+/**
+ * Multitasking: errou as palavras, perde a vez. Conta como um lance seu (os contadores
+ * das cartas andam), mas nenhuma peça se mexe. Em xeque não vale (veja travaDePassar).
+ */
+export function passarVez(estado: Estado): Estado {
+  const trava = travaDePassar(estado);
+  if (trava) throw new Error(trava);
+  const novo = clonarEstado(estado);
+  const cor = estado.vez;
+  novo.meioLance++;
+  novo.lancesFeitos[cor]++;
+  novo.enPassant = null;
+  novo.semProgresso++;
+  novo.eventos.push({ meioLance: estado.meioLance, cor, cartaId: "multitasking", texto: "Multitasking: errou as palavras e perdeu a vez" });
+  passarAVez(novo, cartasEmJogo(novo));
+  return fimDoTurno(novo);
 }
 
 /** Quem tem a vez ficou sem lance: em xeque é xeque-mate; fora do xeque é afogamento (empate). */

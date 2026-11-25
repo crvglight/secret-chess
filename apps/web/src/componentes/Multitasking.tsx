@@ -25,7 +25,8 @@ export function sortearPalavras(): string {
 const normalizar = (t: string) => t.trim().toLowerCase().replace(/\s+/g, " ");
 
 /**
- * Desvantagem Multitasking: para confirmar o lance, digite as 3 palavras em 7 segundos.
+ * Desvantagem Multitasking: para confirmar o lance, digite as 3 palavras em 7 segundos
+ * (errou ou acabou o tempo: perde a vez).
  * `aoDigitar` recebe o texto a cada tecla (para o adversário ver online).
  */
 export function JanelaMultitasking({
@@ -52,7 +53,7 @@ export function JanelaMultitasking({
       setRestante(Math.max(0, r));
       if (r <= 0 && !terminou.current) {
         terminou.current = true;
-        aoFalhar("Acabou o tempo! O lance não aconteceu.");
+        aoFalhar("Acabou o tempo!");
       }
     }, 100);
     return () => clearInterval(id);
@@ -63,7 +64,7 @@ export function JanelaMultitasking({
     if (terminou.current) return;
     terminou.current = true;
     if (normalizar(texto) === normalizar(palavras)) aoAcertar();
-    else aoFalhar("Errou as palavras! O lance não aconteceu.");
+    else aoFalhar("Errou as palavras!");
   }
 
   return (

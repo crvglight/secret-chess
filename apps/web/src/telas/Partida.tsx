@@ -39,6 +39,8 @@ import {
   desvantagemDesligada,
   type Digitacao,
   type Espiada,
+  passarVez,
+  travaDePassar,
 } from "@xadrez/engine";
 import { EscolhaPromocao } from "../componentes/EscolhaPromocao.tsx";
 import { SeletorVisual } from "../componentes/SeletorVisual.tsx";
@@ -820,7 +822,15 @@ export function Partida({ modo, cartas, aoSair, aoRevanche, online }: Props) {
             online?.enviarDigitacao(null);
             setSelecionada(null);
             setPromocao(null);
-            setAviso(motivo);
+            setModoPoder(false);
+            // Errou: o lance é anulado e você perde a vez (em xeque, só cancela o lance).
+            const trava = travaDePassar(estado);
+            if (trava === null) {
+              setEstado(passarVez(estado), { tipo: "passar" });
+              setAviso(`${motivo} O lance foi anulado e você perdeu a vez.`);
+            } else {
+              setAviso(`${motivo} Você está em xeque: o lance foi cancelado, tente de novo.`);
+            }
           }}
         />
       )}

@@ -21,6 +21,8 @@ export interface ConfigSala {
 /** O que o jogador faz na vez dele (o mesmo formato do replay). */
 export type AcaoPartida =
   | { tipo: "carta"; indice: number }
+  /** Multitasking: errou as palavras e perdeu a vez. */
+  | { tipo: "passar" }
   | { tipo: "poder"; alvo: Casa | null }
   | { tipo: "lance"; lance: Lance };
 

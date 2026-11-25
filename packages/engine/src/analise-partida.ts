@@ -6,7 +6,7 @@ import type { AcaoPartida } from "./protocolo.ts";
 import { analisarJogadaFeita, melhorOpcao, NOTA_VITORIA, type OpcaoAnalisada } from "./ia/busca.ts";
 import { obterCarta } from "./cartas/index.ts";
 import { jogarCartaDaMao } from "./mao.ts";
-import { aplicarLance, lancesLegais, usarPoder } from "./regras.ts";
+import { aplicarLance, lancesLegais, passarVez, usarPoder } from "./regras.ts";
 import type { Casa, Cor, Estado, Lance } from "./tipos.ts";
 
 export type Classificacao = "brilhante" | "melhor" | "bom" | "imprecisao" | "erro" | "erro-grave";
@@ -94,6 +94,17 @@ export function turnosDaPartida(inicial: Estado, acoes: readonly AcaoPartida[]):
   let passo = 0;
   let aberto: { antes: Estado; passoAntes: number; carta: number | null; poder: { alvo: Casa | null } | null } | null = null;
   for (const a of acoes) {
+    // Vez perdida (Multitasking): não é uma jogada para analisar.
+    if (a.tipo === "passar") {
+      try {
+        estado = passarVez(estado);
+      } catch {
+        break;
+      }
+      passo++;
+      aberto = null;
+      continue;
+    }
     if (!aberto) aberto = { antes: estado, passoAntes: passo, carta: null, poder: null };
     try {
       if (a.tipo === "carta") {

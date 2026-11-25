@@ -127,7 +127,7 @@ Rode na raiz do projeto:
 | Femme Fatale | desvantagem | 3 | Você só pode dar xeque-mate no rei adversário com a sua dama. |
 | Salário Mínimo | desvantagem | 3 | Orçamento de 100 casas de movimento; quando acabar, você perde uma peça a cada vez sua, até sobrar só o rei. |
 | Esquerdista | desvantagem | 2 | Seus bispos só capturam nas diagonais para a esquerda (do seu ponto de vista). |
-| Multitasking | desvantagem | 3 | Para confirmar cada lance, digite sem erros as 3 palavras que aparecerem, em até 7 segundos. Se errar, o lance não acontece. |
+| Multitasking | desvantagem | 3 | Para confirmar cada lance, digite sem erros as 3 palavras que aparecerem, em até 7 segundos. Se errar (ou o tempo acabar), o lance é anulado e você perde a vez (em xeque, só cancela o lance). |
 | Torres Gêmeas | desvantagem | 2 | Se você perder uma das suas torres, a outra cai junto. |
 | Sortudo | desvantagem | 1 | Você foi abençoado pelos deuses do xadrez: não há desvantagem. (Rara: sai ~4x menos que as outras.) |
 

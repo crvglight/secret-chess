@@ -7,6 +7,8 @@ import {
   nomeCasa,
   sortearCartas,
   type Estado,
+  passarVez,
+  travaDePassar,
   type OpcoesPartida,
 } from "../index.ts";
 import { casasSemSinal } from "./voanet.ts";
@@ -118,5 +120,23 @@ describe("Voanet, Femme Fatale e Salário Mínimo", () => {
     const e = { ...e0, dadosCartas: { ...e0.dadosCartas, brancas: { ...e0.dadosCartas.brancas, desvantagem: { gasto: 100 } } } };
     const d = jogar(e, "e8", "d8");
     expect(d.tabuleiro.filter((p) => p?.cor === "brancas" && p.tipo === "peao")).toHaveLength(2);
+  });
+});
+
+describe("Multitasking: perder a vez", () => {
+  it("quem tem Multitasking perde a vez: nenhuma peça se mexe e a vez passa", () => {
+    const e = criarPartida({ cartas: brancas(null, "multitasking") });
+    const d = passarVez(e);
+    expect(d.vez).toBe("pretas");
+    expect(d.tabuleiro).toEqual(e.tabuleiro);
+    expect(d.lancesFeitos.brancas).toBe(1);
+    expect(d.eventos.at(-1)?.texto).toContain("perdeu a vez");
+  });
+
+  it("sem a carta, ou em xeque, não dá para perder a vez", () => {
+    expect(travaDePassar(criarPartida())).not.toBeNull();
+    expect(() => passarVez(criarPartida())).toThrow();
+    const xeque = criarPartida({ fen: "4r1k1/8/8/8/8/8/8/4K3 w - - 0 1", cartas: brancas(null, "multitasking") });
+    expect(travaDePassar(xeque)).toContain("xeque");
   });
 });

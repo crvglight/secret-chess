@@ -5,6 +5,7 @@ import {
   contarPecas,
   jogarCartaDaMao,
   obterCarta,
+  passarVez,
   usarPoder,
   type AcaoPartida,
   type Cor,
@@ -250,6 +251,7 @@ export function reconstruirPartida(partida: Pick<PartidaSalva, "inicial" | "acoe
   for (const a of partida.acoes) {
     try {
       if (a.tipo === "carta") e = jogarCartaDaMao(e, a.indice);
+      else if (a.tipo === "passar") e = passarVez(e);
       else if (a.tipo === "poder") e = usarPoder(e, a.alvo);
       else e = aplicarLance(e, a.lance);
     } catch {
