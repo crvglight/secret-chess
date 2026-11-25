@@ -182,6 +182,37 @@ io.on("connection", (socket: Socket<EventosDoCliente, EventosDoServidor>) => {
     responder(true);
   });
 
+  // Wallhack: repassa o que este jogador olha ao adversário, só se o adversário tiver a carta.
+  socket.on("espiar", (dados) => {
+    const cor = minhaCor();
+    if (!atual || !cor || !dados || typeof dados !== "object") return;
+    const sala = atual.sala;
+    const adv = cor === "brancas" ? "pretas" : "brancas";
+    const j = sala.jogadores[adv];
+    if (!j || sala.fase !== "jogando" || sala.estado?.cartas[adv].poder !== "wallhack") return;
+    const casas = (v: unknown) => (Array.isArray(v) ? v.filter(casaValida).slice(0, 64) : []);
+    const setas = Array.isArray(dados.setas)
+      ? dados.setas.filter((s) => s && casaValida(s.de) && casaValida(s.para)).slice(0, 32).map((s) => ({ de: s.de, para: s.para }))
+      : [];
+    io.to(canal(sala.codigo, j.token)).emit("espiada", {
+      selecionada: casaValida(dados.selecionada) ? dados.selecionada : null,
+      setas,
+      marcas: casas(dados.marcas),
+    });
+  });
+
+  // Multitasking: mostra ao adversário (e a quem assiste) o que o jogador está digitando.
+  socket.on("digitando", (dados) => {
+    const cor = minhaCor();
+    if (!atual || !cor) return;
+    const digitacao = dados && typeof dados === "object" ? { palavras: texto(dados.palavras, 80), texto: texto(dados.texto, 80) } : null;
+    const sala = atual.sala;
+    const adv = cor === "brancas" ? "pretas" : "brancas";
+    const j = sala.jogadores[adv];
+    if (j) io.to(canal(sala.codigo, j.token)).emit("digitacao", { cor, digitacao });
+    io.to(canalEspectadores(sala.codigo)).emit("digitacao", { cor, digitacao });
+  });
+
   socket.on("rerolarDraft", () => {
     const cor = minhaCor();
     if (!atual || !cor) return;

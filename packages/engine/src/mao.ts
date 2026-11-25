@@ -17,7 +17,7 @@ const TAMANHO_BARALHO = 24;
 const FORA_DA_MAO = new Set(["segunda-chance"]);
 
 export function cartasDaMao(cartas: readonly CartaQualquer[] = CARTAS_OFICIAIS): CartaQualquer[] {
-  return cartas.filter((c) => c.tipo === "poder" && !FORA_DA_MAO.has(c.id) && !c.exigeRelogio);
+  return cartas.filter((c) => c.tipo === "poder" && !FORA_DA_MAO.has(c.id) && !c.foraDaMao && !c.exigeRelogio && !c.exigeOnline);
 }
 
 function sortearPeso(pesos: number[], rng: Aleatorio): number {

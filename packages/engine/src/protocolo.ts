@@ -24,6 +24,19 @@ export type AcaoPartida =
   | { tipo: "poder"; alvo: Casa | null }
   | { tipo: "lance"; lance: Lance };
 
+/** Wallhack: o que o jogador está olhando (peça selecionada, setas e marcações). */
+export interface Espiada {
+  selecionada: Casa | null;
+  setas: { de: Casa; para: Casa }[];
+  marcas: Casa[];
+}
+
+/** Multitasking: as palavras que o jogador tem que digitar e o que ele já digitou. */
+export interface Digitacao {
+  palavras: string;
+  texto: string;
+}
+
 /** Reações prontas (não existe chat livre). */
 export const REACOES = ["Boa!", "GG", "Uau!", "Ops!", "Bom jogo!", "Hmm…"] as const;
 export type Reacao = (typeof REACOES)[number];
@@ -78,6 +91,10 @@ export interface EventosDoCliente {
   rerolarDraft(): void;
   /** No fim da partida: larga a vaga de jogador (para depois assistir à sala). */
   virarEspectador(responder: (ok: boolean) => void): void;
+  /** Wallhack: o que este jogador está olhando (o servidor só repassa a quem tem a carta). */
+  espiar(dados: Espiada): void;
+  /** Multitasking: o que este jogador está digitando (null = terminou). */
+  digitando(dados: Digitacao | null): void;
   acao(acao: AcaoPartida): void;
   reagir(reacao: Reacao): void;
   desistir(): void;
@@ -89,4 +106,8 @@ export interface EventosDoServidor {
   sala(vista: VistaSala): void;
   recusado(motivo: string): void;
   reacao(dados: { cor: Cor; reacao: Reacao }): void;
+  /** Wallhack: o que o adversário está olhando. */
+  espiada(dados: Espiada): void;
+  /** Multitasking: o que um jogador está digitando (null = terminou). */
+  digitacao(dados: { cor: Cor; digitacao: Digitacao | null }): void;
 }

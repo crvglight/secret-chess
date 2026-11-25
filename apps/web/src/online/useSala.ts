@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import type { AcaoPartida, CartasDoJogador, Cor, Reacao, RespostaAssistir, RespostaSala, VistaSala } from "@xadrez/engine";
+import type { AcaoPartida, CartasDoJogador, Cor, Digitacao, Espiada, Reacao, RespostaAssistir, RespostaSala, VistaSala } from "@xadrez/engine";
 import { conexao, esquecerToken, guardarToken, lerApelido, lerToken } from "./conexao.ts";
 
 export interface EstadoSala {
@@ -11,6 +11,10 @@ export interface EstadoSala {
   recusa: { texto: string; id: number } | null;
   /** Reações recebidas. "meu" e "nome" são fixados na chegada (a cor de cada um troca na revanche). */
   reacoes: ReacaoRecebida[];
+  /** Wallhack: o que o adversário está olhando. */
+  espiada: Espiada | null;
+  /** Multitasking: quem está digitando o quê. */
+  digitacao: { cor: Cor; digitacao: Digitacao } | null;
 }
 
 export interface ReacaoRecebida {
@@ -32,6 +36,8 @@ export function useSala(codigo: string, assistir = false) {
     erro: null,
     recusa: null,
     reacoes: [],
+    espiada: null,
+    digitacao: null,
   });
 
   useEffect(() => {
@@ -81,6 +87,11 @@ export function useSala(codigo: string, assistir = false) {
     s.on("sala", aoVista);
     s.on("recusado", aoRecusa);
     s.on("reacao", aoReagir);
+    const aoEspiada = (espiada: Espiada) => setEstado((e) => ({ ...e, espiada }));
+    const aoDigitacao = (d: { cor: Cor; digitacao: Digitacao | null }) =>
+      setEstado((e) => ({ ...e, digitacao: d.digitacao ? { cor: d.cor, digitacao: d.digitacao } : null }));
+    s.on("espiada", aoEspiada);
+    s.on("digitacao", aoDigitacao);
     if (s.connected) aoConectar();
     return () => {
       s.off("connect", aoConectar);
@@ -89,6 +100,8 @@ export function useSala(codigo: string, assistir = false) {
       s.off("sala", aoVista);
       s.off("recusado", aoRecusa);
       s.off("reacao", aoReagir);
+      s.off("espiada", aoEspiada);
+      s.off("digitacao", aoDigitacao);
     };
   }, [codigo, assistir]);
 
@@ -98,6 +111,8 @@ export function useSala(codigo: string, assistir = false) {
   const reagir = useCallback((r: Reacao) => conexao().emit("reagir", r), []);
   const desistir = useCallback(() => conexao().emit("desistir"), []);
   const revanche = useCallback(() => conexao().emit("revanche"), []);
+  const espiar = useCallback((dados: Espiada) => conexao().emit("espiar", dados), []);
+  const digitar = useCallback((dados: Digitacao | null) => conexao().emit("digitando", dados), []);
   /** Larga a vaga e passa a assistir à sala. */
   const virarEspectador = useCallback(() => {
     conexao().emit("virarEspectador", (ok: boolean) => {
@@ -107,5 +122,5 @@ export function useSala(codigo: string, assistir = false) {
     });
   }, [codigo]);
 
-  return { ...estado, enviar, escolherDraft, rerolarDraft, reagir, desistir, revanche, virarEspectador };
+  return { ...estado, enviar, escolherDraft, rerolarDraft, reagir, desistir, revanche, virarEspectador, espiar, digitar };
 }

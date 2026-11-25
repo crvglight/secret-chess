@@ -23,7 +23,7 @@ const SLOTS: SlotCarta[] = ["poder", "desvantagem"];
 
 /** Cartas a revelar de um lado. No modo Mão de cartas: a desvantagem e os poderes que ele jogou. */
 function cartasDoLado(estado: Estado, cor: Cor): (string | null)[] {
-  if (!estado.mao) return SLOTS.map((slot) => estado.cartas[cor][slot]);
+  if (!estado.mao) return [...SLOTS.map((slot) => estado.cartas[cor][slot]), ...(estado.cartas[cor].extra ? [estado.cartas[cor].extra!] : [])];
   const jogadas = estado.eventos
     .filter((e) => e.cor === cor && obterCarta(e.cartaId).tipo === "poder")
     .map((e) => e.cartaId);

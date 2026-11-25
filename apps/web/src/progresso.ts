@@ -176,9 +176,10 @@ export interface Novidades {
 function cartasDosLados(final: Estado): Record<Cor, Set<string>> {
   const lados: Record<Cor, Set<string>> = { brancas: new Set(), pretas: new Set() };
   for (const cor of ["brancas", "pretas"] as const) {
-    const { poder, desvantagem } = final.cartas[cor];
+    const { poder, desvantagem, extra } = final.cartas[cor];
     if (poder) lados[cor].add(poder);
     if (desvantagem) lados[cor].add(desvantagem);
+    if (extra) lados[cor].add(extra);
   }
   for (const e of final.eventos) if (e.texto.startsWith("Jogou a carta")) lados[e.cor].add(e.cartaId);
   return lados;

@@ -33,10 +33,39 @@ export function chanceDoPeso(peso: number): number {
   return Math.max(1, 6 - peso);
 }
 
+/**
+ * Chance de UMA carta sair no Draft e nos sorteios extras: diferença leve entre os pesos
+ * (peso 1 → 1, peso 5 → 0,5). Como é por carta (e não por peso), os pesos com mais
+ * cartas não ficam repetindo as mesmas poucas cartas.
+ */
+export function fatorDoPeso(peso: number): number {
+  return [1, 0.87, 0.75, 0.62, 0.5][Math.max(1, Math.min(5, peso)) - 1]!;
+}
+
+/** Sorteio ponderado de uma carta pelo fatorDoPeso. */
+export function sortearCartaPonderada(cartas: readonly CartaQualquer[], rng: Aleatorio): CartaQualquer {
+  return escolherPonderado(cartas, rng, (c) => fatorDoPeso(c.peso));
+}
+
+/**
+ * Desvantagem extra (poder Spyware do adversário): sorteada entre as desvantagens que
+ * não estão em `excluir` (nem Sortudo, que não atrapalha nada).
+ */
+export function sortearDesvantagemExtra(
+  rng: Aleatorio = Math.random,
+  excluir: readonly (string | null | undefined)[] = [],
+  comRelogio = false,
+): string {
+  const opcoes = CARTAS_OFICIAIS.filter(
+    (c) => c.tipo === "desvantagem" && c.id !== "sortudo" && !excluir.includes(c.id) && (comRelogio || !c.exigeRelogio),
+  );
+  return sortearCartaPonderada(opcoes, rng).id;
+}
+
 const chanceDaCombinacao = (c: Combinacao) => chanceDoPeso(c.poder.peso) * chanceDoPeso(c.desvantagem.peso);
 
 /** Sorteio ponderado: cada item sai com probabilidade proporcional à sua chance. */
-function escolher<T>(lista: readonly T[], rng: Aleatorio, chance: (item: T) => number): T {
+export function escolherPonderado<T>(lista: readonly T[], rng: Aleatorio, chance: (item: T) => number): T {
   const total = lista.reduce((s, item) => s + chance(item), 0);
   let r = rng() * total;
   for (const item of lista) {
@@ -56,8 +85,10 @@ export function sortearCartas(
   cartas: readonly CartaQualquer[] = CARTAS_OFICIAIS,
   /** Partida com relógio: as cartas que dependem dele (ex.: Lentidão) também entram. */
   comRelogio = false,
+  /** Partida online: as cartas que só fazem sentido online (ex.: Wallhack) também entram. */
+  online = false,
 ): Record<Cor, CartasDoJogador> {
-  const sorteaveis = cartas.filter((c) => comRelogio || !c.exigeRelogio);
+  const sorteaveis = cartas.filter((c) => (comRelogio || !c.exigeRelogio) && (online || !c.exigeOnline));
   const poderes = sorteaveis.filter((c) => c.tipo === "poder");
   const desvantagens = sorteaveis.filter((c) => c.tipo === "desvantagem");
   if (poderes.length === 0 || desvantagens.length === 0) throw new Error("Faltam cartas para o sorteio");
@@ -66,10 +97,10 @@ export function sortearCartas(
     desvantagens.map((desvantagem) => ({ poder, desvantagem, saldo: poder.peso - desvantagem.peso })),
   );
 
-  const a = escolher(combinacoes, rng, chanceDaCombinacao);
+  const a = escolherPonderado(combinacoes, rng, chanceDaCombinacao);
   const equilibradas = combinacoes.filter((c) => Math.abs(c.saldo - a.saldo) <= DIFERENCA_MAXIMA);
   const diferentes = equilibradas.filter((c) => c.poder !== a.poder && c.desvantagem !== a.desvantagem);
-  const b = escolher(diferentes.length > 0 ? diferentes : equilibradas, rng, chanceDaCombinacao);
+  const b = escolherPonderado(diferentes.length > 0 ? diferentes : equilibradas, rng, chanceDaCombinacao);
 
   const [brancas, pretas] = rng() < 0.5 ? [a, b] : [b, a];
   return {

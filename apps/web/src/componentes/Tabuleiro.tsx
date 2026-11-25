@@ -1,4 +1,4 @@
-import { useId, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import {
   casa,
   coluna,
@@ -9,6 +9,7 @@ import {
   type Estado,
   type Lance,
   type Peca,
+  type Espiada,
   type Raridade,
   type TipoPeca,
 } from "@xadrez/engine";
@@ -45,6 +46,10 @@ interface Props {
   corUnica?: Cor;
   /** Caixas de airdrop no tabuleiro (só a raridade aparece). */
   caixas?: { casa: Casa; raridade: Raridade }[];
+  /** Avisa quando as setas e marcações (botão direito) mudam (poder Wallhack do adversário). */
+  aoMudarAnotacoes?(setas: { de: Casa; para: Casa }[], marcas: Casa[]): void;
+  /** Wallhack: o que o adversário está olhando (desenhado em roxo). */
+  espiada?: Espiada | null;
   podeArrastar(casa: Casa): boolean;
   aoTocarCasa(casa: Casa): void;
   aoSoltar(de: Casa, para: Casa): void;
@@ -72,6 +77,11 @@ export function Tabuleiro(props: Props) {
   const [arraste, setArraste] = useState<Arraste | null>(null);
   const [setas, setSetas] = useState<Seta[]>([]);
   const [marcas, setMarcas] = useState<Casa[]>([]);
+  const aoMudarAnotacoes = props.aoMudarAnotacoes;
+  useEffect(() => {
+    aoMudarAnotacoes?.(setas, marcas);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [setas, marcas]);
   const [desenho, setDesenho] = useState<Seta | null>(null);
   // A peça solta pelo arrasto não desliza de novo da casa de origem.
   const [semAnimacao, setSemAnimacao] = useState<number | null>(null);
@@ -184,6 +194,9 @@ export function Tabuleiro(props: Props) {
         <marker id="ponta-seta-ia" viewBox="0 0 10 10" refX="0" refY="5" markerWidth="3" markerHeight="3" orient="auto">
           <path d="M0 0 L10 5 L0 10 z" className="ponta-seta-ia" />
         </marker>
+        <marker id="ponta-seta-espiada" viewBox="0 0 10 10" refX="0" refY="5" markerWidth="3" markerHeight="3" orient="auto">
+          <path d="M0 0 L10 5 L0 10 z" className="ponta-seta-espiada" />
+        </marker>
       </defs>
       {casas.map((c) => {
         const { x, y } = posicao(c);
@@ -287,6 +300,23 @@ export function Tabuleiro(props: Props) {
           <circle key={`d-${l.para}-${l.promocao ?? ""}`} className="marca-lance" cx={x + 50} cy={y + 50} r={15} />
         );
       })}
+
+      {props.espiada && (
+        <g className="espiada" aria-hidden="true">
+          {props.espiada.selecionada !== null &&
+            (() => {
+              const { x, y } = posicao(props.espiada.selecionada);
+              return <rect className="casa-espiada" x={x + 3} y={y + 3} width={LADO - 6} height={LADO - 6} rx={8} />;
+            })()}
+          {props.espiada.marcas.map((c) => {
+            const { x, y } = posicao(c);
+            return <circle key={`em-${c}`} className="marca-espiada" cx={x + 50} cy={y + 50} r={44} />;
+          })}
+          {props.espiada.setas.map((s, i) => (
+            <polyline key={`es-${s.de}-${s.para}-${i}`} className="seta-espiada" points={pontosSeta(posicao(s.de), posicao(s.para))} markerEnd="url(#ponta-seta-espiada)" />
+          ))}
+        </g>
+      )}
 
       <g className="anotacoes" aria-hidden="true">
         {props.setasAnalise?.map((s, i) => (

@@ -117,6 +117,12 @@ export interface Carta<D extends object = object> {
   disfarces?(ctx: ContextoLeitura<D>): { casa: Casa; tipo: TipoPeca }[];
   /** Só faz sentido em partida com relógio: fica fora dos sorteios enquanto não houver. */
   exigeRelogio?: boolean;
+  /** Só faz sentido online (ex.: Wallhack): fica fora dos sorteios das partidas locais e contra a IA. */
+  exigeOnline?: boolean;
+  /** Não aparece nas ofertas do Draft. */
+  foraDoDraft?: boolean;
+  /** Não entra no baralho do modo Mão de cartas. */
+  foraDaMao?: boolean;
   acaoAtiva?: AcaoAtiva<D>;
 }
 

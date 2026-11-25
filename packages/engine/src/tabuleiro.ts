@@ -130,10 +130,12 @@ export function clonarEstado(e: Estado): Estado {
       brancas: {
         poder: { ...e.dadosCartas.brancas.poder },
         desvantagem: { ...e.dadosCartas.brancas.desvantagem },
+        ...(e.dadosCartas.brancas.extra ? { extra: { ...e.dadosCartas.brancas.extra } } : {}),
       },
       pretas: {
         poder: { ...e.dadosCartas.pretas.poder },
         desvantagem: { ...e.dadosCartas.pretas.desvantagem },
+        ...(e.dadosCartas.pretas.extra ? { extra: { ...e.dadosCartas.pretas.extra } } : {}),
       },
     },
     usosPoder: { ...e.usosPoder },

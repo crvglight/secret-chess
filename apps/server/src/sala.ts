@@ -146,7 +146,7 @@ export class Sala {
       this.fase = "draft";
       return;
     }
-    this.iniciarPartida(sortearCartas(this.rng, CARTAS_OFICIAIS, this.comRelogio));
+    this.iniciarPartida(sortearCartas(this.rng, CARTAS_OFICIAIS, this.comRelogio, true));
   }
 
   /** Re-roll: troca as opções de `cor` por outras do mesmo peso (uma vez, antes de escolher). */
@@ -171,7 +171,7 @@ export class Sala {
     this.escolhas[cor] = escolha;
     if (this.escolhas.brancas && this.escolhas.pretas) {
       // Cada um fica com o próprio poder e a desvantagem que o adversário escolheu.
-      this.iniciarPartida(cartasDoDraft({ brancas: this.escolhas.brancas, pretas: this.escolhas.pretas }));
+      this.iniciarPartida(cartasDoDraft({ brancas: this.escolhas.brancas, pretas: this.escolhas.pretas }, this.rng));
       this.ofertas = null;
     }
     return null;
@@ -181,6 +181,7 @@ export class Sala {
     const { regras, casasEspeciais, airdrops, minutos } = this.config;
     const estado = criarPartida({
       cartas,
+      rng: this.rng,
       ...(regras === "mao" ? { maoDeCartas: { rng: this.rng } } : {}),
       ...(regras === "caos" ? { caos: { rng: this.rng } } : {}),
       ...(casasEspeciais ? { casasEspeciais: { rng: this.rng } } : {}),
@@ -351,15 +352,24 @@ export class Sala {
 
       let oculto = estado;
       for (const lado of escondidos) oculto = ocultarCartasDe(oculto, lado);
-      // Draft: a desvantagem do adversário foi você quem escolheu, então ela fica à mostra
-      // (o poder dele continua secreto).
-      if (this.config.regras === "draft" && !espectador) {
+      // As desvantagens do adversário ficam à mostra no Draft (foi você quem escolheu) e
+      // com o seu Spyware (inclusive a extra). O poder dele continua secreto.
+      if (!espectador && (this.config.regras === "draft" || estado.cartas[cor].poder === "spyware")) {
+        const dele = estado.cartas[adversario];
+        const dadosDele = estado.dadosCartas[adversario];
         oculto = {
           ...oculto,
-          cartas: { ...oculto.cartas, [adversario]: { ...oculto.cartas[adversario], desvantagem: estado.cartas[adversario].desvantagem } },
+          cartas: {
+            ...oculto.cartas,
+            [adversario]: { ...oculto.cartas[adversario], desvantagem: dele.desvantagem, ...(dele.extra ? { extra: dele.extra } : {}) },
+          },
           dadosCartas: {
             ...oculto.dadosCartas,
-            [adversario]: { ...oculto.dadosCartas[adversario], desvantagem: estado.dadosCartas[adversario].desvantagem },
+            [adversario]: {
+              ...oculto.dadosCartas[adversario],
+              desvantagem: dadosDele.desvantagem,
+              ...(dadosDele.extra ? { extra: dadosDele.extra } : {}),
+            },
           },
         };
       }

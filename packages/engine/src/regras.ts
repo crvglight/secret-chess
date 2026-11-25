@@ -23,7 +23,7 @@ import {
 } from "./airdrops.ts";
 import { comprarSeForAHora, encerrarCartaJogada, montarMaos } from "./mao.ts";
 import { casaAtacada, gerarLancesBase } from "./movimentos.ts";
-import type { Aleatorio } from "./sorteio.ts";
+import { sortearDesvantagemExtra, type Aleatorio } from "./sorteio.ts";
 import {
   casaDoNome,
   clonarEstado,
@@ -58,7 +58,8 @@ const LIMITE_MEIO_LANCES = 400;
 interface CartaEmJogo {
   carta: CartaQualquer;
   dono: Cor;
-  slot: SlotCarta;
+  /** "extra" = a segunda desvantagem (vem do Spyware do adversário). */
+  slot: SlotCarta | "extra";
 }
 
 function cartasEmJogo(estado: Estado): CartaEmJogo[] {
@@ -72,6 +73,8 @@ function cartasEmJogo(estado: Estado): CartaEmJogo[] {
       const id = estado.cartas[dono][slot];
       if (id) lista.push({ carta: obterCarta(id), dono, slot });
     }
+    const extra = estado.cartas[dono].extra;
+    if (extra && !desvantagemDesligada(estado, dono)) lista.push({ carta: obterCarta(extra), dono, slot: "extra" });
   }
   return lista;
 }
@@ -84,7 +87,7 @@ function cartasComFiltro(cartas: CartaEmJogo[], final = false): CartaEmJogo[] {
 }
 
 function ctxLeitura(estado: Estado, c: CartaEmJogo): ContextoLeitura<DadosCarta> {
-  return { estado, dono: c.dono, dados: estado.dadosCartas[c.dono][c.slot] };
+  return { estado, dono: c.dono, dados: estado.dadosCartas[c.dono][c.slot] ?? {} };
 }
 
 function ctxConsulta(estado: Estado, c: CartaEmJogo): ContextoConsulta<DadosCarta> {
@@ -99,7 +102,7 @@ function ctxEscrita(estado: Estado, c: CartaEmJogo, indice = estado.meioLance): 
   return {
     estado,
     dono: c.dono,
-    dados: estado.dadosCartas[c.dono][c.slot],
+    dados: (estado.dadosCartas[c.dono][c.slot] ??= {}),
     lancesLegais: (cor) => lancesLegais(estado, cor),
     registrar: (texto) =>
       estado.eventos.push({ meioLance: indice, cor: c.dono, cartaId: c.carta.id, texto }),
@@ -123,6 +126,8 @@ export interface OpcoesPartida {
   casasEspeciais?: { rng?: Aleatorio; quantos?: number };
   /** Caixas com recompensa que caem durante a partida. */
   airdrops?: { rng?: Aleatorio };
+  /** Sorteios na criação da partida (ex.: a desvantagem extra do Spyware). */
+  rng?: Aleatorio;
 }
 
 export function criarPartida(opcoes: OpcoesPartida = {}): Estado {
@@ -135,14 +140,23 @@ export function criarPartida(opcoes: OpcoesPartida = {}): Estado {
     cartas.brancas.poder = null;
     cartas.pretas.poder = null;
   }
+  // Spyware: o adversário ganha uma desvantagem extra (sorteada agora).
+  for (const cor of CORES) {
+    const adv = corOposta(cor);
+    if (cartas[cor].poder === "spyware" && !cartas[adv].extra) {
+      cartas[adv].extra = sortearDesvantagemExtra(opcoes.rng ?? Math.random, [cartas[adv].desvantagem]);
+    }
+  }
 
-  const dados = (cor: Cor, slot: SlotCarta): DadosCarta => {
+  const dados = (cor: Cor, slot: SlotCarta | "extra"): DadosCarta => {
     const id = cartas[cor][slot];
     if (!id) return {};
     const carta = obterCarta(id);
-    if (carta.tipo !== slot) throw new Error(`A carta ${carta.nome} não é um(a) ${slot}`);
+    const tipo = slot === "extra" ? "desvantagem" : slot;
+    if (carta.tipo !== tipo) throw new Error(`A carta ${carta.nome} não é um(a) ${tipo}`);
     return { ...carta.dadosIniciais?.() };
   };
+  const comExtra = (cor: Cor) => (cartas[cor].extra ? { extra: dados(cor, "extra") } : {});
   const usos = (cor: Cor): number => {
     const id = cartas[cor].poder;
     return id ? (obterCarta(id).acaoAtiva?.usos ?? 0) : 0;
@@ -154,8 +168,8 @@ export function criarPartida(opcoes: OpcoesPartida = {}): Estado {
     lancesFeitos: { brancas: 0, pretas: 0 },
     cartas,
     dadosCartas: {
-      brancas: { poder: dados("brancas", "poder"), desvantagem: dados("brancas", "desvantagem") },
-      pretas: { poder: dados("pretas", "poder"), desvantagem: dados("pretas", "desvantagem") },
+      brancas: { poder: dados("brancas", "poder"), desvantagem: dados("brancas", "desvantagem"), ...comExtra("brancas") },
+      pretas: { poder: dados("pretas", "poder"), desvantagem: dados("pretas", "desvantagem"), ...comExtra("pretas") },
     },
     usosPoder: { brancas: usos("brancas"), pretas: usos("pretas") },
     poderUsadoNoTurno: false,
@@ -744,7 +758,7 @@ export function usarPoder(estado: Estado, alvo: Casa | null = null): Estado {
 }
 
 /** Texto de situação da carta (ex.: "faltam 3 lances"), se ela tiver. */
-export function resumoDaCarta(estado: Estado, cor: Cor, slot: SlotCarta): string | null {
+export function resumoDaCarta(estado: Estado, cor: Cor, slot: SlotCarta | "extra"): string | null {
   const id = estado.cartas[cor][slot];
   if (!id) return null;
   const c: CartaEmJogo = { carta: obterCarta(id), dono: cor, slot };

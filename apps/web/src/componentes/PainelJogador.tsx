@@ -72,7 +72,7 @@ export function PainelJogador({
         )}
       </header>
 
-      <div className="painel-cartas">
+      <div className={`painel-cartas ${cartas.extra ? "com-extra" : ""}`}>
         <CartaVisual
           cartaId={cartas.poder}
           virada={!cartasVisiveis}
@@ -84,6 +84,13 @@ export function PainelJogador({
           virada={!cartasVisiveis && !(desvantagemAberta && cartas.desvantagem)}
           rodape={resumoDaCarta(estado, cor, "desvantagem") ?? undefined}
         />
+        {cartas.extra && (
+          <CartaVisual
+            cartaId={cartas.extra}
+            virada={!cartasVisiveis && !desvantagemAberta}
+            rodape={`Extra (Spyware)${resumoDaCarta(estado, cor, "extra") ? ` · ${resumoDaCarta(estado, cor, "extra")}` : ""}`}
+          />
+        )}
       </div>
 
       {mao && (

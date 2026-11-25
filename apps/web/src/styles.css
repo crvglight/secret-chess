@@ -2410,3 +2410,76 @@ input:focus-visible {
 .filtro-historico {
   margin: 0 0 10px;
 }
+
+/* Carta extra (Spyware): a terceira carta vai para a linha de baixo. */
+.painel-cartas.com-extra > :last-child {
+  grid-column: 1 / -1;
+}
+
+/* Wallhack: o que o adversário está olhando */
+.casa-espiada {
+  fill: none;
+  stroke: #b26bff;
+  stroke-width: 6;
+  stroke-dasharray: 10 6;
+}
+.marca-espiada {
+  fill: none;
+  stroke: #b26bff;
+  stroke-width: 5;
+  opacity: 0.8;
+}
+.seta-espiada {
+  fill: none;
+  stroke: #b26bff;
+  stroke-width: 14;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  opacity: 0.75;
+}
+.ponta-seta-espiada {
+  fill: #b26bff;
+}
+
+/* Multitasking */
+.janela-multitasking form {
+  display: grid;
+  gap: 8px;
+}
+.palavras-multitasking {
+  font-size: 1.4rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  text-align: center;
+  margin: 4px 0 8px;
+  user-select: none;
+}
+.entrada-multitasking {
+  font: inherit;
+  font-size: 1.1rem;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 2px solid var(--painel-borda);
+  background: var(--fundo);
+  color: var(--texto);
+}
+.entrada-multitasking:focus {
+  outline: none;
+  border-color: var(--destaque);
+}
+.aviso-digitando {
+  position: fixed;
+  right: 16px;
+  bottom: 16px;
+  max-width: min(90vw, 340px);
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--destaque);
+  background: var(--painel);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+  z-index: 9;
+  font-size: 0.9rem;
+}
+.palavras-pequenas {
+  font-weight: 700;
+}

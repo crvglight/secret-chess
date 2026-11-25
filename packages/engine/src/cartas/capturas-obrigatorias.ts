@@ -6,6 +6,7 @@ export default definirCarta({
   nome: "Damas",
   tipo: "desvantagem",
   peso: 4,
+  foraDoDraft: true,
   descricao:
     "Como no jogo de damas: se alguma peça sua (menos o rei) puder capturar, você é obrigado a capturar com ela. O rei fica de fora.",
 

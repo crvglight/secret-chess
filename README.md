@@ -88,11 +88,16 @@ Rode na raiz do projeto:
 | Daltônico | poder | 4 | Uma vez por partida, é como se todas as peças ficassem da mesma cor que as suas: mova uma peça do adversário (menos o rei) como se fosse sua; ela pode até capturar outra peça dele. |
 | Peãogonista | poder | 3 | Um dos seus peões é sorteado em segredo e ganha uma vida extra: na primeira vez que for capturado, ele fica intacto no lugar e o adversário perde o lance. |
 | Gigante da Colina | poder | 3 | Suas peças (menos o rei) nas 4 casas centrais (d4, d5, e4 e e5) só podem ser capturadas corpo a corpo: por uma peça encostada nelas. |
+| Spyware | poder | 4 | Seu adversário ganha uma desvantagem extra, e você vê as duas desvantagens dele. (No Draft: quem escolhe fica sem poder e o adversário recebe direto a desvantagem extra.) |
+| Wallhack | poder | 2 | Você vê a peça que o adversário seleciona e as setas e marcações dele no tabuleiro, o tempo todo. (Só online; fora do Draft.) |
+| Power Spike | poder | 2 | Quando chegar o seu 25º lance, dois peões seus são promovidos ao acaso para cavalo, bispo ou torre. |
+| Carta na Manga | poder | 2 | Seus peões também podem capturar para trás, na diagonal (nunca até a sua primeira fileira). |
+| Odds | poder | 1 | Depois de cada lance seu, 2% de chance de jogar de novo. |
 | Bispos tímidos | desvantagem | 3 | Seus bispos não podem capturar. |
 | Rainha preguiçosa | desvantagem | 2 | Sua dama não pode se mover nos 5 primeiros lances. |
 | Batalha de peões | desvantagem | 3 | Você perde se tiver 4 peões a menos que o adversário. |
 | Dama frágil | desvantagem | 4 | Você perde se ficar sem nenhuma dama no tabuleiro. |
-| Damas | desvantagem | 4 | Como no jogo de damas: se alguma peça sua (menos o rei) puder capturar, você é obrigado a capturar com ela. O rei fica de fora. |
+| Damas | desvantagem | 4 | Como no jogo de damas: se alguma peça sua (menos o rei) puder capturar, você é obrigado a capturar com ela. O rei fica de fora. (Fora do Draft.) |
 | Sem roque | desvantagem | 1 | Você não pode fazer roque. |
 | Rei preso | desvantagem | 2 | Seu rei não pode se mover nos 10 primeiros lances. |
 | Cavalos cansados | desvantagem | 2 | Um cavalo seu que se moveu não pode se mover de novo na sua rodada seguinte. |
@@ -117,6 +122,14 @@ Rode na raiz do projeto:
 | Regigigas | desvantagem | 2 | Nos seus 5 primeiros lances, você só pode mover peões. |
 | Ansiedade | desvantagem | 2 | Os peões encostados no seu rei não podem se afastar dele (só podem ir para casas que continuem encostadas no rei). |
 | CLT | desvantagem | 2 | A cada 6 lances seus, no 7º você só pode mover peões (menos se estiver em xeque ou se nenhum peão puder andar). |
+| Covarde | desvantagem | 2 | Quando estiver em xeque, você tem que mover o seu rei (se ele não tiver para onde ir, vale outro lance). |
+| Voanet | desvantagem | 2 | A cada 5 lances seus, três casas vazias ao acaso “não carregam”: suas peças não podem ir para elas naquele lance. |
+| Femme Fatale | desvantagem | 3 | Você só pode dar xeque-mate no rei adversário com a sua dama. |
+| Salário Mínimo | desvantagem | 3 | Orçamento de 100 casas de movimento; quando acabar, você perde uma peça a cada vez sua, até sobrar só o rei. |
+| Esquerdista | desvantagem | 2 | Seus bispos só capturam nas diagonais para a esquerda (do seu ponto de vista). |
+| Multitasking | desvantagem | 3 | Para confirmar cada lance, digite sem erros as 3 palavras que aparecerem, em até 8 segundos. Se errar, o lance não acontece. |
+| Torres Gêmeas | desvantagem | 2 | Se você perder uma das suas torres, a outra cai junto. |
+| Sortudo | desvantagem | 1 | Você foi abençoado pelos deuses do xadrez: não há desvantagem. |
 
 O sorteio compara o saldo de cada lado (peso do poder menos peso da desvantagem) e mantém a diferença em no máximo 1. Cartas de peso maior saem menos: a chance relativa é 6 − peso (peso 1 sai 5 vezes mais que peso 5).
 

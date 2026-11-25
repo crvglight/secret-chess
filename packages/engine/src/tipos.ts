@@ -30,7 +30,11 @@ export interface Lance {
 }
 
 export type SlotCarta = "poder" | "desvantagem";
-export type CartasDoJogador = Record<SlotCarta, string | null>;
+/**
+ * As cartas de um lado. `extra` é uma segunda desvantagem (vem do poder Spyware do
+ * adversário); quase sempre não existe.
+ */
+export type CartasDoJogador = Record<SlotCarta, string | null> & { extra?: string | null };
 export type DadosCarta = Record<string, unknown>;
 
 export interface RegistroLance {
@@ -83,7 +87,7 @@ export interface Estado {
   semProgresso: number;
   lancesFeitos: Record<Cor, number>;
   cartas: Record<Cor, CartasDoJogador>;
-  dadosCartas: Record<Cor, Record<SlotCarta, DadosCarta>>;
+  dadosCartas: Record<Cor, Record<SlotCarta, DadosCarta> & { extra?: DadosCarta }>;
   usosPoder: Record<Cor, number>;
   poderUsadoNoTurno: boolean;
   /** Uma carta pode ligar isto em aoMover para o mesmo jogador lançar de novo. */

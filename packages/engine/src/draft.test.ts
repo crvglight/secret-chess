@@ -1,12 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { obterCarta } from "./cartas/index.ts";
+import { CARTAS_OFICIAIS, obterCarta } from "./cartas/index.ts";
 import { cartasDoDraft, escolhaDraftIA, OPCOES_NO_DRAFT, rerolarOferta, sortearDraft } from "./draft.ts";
 import { aleatorioComSemente } from "./sorteio.ts";
 
-const pesos = (ids: string[]) => ids.map((id) => obterCarta(id).peso).sort();
 
 describe("Draft", () => {
-  it("cada lado recebe 3 poderes e 3 desvantagens, com os mesmos pesos e cartas diferentes", () => {
+  it("cada lado recebe 3 poderes e 3 desvantagens, cartas diferentes e ofertas equilibradas", () => {
     const rng = aleatorioComSemente(8);
     for (let i = 0; i < 300; i++) {
       const { brancas, pretas } = sortearDraft(rng);
@@ -18,9 +17,48 @@ describe("Draft", () => {
       }
       const todas = [...brancas.poderes, ...pretas.poderes, ...brancas.desvantagens, ...pretas.desvantagens];
       expect(new Set(todas).size).toBe(todas.length);
-      expect(pesos(brancas.poderes)).toEqual(pesos(pretas.poderes));
-      expect(pesos(brancas.desvantagens)).toEqual(pesos(pretas.desvantagens));
+      // A soma dos pesos das ofertas dos dois lados difere no máximo 1 ponto.
+      const soma = (ids: string[]) => ids.reduce((t, id) => t + obterCarta(id).peso, 0);
+      expect(Math.abs(soma(brancas.poderes) - soma(pretas.poderes))).toBeLessThanOrEqual(1);
+      expect(Math.abs(soma(brancas.desvantagens) - soma(pretas.desvantagens))).toBeLessThanOrEqual(1);
     }
+  });
+
+  it("o sorteio varia: todas as cartas aparecem, e as de peso maior saem só um pouco menos", () => {
+    const rng = aleatorioComSemente(77);
+    const vezes = new Map<string, number>();
+    for (let i = 0; i < 3000; i++) {
+      const { brancas, pretas } = sortearDraft(rng);
+      for (const id of [...brancas.poderes, ...pretas.poderes, ...brancas.desvantagens, ...pretas.desvantagens]) {
+        vezes.set(id, (vezes.get(id) ?? 0) + 1);
+      }
+    }
+    const doDraft = CARTAS_OFICIAIS.filter((c) => !c.foraDoDraft && !c.exigeRelogio);
+    for (const c of doDraft) expect(vezes.get(c.id) ?? 0, c.id).toBeGreaterThan(0);
+    // Diferença leve: nenhuma carta sai mais que ~2,2x outra.
+    const contagens = doDraft.map((c) => vezes.get(c.id) ?? 0);
+    expect(Math.max(...contagens) / Math.min(...contagens)).toBeLessThan(2.2);
+  });
+
+  it("Wallhack e Damas nunca aparecem no Draft", () => {
+    const rng = aleatorioComSemente(3);
+    for (let i = 0; i < 500; i++) {
+      const { brancas, pretas } = sortearDraft(rng);
+      const todas = [...brancas.poderes, ...pretas.poderes, ...brancas.desvantagens, ...pretas.desvantagens];
+      expect(todas).not.toContain("wallhack");
+      expect(todas).not.toContain("capturas-obrigatorias");
+    }
+  });
+
+  it("Spyware no Draft: quem escolhe fica sem poder e o adversário ganha uma desvantagem extra", () => {
+    const cartas = cartasDoDraft(
+      { brancas: { poder: "spyware", desvantagem: "prazo" }, pretas: { poder: "sniper", desvantagem: "sem-roque" } },
+      aleatorioComSemente(1),
+    );
+    expect(cartas.brancas.poder).toBeNull();
+    expect(cartas.pretas.desvantagem).toBe("prazo");
+    expect(cartas.pretas.extra).toBeTruthy();
+    expect(cartas.pretas.extra).not.toBe("prazo");
   });
 
   it("a IA esperta pega o poder mais forte e dá ao adversário a desvantagem mais pesada", () => {

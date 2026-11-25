@@ -36,6 +36,9 @@ import {
   DESCRICAO_PREMIO,
   destaquesDosAirdrops,
   NOME_RARIDADE,
+  desvantagemDesligada,
+  type Digitacao,
+  type Espiada,
 } from "@xadrez/engine";
 import { EscolhaPromocao } from "../componentes/EscolhaPromocao.tsx";
 import { SeletorVisual } from "../componentes/SeletorVisual.tsx";
@@ -52,6 +55,7 @@ import { Tabuleiro } from "../componentes/Tabuleiro.tsx";
 import { analiseLiberada } from "../dev/liberacao.ts";
 import { useAbertura } from "../aberturas/index.ts";
 import { useIA } from "../ia/useIA.ts";
+import { AvisoDigitando, JanelaMultitasking, sortearPalavras } from "../componentes/Multitasking.tsx";
 import { AnalisePartida } from "./AnalisePartida.tsx";
 import { NOME_NIVEL, NOME_REGRAS, nomeDaIA, type ModoPartida } from "../modo.ts";
 import { NOME_COR, numeroDoLance, tituloResultado } from "../textos.ts";
@@ -137,6 +141,13 @@ export interface ControleOnline {
   final: { inicial: Estado; acoes: AcaoPartida[] } | null;
   /** No fim: larga a vaga e passa a assistir à sala. */
   aoVirarEspectador(): void;
+  /** Wallhack: o que o adversário está olhando (só chega se você tiver a carta). */
+  espiada: Espiada | null;
+  /** Wallhack: manda o que você está olhando (o servidor só repassa a quem tem a carta). */
+  enviarEspiada(d: Espiada): void;
+  /** Multitasking: quem está digitando o quê. */
+  digitacao: { cor: Cor; digitacao: Digitacao } | null;
+  enviarDigitacao(d: Digitacao | null): void;
   revanchePedida: Record<Cor, boolean>;
   aoRevanche(): void;
   aoDesistir(): void;
@@ -212,6 +223,10 @@ export function Partida({ modo, cartas, aoSair, aoRevanche, online }: Props) {
   const [fimFechado, setFimFechado] = useState(false);
   const [mostrarVisual, setMostrarVisual] = useState(false);
   const [analisando, setAnalisando] = useState(false);
+  /** Multitasking: as palavras a digitar e o lance que espera a confirmação. */
+  const [digitando, setDigitando] = useState<{ palavras: string; lance: Lance } | null>(null);
+  /** Wallhack: as setas e marcações deste jogador (para mandar ao adversário). */
+  const [anotacoes, setAnotacoes] = useState<Espiada>({ selecionada: null, setas: [], marcas: [] });
 
   // Esc fecha a janela do visual.
   useEffect(() => {
@@ -271,6 +286,13 @@ export function Partida({ modo, cartas, aoSair, aoRevanche, online }: Props) {
     if (estado.eventos.length > antes.eventos) tocar("poder");
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [estado]);
+
+  // Wallhack: manda ao servidor o que este jogador olha (ele só repassa a quem tem a carta).
+  const enviarEspiada = online && !espectador ? online.enviarEspiada : null;
+  useEffect(() => {
+    enviarEspiada?.({ ...anotacoes, selecionada });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selecionada, anotacoes]);
 
   // Airdrop aberto: avisa quem abriu e o que ganhou.
   const caixasAbertas = estado.airdrops?.registro.length ?? 0;
@@ -439,7 +461,23 @@ export function Partida({ modo, cartas, aoSair, aoRevanche, online }: Props) {
     setFimFechado(false);
   }
 
+  /** Multitasking: quem joga agora tem que digitar as palavras antes de cada lance? */
+  const precisaDigitar = () => {
+    const c = estado.cartas[estado.vez];
+    const tem = c.desvantagem === "multitasking" || c.extra === "multitasking";
+    const nestaTela = !espectador && (corHumano === null || corHumano === estado.vez);
+    return tem && nestaTela && !desvantagemDesligada(estado, estado.vez);
+  };
+
   function efetivar(lance: Lance) {
+    if (precisaDigitar()) {
+      setDigitando({ palavras: sortearPalavras(), lance });
+      return;
+    }
+    efetivarAgora(lance);
+  }
+
+  function efetivarAgora(lance: Lance) {
     const novo = aplicarLance(estado, lance);
     setEstado(novo, { tipo: "lance", lance });
     setSelecionada(null);
@@ -552,7 +590,8 @@ export function Partida({ modo, cartas, aoSair, aoRevanche, online }: Props) {
       relogioCorrendo={online?.relogio?.correndo === cor}
       cartasVisiveis={espectador || visiveis[cor] || estado.resultado !== null || cartasAbertas(estado, cor)}
       // Draft: as desvantagens são conhecidas (cada um escolheu a do outro).
-      desvantagemAberta={modo.regras === "draft"}
+      // Spyware do adversário: as desvantagens deste lado ficam à mostra para ele.
+      desvantagemAberta={modo.regras === "draft" || estado.cartas[corOposta(cor)].poder === "spyware"}
       modoPoder={modoPoder && estado.vez === cor}
       aoAlternarCartas={() => setVisiveis((v) => ({ ...v, [cor]: !v[cor] }))}
       aoUsarPoder={aoUsarPoder}
@@ -668,6 +707,8 @@ export function Partida({ modo, cartas, aoSair, aoRevanche, online }: Props) {
                 disfarces={disfarcesDe(estado)}
                 misteriosas={misteriosasDe(estado)}
                 montadas={pecasMontadas(estado)}
+                espiada={online?.espiada ?? null}
+                aoMudarAnotacoes={(setas, marcas) => setAnotacoes((a) => ({ ...a, setas, marcas }))}
                 // Daltônico em uso: todas as peças ficam da cor de quem joga.
                 corUnica={modoPoder && estado.cartas[estado.vez].poder === "daltonico" ? estado.vez : undefined}
                 podeArrastar={(c) =>
@@ -756,6 +797,29 @@ export function Partida({ modo, cartas, aoSair, aoRevanche, online }: Props) {
             </button>
           </div>
         </div>
+      )}
+
+      {digitando && (
+        <JanelaMultitasking
+          palavras={digitando.palavras}
+          aoDigitar={(d) => online?.enviarDigitacao(d)}
+          aoAcertar={() => {
+            const { lance } = digitando;
+            setDigitando(null);
+            online?.enviarDigitacao(null);
+            efetivarAgora(lance);
+          }}
+          aoFalhar={(motivo) => {
+            setDigitando(null);
+            online?.enviarDigitacao(null);
+            setSelecionada(null);
+            setPromocao(null);
+            setAviso(motivo);
+          }}
+        />
+      )}
+      {online?.digitacao && online.digitacao.cor !== (modo.tipo === "online" && !espectador ? modo.corHumano : null) && (
+        <AvisoDigitando nome={online.nomes[online.digitacao.cor]} digitacao={online.digitacao.digitacao} />
       )}
 
       {promocao && (
