@@ -9,6 +9,7 @@ import {
   type Estado,
   type OpcoesPartida,
 } from "../index.ts";
+import { casasSemSinal } from "./voanet.ts";
 
 const brancas = (poder: string | null, desvantagem: string | null = null): OpcoesPartida["cartas"] => ({
   brancas: { poder, desvantagem },
@@ -89,11 +90,19 @@ describe("Torres Gêmeas, Power Spike e Odds", () => {
 });
 
 describe("Voanet, Femme Fatale e Salário Mínimo", () => {
-  it("Voanet: no 5º lance, 3 casas vazias ficam bloqueadas", () => {
+  it("Voanet: sempre há 3 casas bloqueadas, sorteadas de novo a cada 5 lances", () => {
     const e0 = criarPartida({ cartas: brancas(null, "voanet") });
-    const e = { ...e0, lancesFeitos: { brancas: 4, pretas: 4 } };
-    const normal = { ...e0, lancesFeitos: { brancas: 3, pretas: 3 } };
-    expect(lancesLegais(e).length).toBeLessThan(lancesLegais(normal).length);
+    const semente = (e0.dadosCartas.brancas.desvantagem as { semente: number }).semente;
+    const com = (feitos: number) => ({ ...e0, lancesFeitos: { brancas: feitos, pretas: feitos } });
+    const casas = (feitos: number) => casasSemSinal(com(feitos), "brancas", semente).slice().sort((a, b) => a - b);
+    // As mesmas nos lances 0 a 4; outro sorteio a partir do 5º.
+    for (let f = 1; f < 5; f++) expect(casas(f)).toEqual(casas(0));
+    expect(casas(0)).toHaveLength(3);
+    // Nenhum lance legal entra nelas.
+    for (const f of [0, 5, 10]) {
+      const bloqueadas = new Set(casas(f));
+      expect(lancesLegais(com(f)).some((l) => bloqueadas.has(l.para))).toBe(false);
+    }
   });
 
   it("Femme Fatale: só a dama dá xeque-mate", () => {

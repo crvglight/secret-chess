@@ -1,11 +1,12 @@
 import { definirCarta } from "../carta.ts";
+import { fileira } from "../tabuleiro.ts";
 import type { Casa, Cor, Estado } from "../tipos.ts";
 
 interface Dados {
   semente: number;
 }
 
-/** A cada quantos lances seus a internet cai. */
+/** A cada quantos lances seus as casas sem sinal são sorteadas de novo. */
 const CICLO = 5;
 const CASAS_SEM_SINAL = 3;
 
@@ -16,43 +17,45 @@ function sorte(semente: number, n: number, i: number): number {
   return ((h ^ (h >>> 13)) >>> 0) / 4294967296;
 }
 
-/** Neste lance de `dono`, a internet caiu? */
-const lanceSemSinal = (estado: Estado, dono: Cor) => (estado.lancesFeitos[dono] + 1) % CICLO === 0;
+/** Qual "rodada de sinal" vale agora (muda a cada 5 lances de quem tem a carta). */
+const janela = (estado: Estado, dono: Cor) => Math.floor(estado.lancesFeitos[dono] / CICLO);
 
-/** As 3 casas vazias que "não carregaram" neste lance (sempre as mesmas para o mesmo lance). */
-function casasSemSinal(estado: Estado, dono: Cor, semente: number): Casa[] {
-  const vazias = estado.tabuleiro.map((p, c) => (p ? -1 : c)).filter((c) => c >= 0);
+/**
+ * As 3 casas sem sinal: sorteadas no meio do tabuleiro (3ª a 6ª fileira), sempre as mesmas
+ * durante os 5 lances (replay e online dão o mesmo resultado).
+ */
+export function casasSemSinal(estado: Estado, dono: Cor, semente: number): Casa[] {
+  const meio = Array.from({ length: 64 }, (_, c) => c).filter((c) => fileira(c) >= 2 && fileira(c) <= 5);
   const escolhidas: Casa[] = [];
-  for (let i = 0; escolhidas.length < CASAS_SEM_SINAL && vazias.length > 0; i++) {
-    escolhidas.push(vazias.splice(Math.floor(sorte(semente, estado.lancesFeitos[dono], i) * vazias.length), 1)[0]!);
+  for (let i = 0; escolhidas.length < CASAS_SEM_SINAL; i++) {
+    escolhidas.push(meio.splice(Math.floor(sorte(semente, janela(estado, dono), i) * meio.length), 1)[0]!);
   }
   return escolhidas;
 }
 
-/** Voanet: a cada 5 lances seus, 3 casas vazias ao acaso ficam bloqueadas para as suas peças naquele lance. */
+/** Voanet: sempre há 3 casas em que suas peças não podem entrar; elas mudam a cada 5 lances seus. */
 export default definirCarta<Dados>({
   id: "voanet",
   nome: "Voanet",
   tipo: "desvantagem",
-  peso: 2,
-  descricao: "A cada 5 lances seus, três casas vazias ao acaso “não carregam”: suas peças não podem ir para elas naquele lance.",
+  peso: 3,
+  descricao:
+    "Sempre há 3 casas do meio do tabuleiro que “não carregam”: suas peças não podem ir para elas. A cada 5 lances seus, elas são sorteadas de novo.",
   dadosIniciais: () => ({ semente: Math.floor(Math.random() * 2 ** 31) }),
 
   // Só entre os lances legais: nunca deixa você sem lance.
   filtrarLegais({ estado, dono, dados }, lances, jogador) {
-    if (jogador !== dono || estado.vez !== dono || !lanceSemSinal(estado, dono)) return lances;
+    if (jogador !== dono) return lances;
     const bloqueadas = new Set(casasSemSinal(estado, dono, dados.semente));
     const restantes = lances.filter((l) => !bloqueadas.has(l.para));
     return restantes.length > 0 ? restantes : lances;
   },
 
   destaques: ({ estado, dono, dados }) =>
-    estado.vez === dono && lanceSemSinal(estado, dono) && !estado.resultado
-      ? casasSemSinal(estado, dono, dados.semente).map((casa) => ({ casa, publico: true, rotulo: "Sem sinal" }))
-      : [],
+    estado.resultado ? [] : casasSemSinal(estado, dono, dados.semente).map((casa) => ({ casa, publico: true, rotulo: "Sem sinal" })),
 
   resumo: ({ estado, dono }) => {
-    const falta = CICLO - ((estado.lancesFeitos[dono] + 1) % CICLO || CICLO);
-    return falta === 0 ? "sem sinal neste lance!" : `sinal cai daqui a ${falta + 1} lance(s)`;
+    const faltam = CICLO - (estado.lancesFeitos[dono] % CICLO);
+    return `casas sorteadas de novo em ${faltam} lance(s)`;
   },
 });

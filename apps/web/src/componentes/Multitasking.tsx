@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import type { Digitacao } from "@xadrez/engine";
 
 /** Tempo para digitar as palavras. */
-export const TEMPO_MULTITASKING_MS = 8000;
+export const TEMPO_MULTITASKING_MS = 7000;
 
 /** Palavras curtas e médias, em português e inglês (sem acento, para não atrapalhar no teclado). */
 const PALAVRAS = [
@@ -25,7 +25,7 @@ export function sortearPalavras(): string {
 const normalizar = (t: string) => t.trim().toLowerCase().replace(/\s+/g, " ");
 
 /**
- * Desvantagem Multitasking: para confirmar o lance, digite as 3 palavras em 8 segundos.
+ * Desvantagem Multitasking: para confirmar o lance, digite as 3 palavras em 7 segundos.
  * `aoDigitar` recebe o texto a cada tecla (para o adversário ver online).
  */
 export function JanelaMultitasking({

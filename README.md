@@ -123,11 +123,11 @@ Rode na raiz do projeto:
 | Ansiedade | desvantagem | 2 | Os peões encostados no seu rei não podem se afastar dele (só podem ir para casas que continuem encostadas no rei). |
 | CLT | desvantagem | 2 | A cada 6 lances seus, no 7º você só pode mover peões (menos se estiver em xeque ou se nenhum peão puder andar). |
 | Covarde | desvantagem | 2 | Quando estiver em xeque, você tem que mover o seu rei (se ele não tiver para onde ir, vale outro lance). |
-| Voanet | desvantagem | 2 | A cada 5 lances seus, três casas vazias ao acaso “não carregam”: suas peças não podem ir para elas naquele lance. |
+| Voanet | desvantagem | 3 | Sempre há 3 casas do meio do tabuleiro que “não carregam”: suas peças não podem ir para elas. A cada 5 lances seus, elas são sorteadas de novo. |
 | Femme Fatale | desvantagem | 3 | Você só pode dar xeque-mate no rei adversário com a sua dama. |
 | Salário Mínimo | desvantagem | 3 | Orçamento de 100 casas de movimento; quando acabar, você perde uma peça a cada vez sua, até sobrar só o rei. |
 | Esquerdista | desvantagem | 2 | Seus bispos só capturam nas diagonais para a esquerda (do seu ponto de vista). |
-| Multitasking | desvantagem | 3 | Para confirmar cada lance, digite sem erros as 3 palavras que aparecerem, em até 8 segundos. Se errar, o lance não acontece. |
+| Multitasking | desvantagem | 3 | Para confirmar cada lance, digite sem erros as 3 palavras que aparecerem, em até 7 segundos. Se errar, o lance não acontece. |
 | Torres Gêmeas | desvantagem | 2 | Se você perder uma das suas torres, a outra cai junto. |
 | Sortudo | desvantagem | 1 | Você foi abençoado pelos deuses do xadrez: não há desvantagem. (Rara: sai ~4x menos que as outras.) |
 
