@@ -1260,6 +1260,10 @@ input:focus-visible {
 .draft-carta.escolhida .carta {
   box-shadow: 0 0 0 3px var(--destaque);
 }
+/* A desvantagem escolhida fica com o contorno vermelho (o poder continua amarelo). */
+.draft-carta.escolhida .carta-desvantagem {
+  box-shadow: 0 0 0 3px #e5484d;
+}
 @media (prefers-reduced-motion: reduce) {
   .draft-carta .carta {
     transition: none;
