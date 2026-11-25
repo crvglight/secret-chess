@@ -63,7 +63,7 @@ function sortearVarias(cartas: readonly CartaQualquer[], rng: Aleatorio, usadas:
   for (let i = 0; i < n; i++) {
     const livres = cartas.filter((c) => !usadas.has(c.id));
     if (livres.length === 0) throw new Error("Faltam cartas para o draft");
-    const c = escolherPonderado(livres, rng, (x) => chanceNoDraft(x.peso));
+    const c = escolherPonderado(livres, rng, (x) => chanceNoDraft(x.peso) * (x.raridade ?? 1));
     usadas.add(c.id);
     escolhidas.push(c.id);
   }

@@ -44,7 +44,7 @@ export function fatorDoPeso(peso: number): number {
 
 /** Sorteio ponderado de uma carta pelo fatorDoPeso. */
 export function sortearCartaPonderada(cartas: readonly CartaQualquer[], rng: Aleatorio): CartaQualquer {
-  return escolherPonderado(cartas, rng, (c) => fatorDoPeso(c.peso));
+  return escolherPonderado(cartas, rng, (c) => fatorDoPeso(c.peso) * (c.raridade ?? 1));
 }
 
 /**
@@ -62,7 +62,9 @@ export function sortearDesvantagemExtra(
   return sortearCartaPonderada(opcoes, rng).id;
 }
 
-const chanceDaCombinacao = (c: Combinacao) => chanceDoPeso(c.poder.peso) * chanceDoPeso(c.desvantagem.peso);
+/** Chance de uma carta nos sorteios: pelo peso e pelo ajuste de raridade dela. */
+const chanceDaCarta = (c: CartaQualquer) => chanceDoPeso(c.peso) * (c.raridade ?? 1);
+const chanceDaCombinacao = (c: Combinacao) => chanceDaCarta(c.poder) * chanceDaCarta(c.desvantagem);
 
 /** Sorteio ponderado: cada item sai com probabilidade proporcional à sua chance. */
 export function escolherPonderado<T>(lista: readonly T[], rng: Aleatorio, chance: (item: T) => number): T {

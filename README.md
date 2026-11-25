@@ -129,7 +129,7 @@ Rode na raiz do projeto:
 | Esquerdista | desvantagem | 2 | Seus bispos só capturam nas diagonais para a esquerda (do seu ponto de vista). |
 | Multitasking | desvantagem | 3 | Para confirmar cada lance, digite sem erros as 3 palavras que aparecerem, em até 8 segundos. Se errar, o lance não acontece. |
 | Torres Gêmeas | desvantagem | 2 | Se você perder uma das suas torres, a outra cai junto. |
-| Sortudo | desvantagem | 1 | Você foi abençoado pelos deuses do xadrez: não há desvantagem. |
+| Sortudo | desvantagem | 1 | Você foi abençoado pelos deuses do xadrez: não há desvantagem. (Rara: sai ~4x menos que as outras.) |
 
 O sorteio compara o saldo de cada lado (peso do poder menos peso da desvantagem) e mantém a diferença em no máximo 1. Cartas de peso maior saem menos: a chance relativa é 6 − peso (peso 1 sai 5 vezes mais que peso 5).
 

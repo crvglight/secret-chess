@@ -214,21 +214,27 @@ h3 {
   gap: 20px;
   justify-content: center;
   align-items: flex-start;
-  max-width: 1280px;
+  max-width: 1360px;
   margin: 0 auto;
 }
-/* Cartas dos dois lados, à esquerda do tabuleiro, com um vão no meio. */
+/*
+ * Cartas dos dois lados, à esquerda do tabuleiro: uma embaixo da outra, com um vão fixo.
+ * (A coluna NÃO estica junto com a lista de lances: antes ela crescia a cada jogada e o
+ * painel de baixo ia descendo.)
+ */
 .coluna-cartas {
   width: 320px;
   flex: none;
-  align-self: stretch;
+  align-self: flex-start;
   display: flex;
   flex-direction: column;
   gap: 10px;
 }
 .espaco-cartas {
-  flex: 1;
-  min-height: 40px;
+  flex: none;
+  height: 28px;
+  border-bottom: 1px dashed var(--painel-borda);
+  margin-bottom: 18px;
 }
 /* As duas cartas cabem lado a lado sem vazar para o tabuleiro. */
 .coluna-cartas .painel-cartas {
@@ -602,7 +608,8 @@ h3 {
 
 /* ---------- Lateral (histórico) ---------- */
 .lateral {
-  width: 240px;
+  /* Mesma largura da coluna das cartas: assim o tabuleiro fica no centro. */
+  width: 320px;
   flex: none;
   display: grid;
   gap: 12px;
@@ -620,7 +627,7 @@ h3 {
   padding: 0;
   display: grid;
   gap: 2px;
-  max-height: 60vh;
+  max-height: 40vh;
   overflow-y: auto;
   font-variant-numeric: tabular-nums;
 }
@@ -635,7 +642,7 @@ h3 {
   color: var(--texto-suave);
 }
 
-@media (max-width: 1260px) {
+@media (max-width: 1340px) {
   .mesa {
     flex-wrap: wrap;
   }
@@ -2482,4 +2489,14 @@ input:focus-visible {
 }
 .palavras-pequenas {
   font-weight: 700;
+}
+
+/* Draft: lembrete da desvantagem que você deu ao adversário */
+.lembrete-draft {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--texto-suave);
+}
+.lembrete-draft strong {
+  color: var(--desvantagem);
 }

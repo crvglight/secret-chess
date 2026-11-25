@@ -36,8 +36,22 @@ describe("Draft", () => {
     const doDraft = CARTAS_OFICIAIS.filter((c) => !c.foraDoDraft && !c.exigeRelogio);
     for (const c of doDraft) expect(vezes.get(c.id) ?? 0, c.id).toBeGreaterThan(0);
     // Diferença leve: nenhuma carta sai mais que ~2,2x outra.
-    const contagens = doDraft.map((c) => vezes.get(c.id) ?? 0);
+    // (Cartas com raridade especial, como o Sortudo, ficam de fora desta conta.)
+    const contagens = doDraft.filter((c) => !c.raridade).map((c) => vezes.get(c.id) ?? 0);
     expect(Math.max(...contagens) / Math.min(...contagens)).toBeLessThan(2.2);
+  });
+
+  it("Sortudo é bem mais raro que as outras desvantagens de peso 1", () => {
+    const rng = aleatorioComSemente(12);
+    let sortudo = 0;
+    let semRoque = 0;
+    for (let i = 0; i < 3000; i++) {
+      const { brancas, pretas } = sortearDraft(rng);
+      const d = [...brancas.desvantagens, ...pretas.desvantagens];
+      if (d.includes("sortudo")) sortudo++;
+      if (d.includes("sem-roque")) semRoque++;
+    }
+    expect(sortudo * 2).toBeLessThan(semRoque);
   });
 
   it("Wallhack e Damas nunca aparecem no Draft", () => {

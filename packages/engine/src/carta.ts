@@ -121,6 +121,11 @@ export interface Carta<D extends object = object> {
   exigeOnline?: boolean;
   /** Não aparece nas ofertas do Draft. */
   foraDoDraft?: boolean;
+  /**
+   * Ajuste de raridade só desta carta (1 = normal; 0,25 = sai 4x menos), sem mudar o
+   * peso — o peso continua servindo para equilibrar os dois lados.
+   */
+  raridade?: number;
   /** Não entra no baralho do modo Mão de cartas. */
   foraDaMao?: boolean;
   acaoAtiva?: AcaoAtiva<D>;

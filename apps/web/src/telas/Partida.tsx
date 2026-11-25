@@ -592,6 +592,12 @@ export function Partida({ modo, cartas, aoSair, aoRevanche, online }: Props) {
       // Draft: as desvantagens são conhecidas (cada um escolheu a do outro).
       // Spyware do adversário: as desvantagens deste lado ficam à mostra para ele.
       desvantagemAberta={modo.regras === "draft" || estado.cartas[corOposta(cor)].poder === "spyware"}
+      // Draft: lembrete (só visual) da desvantagem que este lado deu ao adversário.
+      lembreteDraft={
+        modo.regras === "draft" && !espectador && (corHumano === null || cor === corHumano)
+          ? estado.cartas[corOposta(cor)].desvantagem
+          : null
+      }
       modoPoder={modoPoder && estado.vez === cor}
       aoAlternarCartas={() => setVisiveis((v) => ({ ...v, [cor]: !v[cor] }))}
       aoUsarPoder={aoUsarPoder}

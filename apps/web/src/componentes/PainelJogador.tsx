@@ -1,4 +1,4 @@
-import { infoPoder, lancesAteComprar, resumoDaCarta, travaDaMao, type Cor, type Estado } from "@xadrez/engine";
+import { infoPoder, lancesAteComprar, obterCarta, resumoDaCarta, travaDaMao, type Cor, type Estado } from "@xadrez/engine";
 import { CartaVisual } from "./CartaVisual.tsx";
 import { NOME_COR } from "../textos.ts";
 
@@ -11,6 +11,8 @@ interface Props {
   cartasVisiveis: boolean;
   /** A desvantagem fica à mostra mesmo com as cartas viradas (Draft: foi o adversário que escolheu). */
   desvantagemAberta?: boolean;
+  /** Draft: a desvantagem que este lado deu ao adversário (só um lembrete na tela). */
+  lembreteDraft?: string | null;
   modoPoder: boolean;
   aoAlternarCartas(): void;
   aoUsarPoder(): void;
@@ -36,6 +38,7 @@ export function PainelJogador({
   controlavel,
   cartasVisiveis,
   desvantagemAberta = false,
+  lembreteDraft,
   modoPoder,
   tempo,
   relogioCorrendo,
@@ -72,6 +75,11 @@ export function PainelJogador({
         )}
       </header>
 
+      {lembreteDraft && (
+        <p className="lembrete-draft">
+          🎯 Você deu ao adversário: <strong>{obterCarta(lembreteDraft).nome}</strong>
+        </p>
+      )}
       <div className={`painel-cartas ${cartas.extra ? "com-extra" : ""}`}>
         <CartaVisual
           cartaId={cartas.poder}
