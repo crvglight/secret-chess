@@ -96,13 +96,13 @@ Rode na raiz do projeto:
 | Bispos tímidos | desvantagem | 3 | Seus bispos não podem capturar. |
 | Rainha preguiçosa | desvantagem | 2 | Sua dama não pode se mover nos 5 primeiros lances. |
 | Batalha de peões | desvantagem | 3 | Você perde se tiver 4 peões a menos que o adversário. |
-| Dama frágil | desvantagem | 4 | Você perde se ficar sem nenhuma dama no tabuleiro. |
+| Dama frágil | desvantagem | 5 | Você perde se ficar sem nenhuma dama no tabuleiro. |
 | Damas | desvantagem | 4 | Como no jogo de damas: se alguma peça sua (menos o rei) puder capturar, você é obrigado a capturar com ela. O rei fica de fora. (Fora do Draft.) |
 | Sem roque | desvantagem | 1 | Você não pode fazer roque. |
 | Rei preso | desvantagem | 2 | Seu rei não pode se mover nos 10 primeiros lances. |
 | Cavalos cansados | desvantagem | 2 | Um cavalo seu que se moveu não pode se mover de novo na sua rodada seguinte. |
 | Torres curtas | desvantagem | 2 | Suas torres andam no máximo 3 casas. |
-| Sem recuo | desvantagem | 3 | Suas peças (menos o rei) nunca podem voltar para trás. |
+| Sem recuo | desvantagem | 4 | Suas peças (menos o rei) nunca podem voltar para trás. |
 | Pacifista | desvantagem | 2 | Você não pode capturar nos 6 primeiros lances. |
 | Cavalos tímidos | desvantagem | 3 | Seus cavalos não podem capturar. |
 | Peões lentos | desvantagem | 1 | Seus peões nunca andam 2 casas. |
@@ -115,10 +115,10 @@ Rode na raiz do projeto:
 | Peças pesadas | desvantagem | 3 | Você não pode mover a mesma peça em duas rodadas seguidas. |
 | Rei medroso | desvantagem | 2 | Seu rei nunca pode capturar. |
 | Espião | desvantagem | 2 | O adversário vê as suas cartas desde o início da partida. |
-| Maldição | desvantagem | 3 | A cada 10 lances seus, uma peça sua (menos o rei) some do tabuleiro. |
+| Maldição | desvantagem | 4 | A cada 10 lances seus, uma peça sua (menos o rei) some do tabuleiro. |
 | Lado errado | desvantagem | 1 | Você só faz o roque longo, e seus peões não capturam para a esquerda (do seu ponto de vista). |
 | Lentidão | desvantagem | 2 | Você começa com 1 minuto a menos no relógio (só em partidas com relógio). |
-| Kamikaze | desvantagem | 3 | Se você puder dar xeque no rei do adversário, você é obrigado a dar. |
+| Kamikaze | desvantagem | 4 | Se você puder dar xeque no rei do adversário, você é obrigado a dar. |
 | Regigigas | desvantagem | 2 | Nos seus 5 primeiros lances, você só pode mover peões. |
 | Ansiedade | desvantagem | 2 | Os peões encostados no seu rei não podem se afastar dele (só podem ir para casas que continuem encostadas no rei). |
 | CLT | desvantagem | 2 | A cada 6 lances seus, no 7º você só pode mover peões (menos se estiver em xeque ou se nenhum peão puder andar). |

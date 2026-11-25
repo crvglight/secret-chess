@@ -7,7 +7,7 @@ export default definirCarta({
   id: "maldicao",
   nome: "Maldição",
   tipo: "desvantagem",
-  peso: 3,
+  peso: 4,
   descricao: `A cada ${INTERVALO} lances seus, uma peça sua (menos o rei) some do tabuleiro.`,
 
   aoMover(ctx, { jogador }) {

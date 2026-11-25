@@ -20,7 +20,7 @@ export default definirCarta({
   id: "kamikaze",
   nome: "Kamikaze",
   tipo: "desvantagem",
-  peso: 3,
+  peso: 4,
   descricao: "Se você puder dar xeque no rei do adversário, você é obrigado a dar.",
 
   // Obrigação: só entre os lances legais (nunca deixa o jogador sem lance).

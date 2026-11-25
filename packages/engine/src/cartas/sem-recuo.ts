@@ -5,7 +5,7 @@ export default definirCarta({
   id: "sem-recuo",
   nome: "Sem recuo",
   tipo: "desvantagem",
-  peso: 3,
+  peso: 4,
   descricao: "Suas peças (menos o rei) nunca podem voltar para trás.",
 
   filtrarLances({ estado, dono }, lances, jogador) {
