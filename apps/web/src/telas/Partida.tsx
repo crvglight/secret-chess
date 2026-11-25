@@ -36,11 +36,11 @@ import {
   DESCRICAO_PREMIO,
   destaquesDosAirdrops,
   NOME_RARIDADE,
-  desvantagemDesligada,
   type Digitacao,
   type Espiada,
   passarVez,
   travaDePassar,
+  lanceDeMultitasking,
 } from "@xadrez/engine";
 import { EscolhaPromocao } from "../componentes/EscolhaPromocao.tsx";
 import { SeletorVisual } from "../componentes/SeletorVisual.tsx";
@@ -465,10 +465,9 @@ export function Partida({ modo, cartas, aoSair, aoRevanche, online }: Props) {
 
   /** Multitasking: quem joga agora tem que digitar as palavras antes de cada lance? */
   const precisaDigitar = () => {
-    const c = estado.cartas[estado.vez];
-    const tem = c.desvantagem === "multitasking" || c.extra === "multitasking";
     const nestaTela = !espectador && (corHumano === null || corHumano === estado.vez);
-    return tem && nestaTela && !desvantagemDesligada(estado, estado.vez);
+    // A cada 2 lances seus (o motor sabe se a carta está valendo e se é a vez das palavras).
+    return nestaTela && lanceDeMultitasking(estado);
   };
 
   function efetivar(lance: Lance) {

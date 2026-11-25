@@ -193,7 +193,11 @@ describe("Sala online", () => {
     sala.entrar("Bia");
     semCartas(sala);
     expect(sala.agir("brancas", { tipo: "passar" })).toBeTruthy(); // sem a carta: recusado
-    sala.estado = { ...sala.estado!, cartas: { ...sala.estado!.cartas, brancas: { poder: null, desvantagem: "multitasking" } } };
+    sala.estado = {
+      ...sala.estado!,
+      cartas: { ...sala.estado!.cartas, brancas: { poder: null, desvantagem: "multitasking" } },
+      lancesFeitos: { brancas: 1, pretas: 1 }, // 2º lance das brancas: pede as palavras
+    };
     expect(sala.agir("brancas", { tipo: "passar" })).toBeNull();
     expect(sala.estado!.vez).toBe("pretas");
     expect(sala.acoes.at(-1)).toEqual({ tipo: "passar" });

@@ -11,5 +11,8 @@ export default definirCarta({
   tipo: "desvantagem",
   peso: 3,
   descricao:
-    "Para confirmar cada lance, digite sem erros as 3 palavras que aparecerem, em até 7 segundos. Se errar (ou o tempo acabar), o lance é anulado e você perde a vez.",
+    "A cada 2 lances seus, para confirmar o lance, digite sem erros as 3 palavras que aparecerem, em até 7 segundos. Se errar (ou o tempo acabar), o lance é anulado e você perde a vez.",
+
+  resumo: ({ estado, dono }) =>
+    (estado.lancesFeitos[dono] + 1) % 2 === 0 ? "este lance pede as palavras" : "o próximo lance pede as palavras",
 });

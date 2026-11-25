@@ -7,6 +7,7 @@ import {
   nomeCasa,
   sortearCartas,
   type Estado,
+  lanceDeMultitasking,
   passarVez,
   travaDePassar,
   type OpcoesPartida,
@@ -125,18 +126,27 @@ describe("Voanet, Femme Fatale e Salário Mínimo", () => {
 
 describe("Multitasking: perder a vez", () => {
   it("quem tem Multitasking perde a vez: nenhuma peça se mexe e a vez passa", () => {
-    const e = criarPartida({ cartas: brancas(null, "multitasking") });
+    const e0 = criarPartida({ cartas: brancas(null, "multitasking") });
+    const e = { ...e0, lancesFeitos: { brancas: 1, pretas: 1 } }; // 2º lance: pede as palavras
     const d = passarVez(e);
     expect(d.vez).toBe("pretas");
     expect(d.tabuleiro).toEqual(e.tabuleiro);
-    expect(d.lancesFeitos.brancas).toBe(1);
+    expect(d.lancesFeitos.brancas).toBe(2);
     expect(d.eventos.at(-1)?.texto).toContain("perdeu a vez");
+  });
+
+  it("as palavras aparecem a cada 2 lances (no 2º, 4º, 6º...)", () => {
+    const e0 = criarPartida({ cartas: brancas(null, "multitasking") });
+    const com = (feitos: number) => ({ ...e0, lancesFeitos: { brancas: feitos, pretas: feitos } });
+    expect([0, 1, 2, 3, 4, 5].map((f) => lanceDeMultitasking(com(f)))).toEqual([false, true, false, true, false, true]);
+    expect(travaDePassar(com(0))).toContain("não há Multitasking");
   });
 
   it("sem a carta, ou em xeque, não dá para perder a vez", () => {
     expect(travaDePassar(criarPartida())).not.toBeNull();
     expect(() => passarVez(criarPartida())).toThrow();
-    const xeque = criarPartida({ fen: "4r1k1/8/8/8/8/8/8/4K3 w - - 0 1", cartas: brancas(null, "multitasking") });
+    const xeque0 = criarPartida({ fen: "4r1k1/8/8/8/8/8/8/4K3 w - - 0 1", cartas: brancas(null, "multitasking") });
+    const xeque = { ...xeque0, lancesFeitos: { brancas: 1, pretas: 1 } };
     expect(travaDePassar(xeque)).toContain("xeque");
   });
 });

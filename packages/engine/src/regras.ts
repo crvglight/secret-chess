@@ -656,10 +656,19 @@ export function temMultitasking(estado: Estado, cor: Cor = estado.vez): boolean 
   return cartasEmJogo(estado).some((c) => c.dono === cor && c.carta.id === "multitasking");
 }
 
+/** A cada quantos lances seus o Multitasking pede as palavras (no 2º, 4º, 6º...). */
+export const CICLO_MULTITASKING = 2;
+
+/** Neste lance, quem tem a vez precisa digitar as palavras do Multitasking? */
+export function lanceDeMultitasking(estado: Estado, cor: Cor = estado.vez): boolean {
+  return temMultitasking(estado, cor) && (estado.lancesFeitos[cor] + 1) % CICLO_MULTITASKING === 0;
+}
+
 /** Motivo para não poder perder a vez agora (null = pode). */
 export function travaDePassar(estado: Estado): string | null {
   if (estado.resultado) return "A partida já terminou";
   if (!temMultitasking(estado)) return "Só quem tem Multitasking perde a vez";
+  if (!lanceDeMultitasking(estado)) return "Neste lance não há Multitasking";
   if (reiAtacado(estado, estado.vez)) return "Em xeque o lance só é cancelado (não dá para perder a vez)";
   return null;
 }
